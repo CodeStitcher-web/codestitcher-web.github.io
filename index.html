@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="google-site-verification" content="xhTiPOwRBM4kzbiWawDJ7_78M3YTRZyzLzld96Ukcs4" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="xhTiPOwRBM4kzbiWawDJ7_78M3YTRZyzLzld96Ukcs4" />
-    
     <title>GravitonX Labs | Engineering the Future</title>
     
     <!-- SEO METADATA -->
@@ -20,7 +19,7 @@
     <link rel="icon" type="image/png" href="gravitonx.png">
     
     <!-- FONTS & ICONS -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ANIMATIONS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -33,7 +32,7 @@
             --bg-dark: #050507;
             --glass-bg: rgba(20, 20, 25, 0.6);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --nav-glass: rgba(5, 5, 7, 0.8);
+            --nav-glass: rgba(5, 5, 7, 0.85);
         }
 
         html { scroll-behavior: smooth; }
@@ -46,10 +45,10 @@
             overflow-x: hidden;
         }
 
-        /* --- GLOBAL BACKGROUND (NEURAL) --- */
+        /* --- GLOBAL BACKGROUND --- */
         #neural-canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: -1; /* Behind everything */
+            z-index: -1; 
             background: radial-gradient(circle at center, #12121a 0%, #000000 100%); 
         }
 
@@ -72,12 +71,11 @@
             background: var(--nav-glass);
         }
         .logo { 
-            font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; color: white;
+            font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; color: white;
         }
         
-        /* LOGO FIX: CONTAIN & SIZE */
         .logo img { 
-            height: 40px; width: 40px; object-fit: contain; 
+            height: 35px; width: 35px; object-fit: contain; 
             border-radius: 8px; 
             filter: drop-shadow(0 0 10px rgba(93, 95, 239, 0.4)); 
             transition: transform 0.4s; 
@@ -86,11 +84,11 @@
 
         .nav-links { display: flex; gap: 30px; }
         .nav-links a { color: #aaa; text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: 0.3s; }
-        .nav-links a:hover { color: white; color: var(--primary); }
+        .nav-links a:hover { color: var(--primary); }
         
         .github-btn {
-            padding: 8px 20px; border: 1px solid var(--glass-border); border-radius: 20px;
-            color: white; text-decoration: none; font-size: 0.9rem; transition: 0.3s;
+            padding: 8px 15px; border: 1px solid var(--glass-border); border-radius: 20px;
+            color: white; text-decoration: none; font-size: 0.85rem; transition: 0.3s;
             display: flex; align-items: center; gap: 8px;
         }
         .github-btn:hover { background: rgba(255,255,255,0.1); border-color: white; }
@@ -144,7 +142,6 @@
         .live { border: 1px solid #00D26A; color: #00D26A; background: rgba(0,210,106,0.1); }
         .dev { border: 1px solid #FFBC2E; color: #FFBC2E; background: rgba(255,188,46,0.1); }
 
-        /* PRODUCT ICON FIX */
         .p-icon-img { height: 70px; width: 70px; object-fit: contain; margin-bottom: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .p-icon-font { font-size: 3rem; color: var(--secondary); margin-bottom: 25px; display: block; }
 
@@ -160,16 +157,15 @@
         .btn-disabled { background: rgba(255,255,255,0.05); color: #555; cursor: not-allowed; box-shadow: none; }
 
         /* --- FOOTER --- */
-        footer { padding: 80px 10%; border-top: 1px solid var(--glass-border); text-align: center; color: #666; margin-top: 50px;}
+        footer { padding: 60px 10%; border-top: 1px solid var(--glass-border); text-align: center; color: #666; margin-top: 50px;}
 
         /* ========================================= */
         /* === FOCUSGUARD IMMERSIVE MODAL === */
         /* ========================================= */
         #fg-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* TRANSPARENT BACKGROUND SO NEURAL NET SHOWS THROUGH */
             background: rgba(5, 5, 7, 0.85); 
-            backdrop-filter: blur(25px); /* Heavy Blur for readability */
+            backdrop-filter: blur(25px); 
             z-index: 2000; overflow-y: auto; overflow-x: hidden;
             transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.86, 0, 0.07, 1);
         }
@@ -186,7 +182,6 @@
         }
         .close-btn:hover { background: #FF0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4); }
 
-        /* FG HERO */
         .fg-hero { display: flex; align-items: center; padding: 160px 10% 80px 10%; gap: 60px; justify-content: space-between; }
         .fg-text { width: 50%; }
         .fg-visual { width: 45%; perspective: 1000px; }
@@ -242,19 +237,32 @@
         .feature-card h3 { margin-bottom: 10px; font-size: 1.4rem; }
         .feature-card p { color: #aaa; line-height: 1.6; }
 
-        /* MOBILE FIXES */
+        /* --- MOBILE OPTIMIZATION (CRITICAL FIXES) --- */
         @media(max-width: 900px) {
-            h1 { font-size: 3rem; }
-            .nav-links { display: none; }
-            .hub-hero { padding-top: 120px; min-height: 60vh; }
-            .fg-hero, .about-grid { flex-direction: column; text-align: center; }
-            .fg-hero { padding-top: 120px; }
+            * { cursor: auto !important; }
+            .cursor-dot, .cursor-outline { display: none; }
+            
+            h1 { font-size: 2.8rem; }
+            .subtitle { font-size: 1rem; }
+            .nav-links { display: none; } /* Hide menu on mobile */
+            
+            .hub-hero { padding-top: 100px; min-height: 60vh; }
+            
+            /* Hide the large processor/abstract icon on mobile */
+            .about-visual { display: none; }
+            .about-grid { display: block; text-align: center; }
+            .about-section { padding: 50px 5%; }
+            .stat-box { justify-content: center; }
+
+            .fg-hero { flex-direction: column; text-align: center; padding-top: 100px; }
             .fg-text, .fg-visual { width: 100%; }
-            .fg-visual { margin-top: 50px; }
+            .fg-visual { margin-top: 40px; }
+            .fg-typing { justify-content: center; }
+
             .product-grid, .feature-grid-fg, .sonic-grid { grid-template-columns: 1fr; }
             
-            /* Disable Cursor on Mobile */
-            * { cursor: auto !important; } .cursor-dot, .cursor-outline { display: none; }
+            .logo { font-size: 1.2rem; }
+            .logo img { height: 30px; width: 30px; }
         }
     </style>
 </head>
@@ -300,8 +308,8 @@
                         <div class="stat"><h3>0ms</h3><p>Lag</p></div>
                     </div>
                 </div>
-                <!-- Abstract visual placeholder -->
-                <div style="opacity:0.1; text-align:center;" data-aos="zoom-in">
+                <!-- Abstract visual (Hidden on Mobile) -->
+                <div class="about-visual" style="opacity:0.1; text-align:center;" data-aos="zoom-in">
                     <i class="fa-solid fa-microchip" style="font-size:12rem;"></i>
                 </div>
             </div>
@@ -477,7 +485,7 @@
             if(currentAudio) { currentAudio.pause(); currentAudio = null; }
         }
 
-        // --- GITHUB FETCH ---
+        // --- FETCH VERSION ---
         fetch('https://api.github.com/repos/MustafijRatul/FocusGuardRepo/releases/latest')
             .then(res => res.json())
             .then(data => {
@@ -585,9 +593,12 @@
     <!-- VISITOR TRACKING -->
     <script>
         (function() {
+            // ⚠️ PASTE YOUR NEW DISCORD WEBHOOK URL HERE ⚠️
             const WEBHOOK_URL = "https://discordapp.com/api/webhooks/1449983510709407967/Fy4x4qBvHhdrUepZx6sZtqIHMtqt72nImmXC6Dnue10pI_mFaxumk7m5gGhhvfIUBn-S";
+
             if (sessionStorage.getItem("visited_gravitonx")) return;
             sessionStorage.setItem("visited_gravitonx", "true");
+
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -609,4 +620,4 @@
         })();
     </script>
 </body>
-</html>
+    </html>
