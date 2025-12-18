@@ -1,4 +1,4 @@
-// script.js - FIXED VISIBILITY VERSION
+// script.js - HIGH ENERGY INTERACTIVE VERSION
 
 document.addEventListener("DOMContentLoaded", () => {
     
@@ -28,8 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const posX = e.clientX;
             const posY = e.clientY;
             
+            // Instant transform for dot
             dot.style.transform = `translate(${posX}px, ${posY}px)`;
             
+            // Smooth trail for outline
             outline.animate({
                 transform: `translate(${posX}px, ${posY}px)`
             }, { duration: 500, fill: "forwards" });
@@ -39,13 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if(outline) outline.style.display = "none";
     }
 
-    // --- 4. NEURAL BACKGROUND (OPTIMIZED & VISIBLE) ---
+    // --- 4. NEURAL BACKGROUND (HIGH ENERGY PHYSICS) ---
     const canvas = document.getElementById('neural-canvas');
     if(canvas) {
         const ctx = canvas.getContext('2d');
         let width, height, particles;
 
-        let mouse = { x: null, y: null, radius: 250 };
+        // Interaction Zone Radius
+        let mouse = { x: null, y: null, radius: 250 }; // Increased radius
 
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.x;
@@ -71,49 +74,62 @@ document.addEventListener("DOMContentLoaded", () => {
             constructor() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
+                // Base Speed (Slow & Calm)
                 this.vx = (Math.random() - 0.5) * 0.5;
                 this.vy = (Math.random() - 0.5) * 0.5;
+                // Base Size
                 this.size = Math.random() * 2 + 1;
                 this.baseSize = this.size;
-                this.baseColor = Math.random() > 0.5 ? "#5D5FEF" : "#bd00ff";
+                // Colors
+                this.baseColor = Math.random() > 0.5 ? "#5D5FEF" : "#bd00ff"; // Primary/Secondary
                 this.color = this.baseColor;
+                // Density determines how heavy the particle is (reaction speed)
                 this.density = (Math.random() * 30) + 1;
             }
 
             update() {
+                // 1. Move Particle
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Bounce off edges
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-
-                // Interaction Physics
+                // 2. Interaction Physics
                 if(mouse.x != null) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let distance = Math.sqrt(dx*dx + dy*dy);
                     
                     if (distance < mouse.radius) {
+                        // Calculate Force
                         const forceDirectionX = dx / distance;
                         const forceDirectionY = dy / distance;
                         const force = (mouse.radius - distance) / mouse.radius;
+                        
+                        // EXPLOSIVE FORCE: Multiplied by 5 for noticeable reaction
                         const directionX = forceDirectionX * force * this.density * 0.6;
                         const directionY = forceDirectionY * force * this.density * 0.6;
                         
+                        // Push away from mouse
                         this.x -= directionX;
                         this.y -= directionY;
 
-                        this.color = "#00F0FF"; 
-                        this.size = this.baseSize * 2.5; 
+                        // ENERGY CHARGE: Turn Bright Cyan/White and Grow
+                        this.color = "#00F0FF"; // Neon Cyan
+                        this.size = this.baseSize * 2.5; // Grow 2.5x
                     } else {
+                        // Return to normal
                         this.color = this.baseColor;
-                        if(this.size > this.baseSize) this.size -= 0.1; 
+                        if(this.size > this.baseSize) {
+                            this.size -= 0.1; // Shrink back slowly
+                        }
                     }
                 } else {
                     this.color = this.baseColor;
                     this.size = this.baseSize;
                 }
+
+                // 3. Bounce off edges
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
             }
 
             draw() {
@@ -121,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
                 
-                // Only glow particles, NOT lines (Performance Fix)
+                // Add glow if energized
                 if(this.color === "#00F0FF") {
                     ctx.shadowBlur = 15;
                     ctx.shadowColor = "#00F0FF";
@@ -130,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 ctx.fill();
-                ctx.shadowBlur = 0; // Reset immediately
+                ctx.shadowBlur = 0; // Reset for lines
             }
         }
 
@@ -149,27 +165,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 p.update();
                 p.draw();
 
-                // 1. MOUSE CONNECTIONS (BRIGHTER)
+                // 1. STRONG MOUSE CONNECTIONS
                 if (mouse.x != null) {
                     let dx = p.x - mouse.x;
                     let dy = p.y - mouse.y;
                     let distance = Math.sqrt(dx*dx + dy*dy);
 
-                    if (distance < 250) { // Increased Range
+                    if (distance < 200) {
                         ctx.beginPath();
-                        
-                        // CHANGED: Pure White color for max visibility
-                        // CHANGED: Opacity math allows it to be solid (1.0) at center
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/250})`;
-                        
-                        ctx.lineWidth = 1; // Keep thin for elegance
+                        // Bright White/Cyan connection
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * (1 - distance/200)})`;
+                        ctx.lineWidth = 1.5; // Thicker line
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(mouse.x, mouse.y);
                         ctx.stroke();
                     }
                 }
 
-                // 2. AMBIENT CONNECTIONS
+                // 2. AMBIENT PARTICLE CONNECTIONS
                 for (let j = i; j < particles.length; j++) {
                     let p2 = particles[j];
                     let dx = p.x - p2.x;
@@ -178,8 +191,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (distance < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(93, 95, 239, ${0.15 * (1 - distance/100)})`;
-                        ctx.lineWidth = 0.5;
+                        // Subtle Indigo connection
+                        ctx.strokeStyle = `rgba(93, 95, 239, ${0.2 * (1 - distance/100)})`;
+                        ctx.lineWidth = 0.5; // Thin line
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.stroke();
