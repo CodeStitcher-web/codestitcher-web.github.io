@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ctx.beginPath();
                         // Bright White/Cyan connection
                         ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * (1 - distance/200)})`;
-                        ctx.lineWidth = 1.5; // Thicker line
+                        ctx.lineWidth = 2,0; // Thicker line
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(mouse.x, mouse.y);
                         ctx.stroke();
@@ -253,3 +253,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
