@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | GravitonX Labs</title>
+    
+    <link rel="icon" type="image/png" href="../gravitonx.png">
+    
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ANIMATIONS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- SHARED STYLE -->
+    <link rel="stylesheet" href="../style.css">
+
+    <style>
+        /* PAGE SPECIFIC TWEAKS */
+        .products-hero {
+            padding: 150px 5% 50px 5%;
+            text-align: center;
+        }
+        .products-hero h1 { font-size: 4rem; margin-bottom: 20px; }
+        .products-hero p { color: #aaa; max-width: 600px; margin: 0 auto; font-size: 1.2rem; }
+
+        /* WAITLIST MODAL */
+        #waitlist-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            z-index: 5000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        #waitlist-modal.active { opacity: 1; }
+        
+        .waitlist-card {
+            background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1);
+            padding: 40px; border-radius: 20px; text-align: center;
+            width: 90%; max-width: 450px; position: relative;
+            box-shadow: 0 0 50px rgba(93, 95, 239, 0.15);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #waitlist-modal.active .waitlist-card { transform: scale(1); }
+        
+        .wl-input {
+            width: 100%; padding: 12px 15px; border-radius: 8px;
+            background: rgba(255,255,255,0.05); border: 1px solid #333;
+            color: white; margin-bottom: 15px; font-family: 'Outfit'; outline: none;
+        }
+        .wl-input:focus { border-color: var(--primary); }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 900px) {
+            .products-hero { padding-top: 120px; }
+            .products-hero h1 { font-size: 3rem; }
+            
+            /* Make cards look better on phone */
+            .glass-card { padding: 30px 20px; margin-bottom: 20px; }
+            .product-grid { gap: 20px; }
+            
+            /* Fix Icon Sizing */
+            .p-icon-font { font-size: 2.5rem; }
+            
+            /* Remove Hover Dependencies for Mobile */
+            .btn-disabled { opacity: 1; border-color: rgba(255,255,255,0.2); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+    <div class="page-transition"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <canvas id="neural-canvas"></canvas>
+
+    <nav>
+        <a href="../index.html" class="logo">
+            <img src="../gravitonx.png" alt="GX"> GravitonX Labs
+        </a>
+        <div class="nav-links">
+            <a href="../index.html">Home</a>
+            <a href="index.html" style="color:var(--primary);">Products</a>
+            <a href="https://github.com/MustafijRatul" target="_blank">About</a>
+        </div>
+    </nav>
+
+    <section class="products-hero">
+        <div data-aos="fade-down">
+            <h1>The <span class="text-grad">Ecosystem</span></h1>
+            <p>A suite of interconnected high-performance utilities designed to elevate your Windows experience.</p>
+        </div>
+    </section>
+
+    <!-- PRODUCT GRID -->
+    <section class="section" style="padding-top: 20px;">
+        <div class="products-section"> 
+            <div class="grid-3 product-grid">
+
+                <!-- 1. FOCUSGUARD PRO (LIVE) -->
+                <a href="../focusguard/index.html" class="glass-card holo-card" style="text-decoration:none;" data-aos="fade-up" data-aos-delay="0">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <img src="../appicon.png" style="height:60px; border-radius:12px; margin-bottom:20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                        <span style="color:#00D26A; border:1px solid #00D26A; padding:5px 10px; border-radius:15px; font-size:0.7rem; font-weight:700;">LIVE v11.8</span>
+                    </div>
+                    <h3 style="color:white;">FocusGuard Pro</h3>
+                    <p>The flagship distraction shield. Strict app blocking, Pomodoro timers, and deep analytics wrapped in a stunning glass UI.</p>
+                    <div class="btn-glow" style="width:100%; justify-content:center; margin-top:auto;">
+                        Explore <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- 2. AETHER LAB (WAITLIST) -->
+                <div class="glass-card holo-card" data-aos="fade-up" data-aos-delay="100">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <i class="fa-solid fa-flask p-icon-font" style="font-size:3rem; color:var(--secondary); margin-bottom:20px;"></i>
+                        <span style="color:#FFBC2E; border:1px solid #FFBC2E; padding:5px 10px; border-radius:15px; font-size:0.7rem; font-weight:700;">IN DEV</span>
+                    </div>
+                    <h3 style="color:white;">Aether Lab</h3>
+                    <p>Scientific computing reimagined. Interactive 3D plotting, numerical methods visualization, and embedded Python console.</p>
+                    <button class="btn-disabled" onclick="openWaitlist('Aether Lab')" style="width:100%; padding:15px; border-radius:50px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#888; cursor:pointer; font-weight:600; margin-top:auto; transition:0.3s;">
+                        <i class="fa-regular fa-bell"></i> Notify Me
+                    </button>
+                </div>
+
+                <!-- 3. HOLOSPACE (WAITLIST) -->
+                <div class="glass-card holo-card" data-aos="fade-up" data-aos-delay="200">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <i class="fa-solid fa-rocket p-icon-font" style="font-size:3rem; color:var(--secondary); margin-bottom:20px;"></i>
+                        <span style="color:#FFBC2E; border:1px solid #FFBC2E; padding:5px 10px; border-radius:15px; font-size:0.7rem; font-weight:700;">CONCEPT</span>
+                    </div>
+                    <h3 style="color:white;">HoloSpace</h3>
+                    <p>Physics-based desktop environment. Turn your icons into floating gravity orbs with the Verlet-X physics engine.</p>
+                    <button class="btn-disabled" onclick="openWaitlist('HoloSpace')" style="width:100%; padding:15px; border-radius:50px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#888; cursor:pointer; font-weight:600; margin-top:auto; transition:0.3s;">
+                        <i class="fa-regular fa-bell"></i> Notify Me
+                    </button>
+                </div>
+
+                <!-- 4. GHOSTFLOW (WAITLIST) -->
+                <div class="glass-card holo-card" data-aos="fade-up" data-aos-delay="300">
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <i class="fa-solid fa-ghost p-icon-font" style="font-size:3rem; color:var(--secondary); margin-bottom:20px;"></i>
+                        <span style="color:#FFBC2E; border:1px solid #FFBC2E; padding:5px 10px; border-radius:15px; font-size:0.7rem; font-weight:700;">CONCEPT</span>
+                    </div>
+                    <h3 style="color:white;">GhostFlow</h3>
+                    <p>Human-like automation. Record and replay complex mouse/keyboard tasks using Bezier curve interpolation.</p>
+                    <button class="btn-disabled" onclick="openWaitlist('GhostFlow')" style="width:100%; padding:15px; border-radius:50px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:#888; cursor:pointer; font-weight:600; margin-top:auto; transition:0.3s;">
+                        <i class="fa-regular fa-bell"></i> Notify Me
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align:center; padding:50px; border-top:1px solid var(--glass-border); color:#666;">
+        <p>&copy; 2025 <b>GravitonX Labs</b></p>
+    </footer>
+
+    <!-- WAITLIST MODAL -->
+    <div id="waitlist-modal">
+        <div class="waitlist-card">
+            <button onclick="closeWaitlist()" style="position:absolute; top:15px; right:15px; background:none; border:none; color:#666; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            <i class="fa-solid fa-bell" style="font-size:3rem; color:var(--secondary); margin-bottom:20px;"></i>
+            <h3 style="font-size:1.5rem; margin-bottom:10px;">Join the Waitlist</h3>
+            <p style="color:#aaa; margin-bottom:20px;">Get early access to <span id="wl-product-name" style="color:white; font-weight:bold;">Project</span>.</p>
+            
+            <form onsubmit="submitWaitlist(event)">
+                <input type="email" id="wl-email" class="wl-input" placeholder="name@example.com" required>
+                <button type="submit" class="btn-glow" style="width:100%; justify-content:center; cursor:pointer;">Join Now</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+    <script src="../script.js"></script>
+    
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        // --- DISCORD WEBHOOK URL ---
+        // ⚠️ PASTE YOUR URL HERE ⚠️
+        const DISCORD_WEBHOOK = "https://discordapp.com/api/webhooks/1449983510709407967/Fy4x4qBvHhdrUepZx6sZtqIHMtqt72nImmXC6Dnue10pI_mFaxumk7m5gGhhvfIUBn-S";
+
+        // --- MOBILE CHECK ---
+        const isMobile = window.matchMedia("(max-width: 900px)").matches;
+
+        // Only init TILT if NOT on mobile (To fix scroll jitter)
+        if (!isMobile) {
+            VanillaTilt.init(document.querySelectorAll(".glass-card"), { max: 5, speed: 400, glare: true, "max-glare": 0.1 });
+        }
+
+        // --- WAITLIST LOGIC ---
+        let currentProduct = "";
+
+        function openWaitlist(productName) {
+            currentProduct = productName;
+            document.getElementById('wl-product-name').innerText = productName;
+            const modal = document.getElementById('waitlist-modal');
+            modal.style.display = "flex";
+            setTimeout(() => { modal.classList.add('active'); }, 10);
+        }
+
+        function closeWaitlist() {
+            const modal = document.getElementById('waitlist-modal');
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = "none"; }, 300);
+        }
+
+        function submitWaitlist(e) {
+            e.preventDefault();
+            const email = document.getElementById('wl-email').value;
+            
+            // --- DISCORD NOTIFICATION ---
+            fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: "GravitonX Waitlist",
+                    embeds: [{
+                        title: "🚀 New Waitlist Signup!",
+                        color: 16766720, // Gold Color
+                        fields: [
+                            { name: "Product", value: currentProduct, inline: true },
+                            { name: "Email", value: email, inline: true },
+                            { name: "Platform", value: navigator.platform, inline: false }
+                        ]
+                    }]
+                })
+            }).then(() => {
+                alert(`You have been added to the ${currentProduct} priority list. 🚀`);
+                closeWaitlist();
+                document.getElementById('wl-email').value = "";
+            }).catch(err => {
+                alert("Error connecting to server. Please try again.");
+            });
+        }
+
+        // --- PAGE VIEW TRACKER ---
+        (function() {
+            if (sessionStorage.getItem("visited_products")) return;
+            sessionStorage.setItem("visited_products", "true");
+            
+            fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: "GravitonX Analytics",
+                    content: `👀 **User Browsing Products Page**\nRes: ${window.screen.width}x${window.screen.height}`
+                })
+            }).catch(e=>{});
+        })();
+
+        // --- HOVER EFFECT FOR BUTTONS ---
+        document.querySelectorAll('.btn-disabled').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.borderColor = "var(--primary)";
+                btn.style.color = "white";
+                btn.style.background = "rgba(93, 95, 239, 0.1)";
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.borderColor = "rgba(255,255,255,0.1)";
+                btn.style.color = "#888";
+                btn.style.background = "transparent";
+            });
+        });
+    </script>
+</body>
+</html>
