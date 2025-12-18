@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
 
                         const speed = Math.abs(p.vx) + Math.abs(p.vy);
-                        const opacity = 0.45 * mouseBoost * (1 - dist / 100);
+                        const opacity = 0.35 * mouseBoost * (1 - dist / 100);
 
                         ctx.beginPath();
                         ctx.strokeStyle = `rgba(93, 95, 239, ${opacity})`;
@@ -250,4 +250,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
 
