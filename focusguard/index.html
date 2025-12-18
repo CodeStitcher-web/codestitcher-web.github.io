@@ -118,9 +118,18 @@
                 
                 <!-- MANUAL DOWNLOAD BUTTON (Direct Link, No Modal) -->
                 <!-- Ensure FocusGuard_Pro_User_Manual.pdf is in the same folder -->
-                <a href="../FocusGuard_Pro_User_Manual.pdf" download class="btn-glow" style="background:rgba(255,255,255,0.1); box-shadow:none; text-decoration:none;">
-                    <i class="fa-solid fa-file-arrow-down"></i> Download Manual
-                </a>
+                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+    
+				<!-- MAIN APP DOWNLOAD (Triggers Overlay) -->
+				<button onclick="startDownloadFlow()" id="dl-btn-real" class="btn-glow">
+					<i class="fa-brands fa-windows"></i> Download App v11.8
+				</button>
+				
+				<!-- MANUAL DOWNLOAD (Direct Link, No Transition) -->
+				<!-- Added 'no-transition' class explicitly -->
+				<a href="../FocusGuard_Pro_User_Manual.pdf" download class="btn-glow no-transition" style="background:rgba(255,255,255,0.1); box-shadow:none; text-decoration:none;">
+					<i class="fa-solid fa-file-arrow-down"></i> Download Manual
+				</a>
 
             </div>
             <p style="margin-top:10px; color:#666; font-size:0.8rem;">* No Admin Rights Required</p>
@@ -251,3 +260,4 @@
     </script>
 </body>
 </html>
+
