@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>PaperGlass Pro | GravitonX</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Icon points to root folder -->
     <link rel="icon" href="../paperglassicon.png"> 
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -13,7 +11,7 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
 
-    <!-- Main Style from Root -->
+    <!-- Main Style -->
     <link rel="stylesheet" href="../style.css">
 
     <style>
@@ -53,7 +51,7 @@
             </div>
 
             <p style="color:#ccc; font-size:1.2rem; margin-bottom: 30px; margin-top: 15px;">
-                The ultimate PDF utility. Flatten documents, view with <b>Acrylic Blur</b>, and experience enterprise-grade speed.
+                The ultimate multi-format conversion suite. Flatten PDFs, convert Word/Excel, and compile images in a stunning Glass UI.
             </p>
 
             <div style="display:flex; gap:15px; flex-wrap:wrap;">
@@ -66,38 +64,55 @@
         </div>
         
         <div style="flex:1;" data-aos="zoom-in">
-            <!-- Ensure paperglass_dashboard.png exists in root or update path -->
+            <!-- Ensure paperglass_dashboard.png exists in root -->
             <img src="../paperglass_dashboard.png" style="width:100%; border-radius:20px; border:1px solid rgba(255,255,255,0.2); box-shadow:0 30px 80px rgba(0, 240, 255, 0.3);" data-tilt>
         </div>
     </section>
 
-    <!-- FEATURES -->
+    <!-- CORE TOOLS (UPDATED TO MATCH APP DASHBOARD) -->
     <section class="section" style="padding-top:0;">
-        <h2 style="text-align:center; margin-bottom:50px; font-size:2.5rem;" data-aos="fade-up">Core Capabilities</h2>
+        <h2 style="text-align:center; margin-bottom:50px; font-size:2.5rem;" data-aos="fade-up">Tool Arsenal</h2>
         <div class="grid-3">
+             <!-- 1. MD to DOCX -->
              <div class="glass-card" data-aos="fade-up">
-                 <i class="fa-solid fa-layer-group" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>PDF Flattening</h3><p>Convert editable PDFs into secure, flattened images instantly.</p>
+                 <i class="fa-solid fa-file-pen" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>MD to DOCX</h3>
+                 <p>Convert raw Markdown code into formatted Microsoft Word documents instantly.</p>
             </div>
+
+             <!-- 2. DOCX to PDF -->
              <div class="glass-card" data-aos="fade-up" data-aos-delay="100">
-                 <i class="fa-solid fa-book-open" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>Glass Reader</h3><p>A beautiful, translucent PDF reader with continuous scrolling.</p>
+                 <i class="fa-solid fa-file-word" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>DOCX to PDF</h3>
+                 <p>Transform Word documents into professional, secure PDF files.</p>
             </div>
+
+             <!-- 3. PDF to DOCX -->
              <div class="glass-card" data-aos="fade-up" data-aos-delay="200">
-                 <i class="fa-solid fa-wand-magic-sparkles" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>Acrylic UI</h3><p>Built on Windows DWM API for real-time background blur.</p>
+                 <i class="fa-solid fa-file-export" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>PDF to DOCX</h3>
+                 <p>Reverse engineer PDFs back into editable Word documents.</p>
             </div>
+
+             <!-- 4. XLSX to PDF -->
              <div class="glass-card" data-aos="fade-up" data-aos-delay="300">
-                 <i class="fa-solid fa-bolt" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>Zero Lag</h3><p>Multi-threaded processing ensures the UI never freezes.</p>
+                 <i class="fa-solid fa-file-excel" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>XLSX to PDF</h3>
+                 <p>Convert complex Excel spreadsheets into clean, printable PDF reports.</p>
             </div>
+
+             <!-- 5. FLATTEN PDF -->
              <div class="glass-card" data-aos="fade-up" data-aos-delay="400">
-                 <i class="fa-solid fa-expand" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>Focus Mode</h3><p>Fullscreen reading mode for distraction-free study.</p>
+                 <i class="fa-solid fa-layer-group" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>Flatten PDF</h3>
+                 <p>Rasterize vector PDFs into single-layer images to remove hidden data.</p>
             </div>
+
+             <!-- 6. IMAGE TO PDF -->
              <div class="glass-card" data-aos="fade-up" data-aos-delay="500">
-                 <i class="fa-solid fa-lock" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
-                 <h3>Secure Core</h3><p>Local processing only. No data ever leaves your machine.</p>
+                 <i class="fa-solid fa-images" style="font-size:2rem; color:var(--accent); margin-bottom:15px;"></i>
+                 <h3>Image to PDF</h3>
+                 <p>Compile multiple images (JPG, PNG) into a single document container.</p>
             </div>
         </div>
     </section>
@@ -134,7 +149,7 @@
 
         // --- FETCH PAPERGLASS REPO URL ---
         let downloadUrl = "";
-        // ⚠️ REPLACE WITH YOUR PAPERGLASS REPO URL IF DIFFERENT
+        // ⚠️ REPLACE WITH YOUR PAPERGLASS REPO URL
         fetch('https://api.github.com/repos/MustafijRatul/PaperGlassRepo/releases/latest')
             .then(res => res.json())
             .then(data => {
@@ -184,7 +199,7 @@
 
         // --- SPECIFIC TYPEWRITER FOR PAPERGLASS ---
         new Typed('#pg-typewriter', {
-            strings: ['Secure PDF Flattening.', 'Glass-Morphic Reader.', 'High-DPI Rendering.', 'Distraction-Free UI.'],
+            strings: ['Secure PDF Flattening.', 'Office to PDF Conversion.', 'High-DPI Rendering.', 'Distraction-Free UI.'],
             typeSpeed: 60, backSpeed: 40, backDelay: 1500, loop: true, showCursor: false
         });
     </script>
