@@ -113,8 +113,8 @@
             <h2>Flagship Software</h2>
         </div>
         <div class="product-grid">
-            <!-- LINK TO PRODUCTS PAGE -->
-            <a href="products/index.html" class="glass-card" style="text-decoration:none;" data-aos="fade-up">
+            <!-- 1. FOCUSGUARD PRO (LIVE) -->
+            <a href="focusguard/index.html" class="glass-card holo-card" style="text-decoration:none;" data-aos="fade-up">
                 <div style="display:flex; justify-content:space-between; align-items:start;">
                     <img src="appicon.png" style="height:60px; border-radius:12px; margin-bottom:20px;">
                     <span style="color:#00D26A; border:1px solid #00D26A; padding:5px 10px; border-radius:15px; font-size:0.7rem;">LIVE</span>
@@ -124,10 +124,16 @@
                 <div style="color:var(--accent); font-weight:bold;">View All Apps <i class="fa-solid fa-arrow-right"></i></div>
             </a>
             
-             <a href="products/index.html" class="glass-card" style="text-decoration:none;" data-aos="fade-up" data-aos-delay="100">
-                <i class="fa-solid fa-flask" style="font-size:3rem; color:var(--secondary); margin-bottom:20px;"></i>
-                <h3 style="color:white;">Aether Lab</h3>
-                <p>Next-gen scientific computing. Click to view development status.</p>
+             <!-- 2. PAPERGLASS PRO (NEW - LIVE) -->
+             <a href="paperglass/index.html" class="glass-card holo-card" style="text-decoration:none;" data-aos="fade-up" data-aos-delay="100">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <!-- Use FontAwesome icon if image not available on home, or image if preferred -->
+                    <img src="paperglassicon.png" style="height:60px; border-radius:12px; margin-bottom:20px;">
+                    <span style="color:#00D26A; border:1px solid #00D26A; padding:5px 10px; border-radius:15px; font-size:0.7rem;">LIVE</span>
+                </div>
+                <h3 style="color:white;">PaperGlass Pro</h3>
+                <p>The ultimate document forge. Flatten PDFs and view documents in glass.</p>
+                <div style="color:var(--accent); font-weight:bold;">View All Apps <i class="fa-solid fa-arrow-right"></i></div>
             </a>
         </div>
     </section>
@@ -155,8 +161,18 @@
             sessionStorage.setItem("visited_gravitonx_home", "true");
             fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: "GravitonX Analytics", content: "🏠 User visited Home Page" }) }).catch(e=>{});
         })();
+
+        // Hover effect for Holo cards
+        const cards = document.querySelectorAll(".holo-card");
+        document.addEventListener("mousemove", e => {
+            for(const card of cards) {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            }
+        });
     </script>
 </body>
 </html>
-
-
