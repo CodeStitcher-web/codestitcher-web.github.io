@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="xhTiPOwRBM4kzbiWawDJ7_78M3YTRZyzLzld96Ukcs4" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeStitcher | Engineering the Future</title>
+    
+    <meta name="description" content="CodeStitcher - Building high-performance productivity tools.">
+    <meta name="theme-color" content="#030303">
+    <link rel="icon" type="image/png" href="codestitcher.png">
+    
+    <!-- FONTS & CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            --primary: #5D5FEF; 
+            --secondary: #bd00ff; 
+            --accent: #00F0FF;
+            --python: #FFD43B; 
+            --python-accent: #306998;
+            --bg: #030303; 
+            --glass: rgba(20, 20, 25, 0.6); 
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            background-color: var(--bg); color: #fff; 
+            font-family: 'Outfit', sans-serif; overflow-x: hidden; min-height: 100vh;
+        }
+
+        /* LENIS SCROLL */
+        html.lenis { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto; }
+
+        /* 1. SCROLL PROGRESS */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            box-shadow: 0 0 15px var(--accent); z-index: 999999;
+        }
+
+        /* 2. NAVIGATION */
+        nav { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 5%; position: fixed; width: 100%; top: 0; z-index: 100; 
+            backdrop-filter: blur(15px); background: rgba(5,5,7,0.7); 
+            border-bottom: 1px solid var(--border); 
+        }
+        .logo { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+        .logo img { height: 35px; border-radius: 8px; }
+        .nav-links { display: flex; gap: 40px; }
+        .nav-links a { 
+            color: #aaa; text-decoration: none; font-size: 0.9rem; font-weight: 500; 
+            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; 
+        }
+        .nav-links a:hover { color: white; }
+
+        /* 3. HERO SECTION */
+        .hub-hero {
+            min-height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 120px 5% 50px 5%;
+        }
+        h1 {
+            font-size: 5rem; line-height: 1.1; font-weight: 900; margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 30%, #5D5FEF 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .typing-wrapper {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--accent);
+            margin-bottom: 40px; height: 30px; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-glow { 
+            padding: 15px 40px; background: var(--primary); color: white; 
+            border-radius: 50px; font-weight: 700; text-decoration: none; 
+            box-shadow: 0 0 30px rgba(93,95,239,0.3); transition: 0.3s; 
+            display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-glow:hover { transform: scale(1.05); box-shadow: 0 0 60px var(--primary); }
+
+        /* 4. VIDEO CONSOLE */
+        .video-showcase {
+            padding: 80px 5%; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; position: relative; z-index: 10;
+        }
+        .video-label {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #666;
+            letter-spacing: 3px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .holo-console {
+            width: 100%; max-width: 900px;
+            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; overflow: hidden; background: #000;
+            box-shadow: 0 0 0px rgba(93, 95, 239, 0);
+            transform: scale(0.9); opacity: 0.5; filter: grayscale(100%);
+            transition: all 1s ease;
+        }
+        .holo-console.active {
+            transform: scale(1); opacity: 1; filter: grayscale(0%);
+            box-shadow: 0 20px 80px rgba(93, 95, 239, 0.25); border-color: rgba(93, 95, 239, 0.5);
+        }
+        #identity-video { width: 100%; display: block; }
+        .scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.3) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 2; opacity: 0.4;
+        }
+
+        /* 5. ABOUT SECTION (REDESIGNED) */
+        .about-section { padding: 80px 10%; }
+        .about-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px; align-items: center; }
+        .about-text h2 { font-size: 3rem; margin-bottom: 25px; line-height: 1.1; }
+        .about-text p { color: #bbb; line-height: 1.8; font-size: 1.1rem; margin-bottom: 30px; }
+        
+        .stat-box { display: flex; gap: 40px; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+        .stat h3 { font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
+        .stat p { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #666; }
+
+        /* 6. NEURAL UPLINK (PYTHON) */
+        .python-section { padding: 50px 5% 100px; }
+        .uplink-card {
+            background: linear-gradient(135deg, rgba(20,20,25,0.8), rgba(10,10,15,0.9));
+            border: 1px solid rgba(255, 212, 59, 0.2); 
+            border-radius: 24px; padding: 60px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: relative; overflow: hidden;
+            transform-style: preserve-3d; transform: perspective(1000px);
+        }
+        .uplink-card:hover { border-color: var(--python); box-shadow: 0 0 50px rgba(255, 212, 59, 0.15); }
+        .uplink-content { max-width: 500px; position: relative; z-index: 2; transform: translateZ(20px); }
+        .uplink-content h2 { font-size: 2.5rem; margin-bottom: 15px; }
+        .uplink-content p { color: #aaa; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; }
+        
+        .btn-python {
+            padding: 15px 40px; background: transparent; color: var(--python);
+            border: 1px solid var(--python); border-radius: 50px; font-weight: 700; text-decoration: none;
+            box-shadow: 0 0 20px rgba(255, 212, 59, 0.1); transition: 0.3s; display: inline-block;
+        }
+        .btn-python:hover { background: var(--python); color: #000; box-shadow: 0 0 50px rgba(255, 212, 59, 0.4); }
+
+        .uplink-visual {
+            position: relative; width: 400px; height: 300px; display: flex; align-items: center; justify-content: center;
+            transform: translateZ(40px);
+        }
+        .python-logo-3d {
+            font-size: 10rem; color: var(--python); opacity: 0.8;
+            filter: drop-shadow(0 0 30px var(--python-accent));
+            animation: floatLogo 6s ease-in-out infinite;
+        }
+        .code-stream {
+            position: absolute; top: 20%; right: -20px; text-align: right;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.3); pointer-events: none;
+        }
+        @keyframes floatLogo { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(5deg); } }
+
+        /* 7. PRODUCTS */
+        .products-section { padding: 50px 5% 150px; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+        .section-header h2 { font-size: 3rem; margin-bottom: 10px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+
+        /* 8. CARDS */
+        .glass-card { 
+            background: var(--glass); border: 1px solid var(--border); 
+            padding: 40px; border-radius: 20px; transition: 0.4s; 
+            cursor: pointer; display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+        .glass-card:hover { transform: translateY(-10px); border-color: var(--primary); background: rgba(93,95,239,0.1); }
+        .glass-card h3 { font-size: 1.5rem; margin-bottom: 10px; color: white; }
+        .glass-card p { color: #aaa; line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
+
+        .holo-card::before {
+            content: ""; position: absolute; height: 100%; width: 100%; left: 0; top: 0;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.08), transparent 40%);
+            z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+        }
+        .holo-card:hover::before { opacity: 1; }
+
+        /* 9. FX LAYERS */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9000; opacity: 0.04;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        #neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at center, #0a0a0f 0%, #000 100%); }
+
+        .cursor-dot { width: 8px; height: 8px; background: var(--accent); position: fixed; border-radius: 50%; z-index: 2147483647; pointer-events: none; transform: translate(-50%, -50%); }
+        .cursor-outline { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.5); position: fixed; border-radius: 50%; z-index: 2147483646; pointer-events: none; margin-left: -20px; margin-top: -20px; transition: width 0.2s, height 0.2s; }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 900px) {
+            h1 { font-size: 3rem; }
+            .nav-links { display: none; }
+            nav { padding: 15px; flex-direction: column; gap: 10px; background: rgba(5,5,7,0.95); }
+            
+            /* Stack About Grid */
+            .about-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+            .about-visual { display: none; } 
+            .stat-box { justify-content: center; gap: 20px; flex-wrap: wrap; }
+            
+            /* Stack Neural Uplink */
+            .uplink-card { flex-direction: column; text-align: center; padding: 40px 20px; }
+            .uplink-visual { width: 100%; height: 150px; margin-top: 30px; }
+            .python-logo-3d { font-size: 6rem; }
+            .code-stream { display: none; } /* Hide code stream on small screens to prevent clutter */
+            
+            /* Disable Cursor */
+            .cursor-dot, .cursor-outline { display: none; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="scroll-progress"></div>
+    <div class="cursor-dot"></div> <div class="cursor-outline"></div> 
+    <canvas id="neural-canvas"></canvas>
+    <div class="noise-overlay"></div>
+
+    <nav>
+        <a href="index.html" class="logo"><img src="codestitcher.png"> CodeStitcher</a>
+        <div class="nav-links">
+            <a href="index.html" style="color:var(--primary);">Home</a>
+            <a href="products/index.html">Products</a>
+            <a href="https://mustafijratul.github.io" target="_blank">About Developer</a>
+        </div>
+    </nav>
+
+    <section class="hub-hero">
+        <div data-aos="fade-up">
+            <h1>Engineering the<br>Impossible.</h1>
+            <div class="typing-wrapper"><span id="main-typewriter"></span></div>
+            <p style="color:#aaa; font-size:1.2rem; margin-bottom: 40px; max-width:600px; margin-inline:auto;">
+                We build high-performance, glass-morphic utilities that treat your PC like a supercomputer.
+            </p>
+            <a href="products/index.html" class="btn-glow">Explore Ecosystem <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <!-- CINEMATIC VIDEO -->
+    <section class="video-showcase">
+        <div class="video-label">
+            <i class="fa-solid fa-circle-play" style="color:var(--accent); margin-right:8px;"></i> SYSTEM IDENTITY // <span id="video-status" style="color:#666; margin-left:5px;">STANDBY</span>
+        </div>
+        <div class="holo-console">
+            <video id="identity-video" muted playsinline loop>
+                <source src="codestitcher.mp4" type="video/mp4">
+            </video>
+            <div class="scanlines"></div>
+        </div>
+    </section>
+
+    <!-- REDESIGNED ABOUT SECTION (PHILOSOPHY) -->
+    <section id="about" class="about-section">
+        <div class="about-grid">
+            <div class="about-text" data-aos="fade-right">
+                <h2 class="hacker-text" data-value="Architecting Synergy.">Architecting Synergy.</h2>
+                <p>
+                    CodeStitcher is not just a software developer; we are a research entity dedicated to <b>human-computer resonance</b>. 
+                    We believe tools should be extensions of the mind—fluid, transparent, and immediate. 
+                    By fusing physics-based UI with optimized logic, we eliminate the friction between intent and execution.
+                </p>
+                <div class="stat-box">
+                    <div class="stat"><h3>∞</h3><p>Potential</p></div>
+                    <div class="stat"><h3>100%</h3><p>Precision</p></div>
+                    <div class="stat"><h3>0ms</h3><p>Latency</p></div>
+                </div>
+            </div>
+            <div class="about-visual" data-aos="zoom-in" style="opacity:0.2; text-align:center;">
+                <!-- Replaced microchip with a more abstract 'network' icon -->
+                <i class="fa-solid fa-network-wired" style="font-size:12rem;"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEURAL UPLINK (PYTHON) - MOVED UP -->
+    <section class="python-section" data-aos="fade-up">
+        <div class="uplink-card" id="python-card">
+            <div class="uplink-content">
+                <h2><span style="color:var(--python);">Neural</span> Uplink</h2>
+                <p>Access the browser-based Python IDE. Write, compile, and execute logic directly within the CodeStitcher interface. Powered by WebAssembly (Pyodide).</p>
+                <a href="python-lab.html" class="btn-python">Initialize Protocol <i class="fa-solid fa-terminal" style="margin-left:8px;"></i></a>
+            </div>
+            <div class="uplink-visual">
+                <div class="code-stream">
+                    <div>def neural_link():</div>
+                    <div style="opacity:0.7">&nbsp;&nbsp;connect(sys.argv)</div>
+                    <div style="opacity:0.4">&nbsp;&nbsp;return "Granted"</div>
+                </div>
+                <i class="fa-brands fa-python python-logo-3d"></i>
+            </div>
+        </div>
+    </section>
+    
+    <!-- PRODUCTS SECTION - MOVED DOWN -->
+    <section class="products-section">
+        <div class="section-header">
+            <h2 class="hacker-text" data-value="Flagship Software">Flagship Software</h2>
+        </div>
+        <div class="product-grid">
+            <a href="focusguard/index.html" class="glass-card holo-card" style="text-decoration:none;" data-aos="fade-up">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <img src="appicon.png" style="height:60px; border-radius:12px; margin-bottom:20px;">
+                    <span style="color:#00D26A; border:1px solid #00D26A; padding:5px 10px; border-radius:15px; font-size:0.7rem;">LIVE</span>
+                </div>
+                <h3 style="color:white;">FocusGuard Pro</h3>
+                <p>The flagship distraction shield. Click to view the full ecosystem.</p>
+                <div style="color:var(--accent); font-weight:bold;">View All Apps <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+            
+             <a href="paperglass/index.html" class="glass-card holo-card" style="text-decoration:none;" data-aos="fade-up" data-aos-delay="100">
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <img src="paperglassicon.png" style="height:60px; border-radius:12px; margin-bottom:20px;">
+                    <span style="color:#00D26A; border:1px solid #00D26A; padding:5px 10px; border-radius:15px; font-size:0.7rem;">LIVE</span>
+                </div>
+                <h3 style="color:white;">PaperGlass Pro</h3>
+                <p>The ultimate document forge. Flatten PDFs and view documents in glass.</p>
+                <div style="color:var(--accent); font-weight:bold;">View All Apps <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+    </section>
+
+    <footer style="text-align:center; padding:50px; border-top:1px solid var(--glass-border); color:#666;">
+        <p>&copy; 2025 <b>CodeStitcher</b></p>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // 1. INIT AOS
+            if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true, offset: 50 });
+
+            // 2. LENIS
+            try {
+                const lenis = new Lenis({ duration: 1.2, smooth: true });
+                function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+                requestAnimationFrame(raf);
+            } catch(e) { console.log("Lenis error"); }
+
+            // 3. SCROLL PROGRESS
+            window.addEventListener("scroll", () => {
+                const h = document.documentElement;
+                const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+                document.getElementById("scroll-progress").style.width = scrolled + "%";
+            });
+
+            // 4. HACKER TEXT
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#$%&";
+            const hackerTexts = document.querySelectorAll(".hacker-text");
+            if(window.IntersectionObserver && hackerTexts.length > 0) {
+                const observerText = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            let iteration = 0;
+                            const originalText = entry.target.dataset.value;
+                            if(!originalText) return; 
+                            const interval = setInterval(() => {
+                                entry.target.innerText = originalText.split("").map((letter, index) => {
+                                    if(index < iteration) return originalText[index];
+                                    return letters[Math.floor(Math.random() * 26)];
+                                }).join("");
+                                if(iteration >= originalText.length) clearInterval(interval);
+                                iteration += 1 / 3;
+                            }, 30);
+                            observerText.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                hackerTexts.forEach(text => observerText.observe(text));
+            }
+
+            // 5. VIDEO LOGIC
+            const videoConsole = document.querySelector('.holo-console');
+            const brandVideo = document.getElementById('identity-video');
+            const videoStatus = document.getElementById('video-status');
+
+            if(videoConsole && brandVideo) {
+                const observerVideo = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            videoConsole.classList.add('active');
+                            brandVideo.play().catch(e => {}); 
+                            if(videoStatus) { videoStatus.innerText = "ONLINE"; videoStatus.style.color = "#00D26A"; }
+                        } else {
+                            videoConsole.classList.remove('active');
+                            brandVideo.pause();
+                            if(videoStatus) { videoStatus.innerText = "STANDBY"; videoStatus.style.color = "#666"; }
+                        }
+                    });
+                }, { threshold: 0.6 });
+                observerVideo.observe(videoConsole);
+            }
+
+            // 6. TYPED JS
+            if (typeof Typed !== 'undefined') {
+                new Typed('#main-typewriter', {
+                    strings: ['Physics-Based Productivity.', 'Automated Workflows.', 'Glass-Morphic Interfaces.', 'Welcome to CodeStitcher.'],
+                    typeSpeed: 40, backSpeed: 20, loop: true, backDelay: 3000, showCursor: false 
+                });
+            }
+
+            // 7. NEURAL CANVAS
+            const canvas = document.getElementById('neural-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let width, height, particles = [];
+                let mouse = { x: null, y: null, radius: 150 };
+                window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+                const resize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+                class Particle {
+                    constructor() {
+                        this.x = Math.random() * width; this.y = Math.random() * height;
+                        this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5;
+                        this.size = Math.random() * 1.5; this.color = Math.random() > 0.5 ? "#5D5FEF" : "#00F0FF";
+                    }
+                    update() {
+                        this.x += this.vx; this.y += this.vy;
+                        if (this.x < 0 || this.x > width) this.vx *= -1;
+                        if (this.y < 0 || this.y > height) this.vy *= -1;
+                    }
+                    draw() {
+                        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+                    }
+                }
+                const init = () => { resize(); particles = []; for(let i=0; i<80; i++) particles.push(new Particle()); };
+                const animate = () => {
+                    ctx.clearRect(0, 0, width, height);
+                    for(let i=0; i<particles.length; i++) {
+                        let p = particles[i]; p.update(); p.draw();
+                        if(mouse.x != null) {
+                            let dx = mouse.x - p.x; let dy = mouse.y - p.y;
+                            if(Math.sqrt(dx*dx+dy*dy) < 150) {
+                                ctx.beginPath(); ctx.strokeStyle = `rgba(93,95,239,${1-Math.sqrt(dx*dx+dy*dy)/150})`; ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                            }
+                        }
+                    }
+                    requestAnimationFrame(animate);
+                };
+                window.addEventListener('resize', init); init(); animate();
+            }
+
+            // 8. TILT
+            VanillaTilt.init(document.querySelectorAll(".holo-card"), { max: 10, speed: 400, glare: true, "max-glare": 0.2 });
+            VanillaTilt.init(document.querySelector("#python-card"), { max: 5, speed: 400, glare: true, "max-glare": 0.1 });
+
+            // 9. MOUSE
+            const dot = document.querySelector('.cursor-dot');
+            const outline = document.querySelector('.cursor-outline');
+            if (window.matchMedia("(pointer: fine)").matches && dot && outline) {
+                window.addEventListener("mousemove", (e) => {
+                    dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                    outline.animate({ transform: `translate(${e.clientX}px, ${e.clientY}px)` }, { duration: 500, fill: "forwards" });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
