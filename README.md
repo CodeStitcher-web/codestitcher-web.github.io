@@ -5,7 +5,7 @@
 This repository hosts the official landing page for **CodeStitcher**, a software research facility dedicated to building high-performance, physics-based desktop utilities.
 
 ### 🚀 Live Site
-**[https://gravitonx-labs.github.io](https://gravitonx-labs.github.io)**
+**[https://codestitcher-web.github.io](https://codestitcher-web.github.io)**
 
 ### 🛠️ Technology Stack
 The website acts as a tech demo for our design philosophy:
