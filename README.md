@@ -1,8 +1,8 @@
-# 🌌 GravitonX Labs
+# 🌌 CodeStitcher
 
 **Engineering the Future of Windows Productivity.**
 
-This repository hosts the official landing page for **GravitonX Labs**, a software research facility dedicated to building high-performance, physics-based desktop utilities.
+This repository hosts the official landing page for **CodeStitcher**, a software research facility dedicated to building high-performance, physics-based desktop utilities.
 
 ### 🚀 Live Site
 **[https://gravitonx-labs.github.io](https://gravitonx-labs.github.io)**
@@ -20,4 +20,4 @@ The website acts as a tech demo for our design philosophy:
 3.  **HoloSpace** (Concept) - Physics-based desktop environment.
 
 ---
-*© 2025 GravitonX Labs. Architected by Md. Mustafijur Rahman Ratul.*
+*© 2025 CodeStitcher. Architected by Md. Mustafijur Rahman Ratul.*
