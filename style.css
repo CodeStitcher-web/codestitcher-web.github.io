@@ -1,0 +1,220 @@
+/* --- GLOBAL VARIABLES & RESET --- */
+:root {
+    --primary: #5D5FEF; 
+    --secondary: #bd00ff; 
+    --accent: #00F0FF;
+    --bg: #030303; 
+    --glass: rgba(20, 20, 25, 0.6); 
+    --border: rgba(255, 255, 255, 0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Enable custom cursor logic only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+    * { cursor: none !important; }
+}
+
+body { 
+    background-color: var(--bg); 
+    color: #fff; 
+    font-family: 'Outfit', sans-serif; 
+    overflow-x: hidden; 
+    min-height: 100vh;
+}
+
+/* --- 1. UTILITIES & BACKGROUNDS --- */
+.section { padding: 120px 8%; min-height: 100vh; position: relative; }
+.text-grad { 
+    background: linear-gradient(135deg, #fff 30%, var(--primary) 100%); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+}
+
+/* Cinematic Grain */
+.noise-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 9000; opacity: 0.04;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Neural Background Canvas */
+#neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at center, #0a0a0f 0%, #000 100%); }
+
+/* --- 2. CUSTOM CURSOR (FIXED Z-INDEX) --- */
+.cursor-dot { 
+    width: 8px; height: 8px; 
+    background: var(--accent); 
+    position: fixed; top: 0; left: 0;
+    border-radius: 50%; 
+    z-index: 2147483647; /* Max possible Z-Index */
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+.cursor-outline { 
+    width: 40px; height: 40px; 
+    border: 1px solid rgba(255,255,255,0.5); 
+    position: fixed; top: 0; left: 0;
+    border-radius: 50%; 
+    z-index: 2147483646; 
+    pointer-events: none; 
+    margin-left: -20px; margin-top: -20px;
+    transition: width 0.2s, height 0.2s, background-color 0.2s;
+}
+
+/* --- 3. PAGE TRANSITION (FIXED) --- */
+.page-transition { 
+    position: fixed; top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: #030303; 
+    z-index: 99999; 
+    transform: scaleY(0); /* Hidden by default to prevent black screen */
+    transform-origin: top; 
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none; 
+}
+
+/* --- 4. NAVIGATION --- */
+nav { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 20px 5%; position: fixed; width: 100%; top: 0; z-index: 100; 
+    backdrop-filter: blur(15px); background: rgba(5,5,7,0.7); 
+    border-bottom: 1px solid var(--border); 
+}
+.logo { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; cursor: pointer; }
+.logo img { height: 35px; border-radius: 8px; filter: drop-shadow(0 0 10px var(--primary)); }
+.nav-links { display: flex; gap: 40px; }
+.nav-links a { 
+    color: #aaa; text-decoration: none; font-size: 0.9rem; font-weight: 500; 
+    text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; position: relative; cursor: pointer; 
+}
+.nav-links a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 1px; background: var(--accent); transition: 0.3s; }
+.nav-links a:hover { color: white; } .nav-links a:hover::after { width: 100%; }
+
+/* --- 5. BUTTONS --- */
+.btn-glow { 
+    padding: 15px 40px; background: var(--primary); color: white; 
+    border-radius: 50px; font-weight: 700; text-decoration: none; 
+    box-shadow: 0 0 30px rgba(93,95,239,0.3); transition: 0.3s; 
+    display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer;
+}
+.btn-glow:hover { transform: scale(1.05); box-shadow: 0 0 60px var(--primary); color: white; }
+
+.btn-disabled {
+    cursor: not-allowed; opacity: 0.7;
+}
+
+/* --- 6. GRID & CARDS --- */
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+.glass-card { 
+    background: var(--glass); border: 1px solid var(--border); 
+    padding: 40px; border-radius: 20px; transition: 0.4s; 
+    cursor: pointer; display: flex; flex-direction: column; 
+    position: relative; overflow: hidden;
+}
+.glass-card:hover { transform: translateY(-10px); border-color: var(--primary); background: rgba(93,95,239,0.1); }
+.glass-card h3 { font-size: 1.5rem; margin-bottom: 10px; color: white; }
+.glass-card p { color: #aaa; line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
+
+/* Holographic Effect */
+.holo-card::before {
+    content: ""; position: absolute; height: 100%; width: 100%; left: 0; top: 0;
+    background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.06), transparent 40%);
+    z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+}
+.holo-card:hover::before { opacity: 1; }
+
+/* --- 7. AUDIO ANIMATIONS (EQUALIZER) --- */
+.equalizer { display: flex; align-items: flex-end; height: 20px; gap: 3px; margin-left: auto; opacity: 0; transition: opacity 0.3s ease; }
+.bar { width: 4px; background: var(--accent); border-radius: 2px; animation: bounce 0s infinite ease-in-out; }
+
+.glass-card.playing { border-color: var(--accent); box-shadow: 0 0 25px rgba(93, 95, 239, 0.4); background: rgba(30, 30, 35, 0.9); }
+.glass-card.playing .equalizer { opacity: 1; }
+
+@keyframes bounce { 0%, 100% { height: 3px; } 50% { height: 18px; } }
+.glass-card.playing .bar:nth-child(1) { animation-duration: 0.6s; }
+.glass-card.playing .bar:nth-child(2) { animation-duration: 0.8s; }
+.glass-card.playing .bar:nth-child(3) { animation-duration: 0.5s; }
+.glass-card.playing .bar:nth-child(4) { animation-duration: 0.7s; }
+.glass-card.playing .bar:nth-child(5) { animation-duration: 0.9s; }
+
+/* --- 8. DOWNLOAD OVERLAY --- */
+#download-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+    z-index: 10000; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.5s ease; cursor: auto;
+}
+#download-overlay.active { display: flex; opacity: 1; }
+
+.success-card {
+    text-align: center; padding: 50px 40px; max-width: 450px; width: 90%;
+    background: #0F0F12; border: 1px solid var(--accent); border-radius: 24px;
+    box-shadow: 0 0 80px rgba(93, 95, 239, 0.2);
+    transform: translateY(50px); opacity: 0; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative; z-index: 2;
+}
+#download-overlay.active .success-card { transform: translateY(0); opacity: 1; }
+
+.icon-wrapper { position: relative; width: 80px; height: 80px; margin: 0 auto 25px auto; display: flex; align-items: center; justify-content: center; }
+.success-circle { width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; z-index: 2; }
+.ripple { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: rippleEffect 2s infinite; }
+.ripple:nth-child(2) { animation-delay: 0.5s; }
+@keyframes rippleEffect { 0% { width: 60px; height: 60px; opacity: 0.8; } 100% { width: 150px; height: 150px; opacity: 0; } }
+#confetti-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+/* --- 9. PDF MODAL --- */
+#pdf-modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); z-index: 9000;
+    flex-direction: column; align-items: center; justify-content: center;
+}
+#pdf-modal.active { display: flex; }
+.pdf-header { width: 90%; max-width: 1200px; display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+.pdf-container { width: 90%; max-width: 1200px; height: 85vh; background: #222; border-radius: 8px; overflow: hidden; }
+.pdf-frame { width: 100%; height: 100%; border: none; }
+
+/* --- 10. TYPING EFFECT --- */
+.typing-container {
+    font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent);
+    margin: 20px 0 40px 0; height: 30px; display: flex; align-items: center; justify-content: center;
+}
+.typing-cursor { display: inline-block; width: 2px; height: 1.2rem; background: var(--accent); margin-left: 5px; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* --- 11. SCROLLBAR --- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #050507; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* --- 12. MOBILE OPTIMIZATION --- */
+@media (max-width: 900px) {
+    /* Hide custom cursor on touch */
+    .cursor-dot, .cursor-outline { display: none !important; }
+    * { cursor: auto !important; }
+
+    /* Nav */
+    nav { padding: 15px; flex-direction: column; gap: 10px; background: rgba(5,5,7,0.95); }
+    .nav-links { display: none; } /* Hide links, maybe add burger menu later if needed */
+    
+    /* Hero */
+    .section { padding: 100px 5% 50px 5%; }
+    .fg-hero { flex-direction: column !important; text-align: center; gap: 30px !important; }
+    .fg-hero h1 { font-size: 2.5rem !important; }
+    .typing-container { justify-content: center !important; }
+    .fg-hero div[style*="display:flex"] { justify-content: center; }
+    
+    /* Grid */
+    .grid-3 { grid-template-columns: 1fr !important; padding: 0; gap: 20px; }
+    
+    /* PDF */
+    .pdf-container { width: 100%; height: 90vh; border-radius: 0; }
+    .pdf-header { width: 95%; }
+    
+    /* Modals */
+    .success-card { padding: 30px 20px; }
+    .waitlist-card { padding: 30px 20px; width: 95%; }
+}
