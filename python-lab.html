@@ -18,6 +18,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
 
     <style>
+		/* --- TERMINAL LOG STYLES --- */
+        .log-net { color: #00F0FF; font-weight: bold; } /* Cyan for Network */
+        .log-sys { color: #FFD43B; font-weight: bold; } /* Gold for System */
+        .log-ok  { color: #00D26A; font-weight: bold; } /* Green for Success */
         /* --- NAV BUTTON STYLES --- */
         .nav-btn {
             text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
@@ -51,9 +55,9 @@
 
         .nav-logo { display: flex; align-items: center; gap: 15px; text-decoration: none; }
         .nav-logo img {
-            height: 50px !important; width: auto; 
+            height: 45px !important; width: auto; 
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); transition: 0.3s ease;
-            border-radius: 3px;
+            border-radius: 7px;
             border: 1px solid rgba(191, 161, 255, 0.2);
         }
         .nav-logo:hover img { transform: scale(1.3); filter: drop-shadow(0 0 15px #00D26A) drop-shadow(0 0 30px #00D26A); }
@@ -161,7 +165,7 @@
 
             /* Left Side: Logo + Text */
             .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-            .nav-logo img { height: 35px !important; width: auto; }
+            .nav-logo img { height: 28px !important; width: auto; }
             .nav-text { display: block !important; font-size: 1.1rem; font-weight: 700; }
             .nav-badge { display: none; } 
 
@@ -283,27 +287,26 @@
 
         function updateLoad(p) { document.getElementById('loader-bar').style.width = p + "%"; }
 
-        async function loadEngines() {
+         async function loadEngines() {
             try {
                 updateLoad(30);
                 pyodide = await loadPyodide();
                 updateLoad(50);
                 
-                // Load Micropip (Installer)
                 await pyodide.loadPackage("micropip");
                 
-                // Custom Install Helper
+                // --- STYLISH INSTALLER FUNCTION ---
+                // We define a Python function that prints with special tags
                 await pyodide.runPythonAsync(`
                     import micropip, sys
                     async def install(packages):
-                        print(f"\\n>>> DOWNLOADING PACKAGES: {packages}...")
+                        print(f"[NET] ESTABLISHING UPLINK FOR: {packages}...")
                         await micropip.install(packages)
-                        print(f">>> INSTALLED.\\n")
+                        print(f"[OK] MODULE '{packages}' INTEGRATED.")
                 `);
 
                 updateLoad(70);
 
-                // Load Monaco Editor
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
                 require(['vs/editor/editor.main'], function() {
                     updateLoad(100);
@@ -315,11 +318,8 @@
                     });
 
                     setTimeout(() => {
-                        // HIDE LOADER, SHOW IDE
                         document.getElementById('boot-loader').style.display = 'none';
                         document.getElementById('ide-wrapper').style.display = 'grid'; 
-                        
-                        // If we have sound context (user interaction required normally, but we try)
                         playSound('startup');
 
                         editor = monaco.editor.create(document.getElementById('monaco-container'), {
@@ -330,62 +330,83 @@
                             scrollBeyondLastLine: false, padding: { top: 15 }
                         });
                         
-                        if(incomingCode) {
-                            log(">>> DATA UPLINK SUCCESSFUL.", "log-success");
-                        }
+                        if(incomingCode) log(">>> DATA UPLINK SUCCESSFUL.", "log-success");
                     }, 500);
                 });
-            } catch (e) { 
-                alert("Error loading engines. Check internet connection."); 
-            }
+            } catch (e) { alert("Error loading engines."); }
         }
 
         async function runCode() {
             if(!pyodide) return;
             const btn = document.getElementById('exec-btn');
-            const term = document.getElementById('console-output');
             const panel = document.getElementById('term-panel');
             
             playSound('execute');
             
-            // ANIMATION START: CLEAR & GLOW
-            term.innerHTML = '';
-            panel.classList.add('processing'); // Adds glowing border
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            // 1. PREPARE TERMINAL
+            document.getElementById('console-output').innerHTML = '';
+            panel.classList.add('processing');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...';
             
             let rawCode = editor.getValue();
-
-            // --- 🧠 NEURAL PRE-PROCESSOR (The Fix) ---
-            // This line finds "pip install X" and converts it to Python code that Pyodide understands
-            // Example: "pip install numpy" -> 'await install("numpy")'
-            let processedCode = "import micropip\n" + rawCode;
             
-            // Regex to catch pip install package_name
+            // --- NEURAL PRE-PROCESSOR ---
+            let processedCode = "import micropip\n" + rawCode;
             processedCode = processedCode.replace(
                 /^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 
-                'print(">>> DOWNLOADING PACKAGE: $1..."); await install("$1");'
+                'await install("$1")' 
             );
 
             log(">>> EXECUTING PROTOCOL...", "log-sys");
 
             setTimeout(async () => {
                 try {
-                    pyodide.setStdout({ batched: (msg) => log(msg, "log-out") });
-                    
-                    // Run the PROCESSED code (User sees 'pip install', Engine runs 'await install')
+                    // 2. CAPTURE OUTPUT (Don't print yet!)
+                    let outputQueue = [];
+                    pyodide.setStdout({ batched: (msg) => outputQueue.push(msg) });
+
+                    // 3. RUN PYTHON (Silently fills the queue)
                     await pyodide.runPythonAsync(processedCode);
-                    
-                    log("✔ PROTOCOL EXECUTED.", "log-success");
-                    playSound('success');
+
+                    // 4. THE CINEMATIC REPLAY LOOP
+                    if (outputQueue.length === 0) outputQueue.push(">>> Protocol executed silently.");
+
+                    let totalDelay = 0;
+                    const delayPerLine = 200; // Speed of typing (ms)
+
+                    outputQueue.forEach((line, index) => {
+                        // Calculate specific time for this line
+                        totalDelay = index * delayPerLine;
+
+                        setTimeout(() => {
+                            // Smart Styling Logic
+                            let type = "log-out";
+                            if(line.includes("[NET]")) type = "log-net";
+                            else if(line.includes("[SYS]")) type = "log-sys";
+                            else if(line.includes("[OK]")) type = "log-ok";
+
+                            log(line, type);
+                            playSound('success'); // Beep for every line
+                        }, totalDelay);
+                    });
+
+                    // 5. FINISH AFTER ANIMATION
+                    // We wait for (total lines * delay) + a small buffer
+                    setTimeout(() => {
+                        log("✔ EXECUTION COMPLETE.", "log-success");
+                        btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
+                        panel.classList.remove('processing');
+                    }, totalDelay + 300);
+
                 } catch (err) {
+                    // Handle Errors
                     log(String(err), "log-err");
                     playSound('error');
+                    btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
+                    panel.classList.remove('processing');
                 }
-                btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
-                panel.classList.remove('processing'); // Remove glow
             }, 100); 
         }
-
         function log(msg, type) {
             const div = document.createElement('div');
             div.className = `log-line ${type}`;
@@ -437,7 +458,4 @@
         }
     </script>
 </body>
-
 </html>
-
-
