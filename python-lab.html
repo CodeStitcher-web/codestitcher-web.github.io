@@ -343,21 +343,38 @@
         async function runCode() {
             if(!pyodide) return;
             const btn = document.getElementById('exec-btn');
+            const term = document.getElementById('console-output');
             const panel = document.getElementById('term-panel');
             
             playSound('execute');
             
-            document.getElementById('console-output').innerHTML = '';
-            panel.classList.add('processing');
+            // ANIMATION START: CLEAR & GLOW
+            term.innerHTML = '';
+            panel.classList.add('processing'); // Adds glowing border
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
             
-            const code = editor.getValue();
+            let rawCode = editor.getValue();
+
+            // --- 🧠 NEURAL PRE-PROCESSOR (The Fix) ---
+            // This line finds "pip install X" and converts it to Python code that Pyodide understands
+            // Example: "pip install numpy" -> 'await install("numpy")'
+            let processedCode = "import micropip\n" + rawCode;
+            
+            // Regex to catch pip install package_name
+            processedCode = processedCode.replace(
+                /^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 
+                'print(">>> DOWNLOADING PACKAGE: $1..."); await install("$1");'
+            );
+
             log(">>> EXECUTING PROTOCOL...", "log-sys");
 
             setTimeout(async () => {
                 try {
                     pyodide.setStdout({ batched: (msg) => log(msg, "log-out") });
-                    await pyodide.runPythonAsync(code);
+                    
+                    // Run the PROCESSED code (User sees 'pip install', Engine runs 'await install')
+                    await pyodide.runPythonAsync(processedCode);
+                    
                     log("✔ PROTOCOL EXECUTED.", "log-success");
                     playSound('success');
                 } catch (err) {
@@ -365,7 +382,7 @@
                     playSound('error');
                 }
                 btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
-                panel.classList.remove('processing');
+                panel.classList.remove('processing'); // Remove glow
             }, 100); 
         }
 
@@ -422,4 +439,5 @@
 </body>
 
 </html>
+
 
