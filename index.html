@@ -493,6 +493,75 @@
         font-size: 0.75rem;
         word-wrap: break-word; /* Wrap long error messages */
     }
+	 /* --- FIX 1: HOME HERO (Bigger & Centered) --- */
+    .hub-hero {
+        padding-top: 120px; /* Give it space from the navbar */
+        text-align: center !important;
+    }
+    
+    .hub-hero h1 {
+        font-size: 3.2rem !important; /* Make it BIG again */
+        line-height: 1.1;
+        text-align: center !important;
+        margin-bottom: 15px;
+    }
+
+    .hub-hero p {
+        text-align: center !important;
+        font-size: 1rem !important;
+        padding: 0 10px;
+    }
+
+    .typing-wrapper {
+        justify-content: center !important; /* Center the typing text */
+    }
+
+    /* --- FIX 2: NEURAL UPLINK CARD (The Ugly Card Fix) --- */
+    .uplink-card {
+        flex-direction: column !important; /* Stack items vertically */
+        padding: 30px 20px !important;
+        height: auto !important; /* Allow it to grow */
+        text-align: center !important;
+        gap: 30px; /* Space between text and logo */
+    }
+
+    .uplink-content {
+        width: 100% !important;
+        transform: none !important; /* Remove 3D shift on mobile */
+    }
+
+    .uplink-content h2 {
+        font-size: 2rem !important;
+        text-align: center;
+    }
+
+    .uplink-actions {
+        justify-content: center !important; /* Center the buttons */
+        flex-direction: column; /* Stack buttons on top of each other */
+        width: 100%;
+    }
+
+    .btn-python {
+        width: 100%; /* Full width buttons */
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    /* Fix the Python Logo Visual */
+    .uplink-visual {
+        width: 100% !important;
+        height: 180px !important; /* Limit height so it doesn't take over */
+        margin-top: 0;
+        transform: none !important;
+    }
+
+    .python-logo-3d {
+        font-size: 6rem !important; /* Make logo smaller so it fits */
+    }
+
+    .code-stream {
+        display: none !important; /* Hide the floating code text on mobile (too messy) */
+    }
 }
     </style>
 </head>
@@ -831,4 +900,5 @@
 </body>
 
 </html>
+
 
