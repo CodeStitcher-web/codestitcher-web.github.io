@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeStitcher | Protocol Archives</title>
+    <link rel="icon" type="image/png" href="codestitcher.png">
+
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- PYTHON ENGINE (PYODIDE) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+    <!-- GLOBAL STYLES -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* --- PAGE SPECIFIC OVERRIDES --- */
+        body { overflow-x: hidden; overflow-y: auto; }
+        
+        /* --- NAVBAR STYLES (FIXED) --- */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; 
+            background: rgba(10,10,12,0.8); backdrop-filter: blur(10px);
+            z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .nav-logo img {
+            height: 45px !important; width: auto; 
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); transition: 0.3s ease;
+			border-radius: 7px;
+            border: 1px solid rgba(191, 161, 255, 0.2);
+        }
+        .nav-logo:hover img { transform: scale(1.3); filter: drop-shadow(0 0 15px #00D26A) drop-shadow(0 0 30px #00D26A); }
+        .nav-text { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+		
+        
+        .nav-badge {
+            font-family: 'JetBrains Mono', monospace; background: rgba(93, 95, 239, 0.2); color: var(--primary);
+            padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(93, 95, 239, 0.3);
+        }
+
+        .nav-actions { display: flex; align-items: center; gap: 15px; }
+		.rule-list {
+			list-style: none;
+			padding-left: 0;
+		}
+
+		.rule-list li::before {
+			content: "✔";
+			margin-right: 8px;
+			color: # 00D26A;
+		}
+
+        /* BUTTON STYLES */
+        /* --- NAV BUTTON STYLES --- */
+        .nav-btn {
+            text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
+            border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center;
+            gap: 8px; border: 1px solid transparent;
+        }
+        /* 1. EXIT BUTTON (Red) */
+        .exit-btn { color: #ff5e57; background: rgba(255, 94, 87, 0.1); border: 1px solid rgba(255, 94, 87, 0.2); }
+        .exit-btn:hover { background: #ff5e57;transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(255, 94, 87, 0.4); }
+        /* 2. LEARN PYTHON BUTTON (Green) */
+        .learn-btn { color: #00D26A; background: rgba(0, 210, 106, 0.1); border: 1px solid rgba(0, 210, 106, 0.2); }
+        .learn-btn:hover { background: #00D26A;transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(0, 210, 106, 0.4); }
+        /* 3. FOUNDER BUTTON (Cyan) */
+        .founder-btn { color: #00F0FF; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2); }
+        .founder-btn:hover { background: #00F0FF;transform: scale(1.05); color: black; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+
+        /* MOBILE NAV */
+        @media (max-width: 900px) {
+            .nav-btn span { display: none; }
+            .nav-btn { padding: 8px 12px; }
+            .archive-container { grid-template-columns: 1fr; padding-top: 80px; }
+            .archive-nav { display: none; }
+        }
+
+        /* --- LAYOUT STYLES --- */
+        .archive-container {
+            display: grid; grid-template-columns: 280px 1fr;
+            max-width: 1400px; margin: 100px auto 0; padding: 20px 5%; gap: 50px;
+            position: relative;
+        }
+
+        .archive-nav {
+            position: sticky; top: 120px; height: fit-content;
+            background: rgba(20, 20, 25, 0.4); backdrop-filter: blur(10px);
+            border: 1px solid var(--border); border-radius: 16px; padding: 30px;
+        }
+        .nav-header { font-family: 'JetBrains Mono'; color: var(--primary); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 20px; }
+        .toc-link {
+            display: block; color: #888; text-decoration: none; padding: 10px 15px;
+            border-left: 2px solid rgba(255,255,255,0.1); margin-bottom: 5px;
+            transition: 0.3s; font-size: 0.95rem; font-weight: 500;
+        }
+        .toc-link:hover { color: white; padding-left: 20px; border-left-color: var(--primary); background: linear-gradient(90deg, rgba(93,95,239,0.1), transparent); }
+        .toc-link.active { color: var(--accent); border-left-color: var(--accent); font-weight: 700; padding-left: 20px; background: linear-gradient(90deg, rgba(0,240,255,0.1), transparent); }
+
+        .content-stream { display: flex; flex-direction: column; gap: 60px; padding-bottom: 100px; }
+        .module-header { font-size: 2.5rem; margin-bottom: 20px; color: white; display: flex; align-items: center; gap: 15px; }
+        .module-header i { color: var(--accent); font-size: 2rem; }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; margin: 20px 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            position: relative; overflow: hidden;
+        }
+        .code-header {
+            position: absolute; top: 0; left: 0; width: 100%; height: 30px;
+            background: rgba(255,255,255,0.05); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 15px; font-size: 0.75rem; color: #666;
+        }
+        .code-content { margin-top: 20px; color: #d4d4d4; line-height: 1.6; }
+        
+        .c-kw { color: #ff79c6; } .c-fn { color: #8be9fd; } .c-str { color: #f1fa8c; } 
+        .c-cm { color: #6272a4; font-style: italic; } .c-num { color: #bd93f9; } 
+
+        /* --- INTERACTIVE RUN BUTTON --- */
+        .btn-exec {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(0, 210, 106, 0.1); border: 1px solid #00D26A;
+            color: #00D26A; padding: 10px 25px; border-radius: 50px;
+            font-size: 0.9rem; font-weight: 700; text-decoration: none;
+            margin-top: 5px; transition: 0.3s; cursor: pointer;
+            font-family: 'JetBrains Mono';
+        }
+        .btn-exec:hover { background: #00D26A; color: black; box-shadow: 0 0 25px rgba(0,210,106,0.5); transform: translateY(-2px); }
+        .btn-exec i { transition: 0.3s; }
+
+        /* --- HOLOGRAPHIC OUTPUT TERMINAL --- */
+        .output-terminal {
+            margin-top: 20px;
+            background: rgba(0, 15, 10, 0.9);
+            border: 1px solid #00D26A;
+            border-left: 3px solid #00D26A;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #e0e0e0;
+            display: none; /* Hidden by default */
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .output-terminal::before {
+            content: "Terminal Output";
+            position: absolute; top: 0; right: 0;
+            background: #00D26A; color: black;
+            font-size: 0.7rem; padding: 2px 8px;
+            border-bottom-left-radius: 8px; font-weight: bold;
+        }
+        .term-line {
+            opacity: 0; animation: typeLine 0.3s forwards;
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0;
+        }
+        @keyframes typeLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+
+        .loading-pulse {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #00D26A;
+            animation: pulse 1s infinite; margin-right: 8px;
+        }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- ASSETS -->
+    <div class="cursor-dot"></div> <div class="cursor-outline"></div> 
+    <canvas id="neural-canvas"></canvas>
+    <div class="noise-overlay"></div>
+    <div id="scroll-progress" style="position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg, var(--primary), var(--accent)); z-index:9999;"></div>
+
+    <!-- NAVBAR -->
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <img src="codestitcher.png" alt="Logo">
+            <span class="nav-text">CodeStitcher</span>
+            <span class="nav-badge">// LEARN PYTHON</span>
+        </a>
+        <div class="nav-actions">
+            <a href="python-lab.html" class="nav-btn learn-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-microchip"></i> <span>Open Neural IDE</span>
+            </a>
+            <a href="https://mustafijTamim.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
+            </a>
+            <a href="index.html" class="nav-btn exit-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-power-off"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- MAIN GRID -->
+    <div class="archive-container">
+	
+	
+	
+	
+	
+	
+        
+        <!-- SIDEBAR -->
+        <aside class="archive-nav">
+            <div class="nav-header">/// SYSTEM MODULES</div>
+            <a href="#primitives" class="toc-link active" onclick="playSound('click')">01. Comments</a>
+            <a href="#datatypes" class="toc-link" onclick="playSound('click')">02. Data Types</a>
+            <a href="#variables" class="toc-link" onclick="playSound('click')">03. Variables & Assignment</a>
+            <a href="#strings" class="toc-link" onclick="playSound('click')">04. Strings</a>
+            <a href="#numbers" class="toc-link" onclick="playSound('click')">05. Numbers & Math</a>
+            <a href="#conditionals" class="toc-link" onclick="playSound('click')">06. Conditionals</a>
+            <a href="#loops" class="toc-link" onclick="playSound('click')">07. Loops</a>
+            <a href="#functions" class="toc-link" onclick="playSound('click')">08. Functions</a>
+            <a href="#exceptions" class="toc-link" onclick="playSound('click')">10. Error Handling</a>
+            <a href="#collections" class="toc-link" onclick="playSound('click')">11. Collections</a>
+            <a href="#comprehensions" class="toc-link" onclick="playSound('click')">12. Comprehensions</a>
+            <a href="#imports" class="toc-link" onclick="playSound('click')">13. Imports & Modules</a>
+        </aside>
+
+        <!-- STREAM -->
+        <main class="content-stream">
+            
+            <div data-aos="fade-up">
+                <h1 style="font-size: 3.5rem; line-height: 1.1; margin-bottom: 10px;">Python Protocol <br><span class="text-grad">Knowledge Base</span></h1>
+                <p style="color:#aaa; max-width: 600px;">
+                    Essential syntax reference for the CodeStitcher Neural Engine. 
+                    RUN CODEs directly in the stream.
+                </p>
+            </div>
+			
+			
+			
+			
+			
+
+            <!-- MODULE 1 -->
+            <section id="primitives" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header">
+					<i class="fa-solid fa-comment-dots"></i> Comments
+				</h2>
+
+                <ul class="rule-list">
+					<li>Always add a space after the <strong>#</strong> for readability</li>
+					<li>Use comments to explain <strong>why</strong> the code exists, not what it does</li>
+					<li>Keep comments clear, short, and meaningful</li>
+					<li>Avoid writing unnecessary or obvious comments</li>
+				</ul>
+
+
+
+                <div class="code-block">
+                    <div class="code-header">comments.py</div>
+                    <div class="code-content">
+<span class="c-cm"># This is a comment explaining the code</span><br>
+<span class="c-cm"># print("This code will not run")  ← This line is ignored by Python</span><br>
+<span class="c-fn">print</span>(<span class="c-str">"This will run"</span>)  <span class="c-cm"># Comments do not affect execution</span>
+</div>
+
+
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+			
+			
+
+            <!-- MODULE 2 -->
+            <section id="datatypes" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-quote-left"></i> Data Types</h2>
+                <ul class="rule-list">
+					<li>Python is dynamically typed</li>
+					<li>Use None to represent missing or optional values</li>
+					<li>Use type() to check object type</li>
+					<li>Check for a specific type with isinstance()</li>
+					<li>issubclass() checks if a class is a subclass</li>
+				</ul>
+                <div class="code-block">
+                    <div class="code-header">data_types.py</div>
+                    <div class="code-content">
+<span class="c-fn">print</span>(<span class="c-str">"Type of 42:"</span>, <span class="c-fn">type</span>(<span class="c-num">42</span>))<br>
+<span class="c-fn">print</span>(<span class="c-str">"Type of 3.14:"</span>, <span class="c-fn">type</span>(<span class="c-num">3.14</span>))<br>
+<span class="c-fn">print</span>(<span class="c-str">"Type of 'Hello':"</span>, <span class="c-fn">type</span>(<span class="c-str">"Hello"</span>))<br>
+<span class="c-fn">print</span>(<span class="c-str">"Type of True:"</span>, <span class="c-fn">type</span>(<span class="c-kw">True</span>))<br>
+<span class="c-fn">print</span>(<span class="c-str">"Type of None:"</span>, <span class="c-fn">type</span>(<span class="c-kw">None</span>))<br>
+<br>
+<span class="c-fn">print</span>()<br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Is 3.14 a float?"</span>, <span class="c-fn">isinstance</span>(<span class="c-num">3.14</span>, <span class="c-kw">float</span>))<br>
+<span class="c-fn">print</span>(<span class="c-str">"Does int inherit from object?"</span>, <span class="c-fn">issubclass</span>(<span class="c-kw">int</span>, <span class="c-kw">object</span>))
+</div>
+
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+
+
+            <!-- MODULE 3 -->
+<section id="variables" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-pencil-alt"></i> Variables & Assignment</h2>
+    <p>Variables are created when they are first assigned a value.
+        Choose descriptive and meaningful variable names.
+        Follow the <strong>snake_case</strong> naming convention.
+        A variable can be reassigned to store a new value.</p>
+
+    <!-- Subgroup: Basic Assignment -->
+    <div class="subgroup">
+        <h3 class="subgroup-header" style="margin-bottom:10px;">Basic Assignment</h3>
+        <div class="code-block">
+            <div class="code-header">basic_assignment.py</div>
+            <div class="code-content">
+<span class="c-cm"># Basic Assignment</span><br>
+<span class="c-kw">name</span> = <span class="c-str">"Tamim"</span>       <span class="c-cm"># String</span><br>
+<span class="c-kw">age</span> = <span class="c-num">7</span>            <span class="c-cm"># Integer</span><br>
+<span class="c-kw">height</span> = <span class="c-num">5.6</span>       <span class="c-cm"># Float</span><br>
+<span class="c-kw">is_cat</span> = <span class="c-kw">True</span>      <span class="c-cm"># Boolean</span><br>
+<span class="c-kw">flaws</span> = <span class="c-kw">None</span>       <span class="c-cm"># None type</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Name:"</span>, name)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Age:"</span>, age)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Height:"</span>, height)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Is Cat:"</span>, is_cat)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Flaws:"</span>, flaws)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: Parallel & Chained Assignments -->
+    <div class="subgroup">
+        <h3 class="subgroup-header" style="margin-bottom:10px;">Parallel & Chained Assignments</h3>
+        <div class="code-block">
+            <div class="code-header">parallel_chained.py</div>
+            <div class="code-content">
+<span class="c-cm"># Parallel & Chained Assignments</span><br>
+x, y = <span class="c-num">10</span>, <span class="c-num">20</span>      <span class="c-cm"># Multiple values</span><br>
+a = b = c = <span class="c-num">0</span>                               <span class="c-cm"># Same value to multiple variables</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"x:"</span>, x, <span class="c-str">"y:"</span>, y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"a:"</span>, a, <span class="c-str">"b:"</span>, b, <span class="c-str">"c:"</span>, c)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: Augmented Assignments -->
+    <div class="subgroup">
+        <h3 class="subgroup-header" style="margin-bottom:10px;">Augmented Assignments</h3>
+        <div class="code-block">
+            <div class="code-header">augmented_assignments.py</div>
+            <div class="code-content">
+<span class="c-cm"># Augmented Assignments</span><br>
+<span class="c-kw">counter</span> = <span class="c-num">0</span><br>
+<span class="c-kw">counter</span> += <span class="c-num">1</span>      <span class="c-cm"># Increment</span><br>
+<span class="c-kw">numbers</span> = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>]<br>
+<span class="c-kw">numbers</span> += [<span class="c-num">4</span>, <span class="c-num">5</span>]   <span class="c-cm"># Extend list</span><br>
+<span class="c-kw">permissions</span> = <span class="c-num">0b001</span>  <span class="c-cm"># Binary example</span><br>
+<span class="c-kw">write</span> = <span class="c-num">0b010</span><br>
+<span class="c-kw">permissions</span> |= write     <span class="c-cm"># Add write permission</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Counter:"</span>, counter)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Numbers:"</span>, numbers)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Permissions:"</span>, <span class="c-fn">bin</span>(permissions))
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+</section>
+
+
+
+
+            <!-- MODULE 4 -->
+<section id="strings" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-quote-right"></i> Strings</h2>
+    <p>Learn how to create, manipulate, and format strings in Python.</p>
+	<p></p>
+    <!-- Subgroup: Creating Strings -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Creating Strings</h3>
+        <div class="code-block">
+            <div class="code-header">strings_example.py</div>
+            <div class="code-content">
+<span class="c-kw">single</span> = <span class="c-str">'Hello'</span><br>
+<span class="c-kw">double</span> = <span class="c-str">"World"</span><br>
+<span class="c-kw">multi</span> = <span class="c-str">"""Multiple<br>line string"""</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: String Operations -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">String Operations</h3>
+        <div class="code-block">
+            <div class="code-header">operations.py</div>
+            <div class="code-content">
+<span class="c-kw">greeting</span> = <span class="c-str">"me"</span> + <span class="c-str">"ow!"</span>  <span class="c-cm"># "meow!"</span><br>
+<span class="c-kw">repeat</span> = <span class="c-str">"Meow!"</span> * <span class="c-num">3</span>   <span class="c-cm"># "Meow!Meow!Meow!"</span><br>
+<span class="c-kw">length</span> = <span class="c-fn">len</span>(<span class="c-str">"Python"</span>) <span class="c-cm"># 6</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">RUN CODE</button>
+        <div class="output-terminal"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: String Methods -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">String Methods</h3>
+        <div class="code-block">
+            <div class="code-header">methods.py</div>
+            <div class="code-content">
+<span class="c-str">"a"</span>.<span class="c-fn">upper</span>()          <span class="c-cm"># "A"</span><br>
+<span class="c-str">"A"</span>.<span class="c-fn">lower</span>()          <span class="c-cm"># "a"</span><br>
+<span class="c-str">" a "</span>.<span class="c-fn">strip</span>()        <span class="c-cm"># "a"</span><br>
+<span class="c-str">"abc"</span>.<span class="c-fn">replace</span>(<span class="c-str">"bc"</span>, <span class="c-str">"ha"</span>) <span class="c-cm"># "aha"</span><br>
+<span class="c-str">"a b"</span>.<span class="c-fn">split</span>()        <span class="c-cm"># ["a","b"]</span><br>
+<span class="c-str">"-"</span>.<span class="c-fn">join</span>([<span class="c-str">"a"</span>, <span class="c-str">"b"</span>]) <span class="c-cm"># "a-b"</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="RUN CODELocalCode(this)">RUN CODE</button>
+        <div class="output-terminal"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: Indexing & Slicing -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">String Indexing & Slicing</h3>
+        <div class="code-block">
+            <div class="code-header">index_slice.py</div>
+            <div class="code-content">
+<span class="c-kw">text</span> = <span class="c-str">"Python"</span><br>
+<span class="c-fn">print</span>(text[<span class="c-num">0</span>])      <span class="c-cm"># "P" first</span><br>
+<span class="c-fn">print</span>(text[<span class="c-num">-1</span>])     <span class="c-cm"># "n" last</span><br>
+<span class="c-fn">print</span>(text[<span class="c-num">1</span>:<span class="c-num">4</span>])  <span class="c-cm"># "yth"</span><br>
+<span class="c-fn">print</span>(text[:<span class="c-num">3</span>])      <span class="c-cm"># "Pyt"</span><br>
+<span class="c-fn">print</span>(text[<span class="c-num">3</span>:])      <span class="c-cm"># "hon"</span><br>
+<span class="c-fn">print</span>(text[::<span class="c-num">2</span>])      <span class="c-cm"># "Pto"</span><br>
+<span class="c-fn">print</span>(text[::-<span class="c-num">1</span>])     <span class="c-cm"># "nohtyP"</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">RUN CODE</button>
+        <div class="output-terminal"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: String Formatting -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">String Formatting</h3>
+        <div class="code-block">
+            <div class="code-header">formatting.py</div>
+            <div class="code-content">
+<span class="c-kw">name</span> = <span class="c-str">"Aubrey"</span><br>
+<span class="c-kw">age</span> = <span class="c-num">2</span><br>
+<br>
+<span class="c-cm"># f-strings</span><br>
+<span class="c-fn">print</span>(<span class="c-str">f"Hello, {name}!"</span>)<br>
+<span class="c-fn">print</span>(<span class="c-str">f"{name} is {age} years old"</span>)<br>
+<span class="c-fn">print</span>(<span class="c-str">f"Debug: {age=}"</span>)<br>
+<br>
+<span class="c-cm"># format() method</span><br>
+<span class="c-kw">template</span> = <span class="c-str">"Hello, {name}! You're {age}."</span><br>
+<span class="c-fn">print</span>(template.<span class="c-fn">format</span>(name=name, age=age))
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">RUN CODE</button>
+        <div class="output-terminal"></div>
+    </div>
+	<p></p>
+    <!-- Subgroup: Raw Strings -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Raw Strings</h3>
+        <div class="code-block">
+            <div class="code-header">raw_strings.py</div>
+            <div class="code-content">
+<span class="c-cm"># Normal string with tab</span><br>
+<span class="c-kw">text</span> = <span class="c-str">"This is:\tCool."</span><br>
+<span class="c-fn">print</span>(text)<br>
+<br>
+<span class="c-cm"># Raw string keeps escape sequences</span><br>
+<span class="c-kw">raw_text</span> = <span class="c-str">r"This is:\tCool."</span><br>
+<span class="c-fn">print</span>(raw_text)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">RUN CODE</button>
+        <div class="output-terminal"></div>
+    </div>
+</section>
+
+
+            <!-- MODULE 5 -->
+<section id="numbers" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-calculator"></i> Numbers & Math</h2>
+    <p>Learn about numbers, numeric types, and basic arithmetic operations in Python.</p>
+
+    <!-- Subgroup: Number Types -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Number Types</h3>
+        <div class="code-block">
+            <div class="code-header">number_types.py</div>
+            <div class="code-content">
+<span class="c-kw">integer_num</span> = <span class="c-num">42</span>          <span class="c-cm"># int</span><br>
+<span class="c-kw">float_num</span> = <span class="c-num">3.14</span>         <span class="c-cm"># float</span><br>
+<span class="c-kw">complex_num</span> = <span class="c-num">2</span> + <span class="c-num">3</span>j <span class="c-cm"># complex</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Integer:"</span>, integer_num)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Float:"</span>, float_num)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Complex:"</span>, complex_num)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+<p></p>
+    <!-- Subgroup: Arithmetic Operators -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Arithmetic Operators</h3>
+        <div class="code-block">
+            <div class="code-header">arithmetic_ops.py</div>
+            <div class="code-content">
+<span class="c-kw">a</span> = <span class="c-num">10</span><br>
+<span class="c-kw">b</span> = <span class="c-num">3</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Addition:"</span>, a + b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Subtraction:"</span>, a - b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Multiplication:"</span>, a * b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Division:"</span>, a / b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Floor Division:"</span>, a // b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Modulus:"</span>, a % b)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Exponent:"</span>, a ** b)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+<p></p>
+    <!-- Subgroup: Comparison Operators -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Comparison Operators</h3>
+        <div class="code-block">
+            <div class="code-header">comparison_ops.py</div>
+            <div class="code-content">
+<span class="c-kw">x</span> = <span class="c-num">5</span><br>
+<span class="c-kw">y</span> = <span class="c-num">10</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"Equal:"</span>, x == y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Not Equal:"</span>, x != y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Greater:"</span>, x > y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Less:"</span>, x < y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Greater or Equal:"</span>, x >= y)<br>
+<span class="c-fn">print</span>(<span class="c-str">"Less or Equal:"</span>, x <= y)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+<p></p>
+    <!-- Subgroup: Logical Operators -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Logical Operators</h3>
+        <div class="code-block">
+            <div class="code-header">logical_ops.py</div>
+            <div class="code-content">
+<span class="c-kw">p</span> = <span class="c-kw">True</span><br>
+<span class="c-kw">q</span> = <span class="c-kw">False</span><br>
+<br>
+<span class="c-fn">print</span>(<span class="c-str">"AND:"</span>, p and q)<br>
+<span class="c-fn">print</span>(<span class="c-str">"OR:"</span>, p or q)<br>
+<span class="c-fn">print</span>(<span class="c-str">"NOT p:"</span>, not p)
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+<p></p>
+    <!-- Subgroup: Assignment Operators -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Assignment Operators</h3>
+        <div class="code-block">
+            <div class="code-header">assignment_ops.py</div>
+            <div class="code-content">
+<span class="c-kw">num</span> = <span class="c-num">10</span><br>
+<span class="c-kw">num</span> += <span class="c-num">5</span>   <span class="c-cm"># Add 5</span><br>
+<span class="c-kw">num</span> -= <span class="c-num">3</span>   <span class="c-cm"># Subtract 3</span><br>
+<span class="c-kw">num</span> *= <span class="c-num">2</span>   <span class="c-cm"># Multiply by 2</span><br>
+<span class="c-kw">num</span> /= <span class="c-num">4</span>   <span class="c-cm"># Divide by 4</span><br>
+<span class="c-kw">num</span> %= <span class="c-num">3</span>   <span class="c-cm"># Modulus 3</span><br>
+<span class="c-kw">num</span> **= <span class="c-num">2</span>  <span class="c-cm"># Exponent 2</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+<p></p>
+    <!-- Subgroup: Built-in Math Functions -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Built-in Math Functions</h3>
+        <div class="code-block">
+            <div class="code-header">math_functions.py</div>
+            <div class="code-content">
+<span class="c-fn">print</span>(<span class="c-fn">abs</span>(<span class="c-num">-7</span>))          <span class="c-cm"># Absolute value</span><br>
+<span class="c-fn">print</span>(<span class="c-fn">round</span>(<span class="c-num">3.14159</span>, <span class="c-num">2</span>)) <span class="c-cm"># Round to 2 decimals</span><br>
+<span class="c-fn">print</span>(<span class="c-fn">pow</span>(<span class="c-num">2</span>, <span class="c-num">3</span>))        <span class="c-cm"># 2^3 = 8</span><br>
+<span class="c-fn">print</span>(<span class="c-fn">max</span>(<span class="c-num">5</span>, <span class="c-num">10</span>, <span class="c-num">3</span>)) <span class="c-cm"># Maximum</span><br>
+<span class="c-fn">print</span>(<span class="c-fn">min</span>(<span class="c-num">5</span>, <span class="c-num">10</span>, <span class="c-num">3</span>)) <span class="c-cm"># Minimum</span>
+            </div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal" style="margin-top:10px;"></div>
+    </div>
+
+</section>
+
+
+            <!-- MODULE 6 -->
+<section id="conditionals" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-code-branch"></i> Conditionals</h2>
+    <p>Learn how to make decisions in Python using conditional statements.</p>
+
+    <div class="subgroup">
+        <h3 class="subgroup-header">if Statement</h3>
+        <div class="code-block">
+            <div class="code-header">if_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">x</span> = <span class="c-num">10</span>
+
+<span class="c-kw">if</span> x > <span class="c-num">5</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"x is greater than 5"</span>)
+
+<span class="c-kw">if</span> x < <span class="c-num">5</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"x is less than 5"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <div class="subgroup">
+        <h3 class="subgroup-header">if-else Statement</h3>
+        <div class="code-block">
+            <div class="code-header">if_else_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">y</span> = <span class="c-num">7</span>
+
+<span class="c-kw">if</span> y % <span class="c-num">2</span> == <span class="c-num">0</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"y is even"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"y is odd"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <div class="subgroup">
+        <h3 class="subgroup-header">if-elif-else Statement</h3>
+        <div class="code-block">
+            <div class="code-header">if_elif_else.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">score</span> = <span class="c-num">85</span>
+
+<span class="c-kw">if</span> score >= <span class="c-num">90</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Grade: A"</span>)
+<span class="c-kw">elif</span> score >= <span class="c-num">75</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Grade: B"</span>)
+<span class="c-kw">elif</span> score >= <span class="c-num">60</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Grade: C"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Grade: F"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <div class="subgroup">
+        <h3 class="subgroup-header">Nested Conditionals</h3>
+        <div class="code-block">
+            <div class="code-header">nested_conditionals.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">num</span> = <span class="c-num">15</span>
+
+<span class="c-kw">if</span> num > 0:
+    <span class="c-kw">if</span> num % <span class="c-num">2</span> == 0:
+        <span class="c-fn">print</span>(<span class="c-str">"Positive even number"</span>)
+    <span class="c-kw">else</span>:
+        <span class="c-fn">print</span>(<span class="c-str">"Positive odd number"</span>)
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Non-positive number"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <div class="subgroup">
+        <h3 class="subgroup-header">Conditional Expressions (Ternary Operator)</h3>
+        <div class="code-block">
+            <div class="code-header">ternary_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">age</span> = <span class="c-num">18</span>
+<span class="c-kw">status</span> = <span class="c-str">"Adult"</span> <span class="c-kw">if</span> age >= <span class="c-num">18</span> <span class="c-kw">else</span> <span class="c-str">"Minor"</span>
+<span class="c-fn">print</span>(status)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <div class="subgroup">
+        <h3 class="subgroup-header">Logical Operators in Conditionals</h3>
+        <div class="code-block">
+            <div class="code-header">logical_conditionals.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">a</span> = <span class="c-num">10</span>
+<span class="c-kw">b</span> = <span class="c-num">5</span>
+<span class="c-kw">c</span> = <span class="c-num">7</span>
+
+<span class="c-kw">if</span> a > b <span class="c-kw">and</span> a > c:
+    <span class="c-fn">print</span>(<span class="c-str">"a is the largest"</span>)
+<span class="c-kw">if</span> b > a <span class="c-kw">or</span> b > c:
+    <span class="c-fn">print</span>(<span class="c-str">"b is greater than at least one"</span>)
+<span class="c-fn">print</span>(<span class="c-str">"End of checks"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+</section>
+
+
+
+<!-- MODULE 7: LOOPS -->
+<section id="loops" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-rotate"></i> Cycle Loops</h2>
+    <p>Loops are used to repeat a block of code multiple times. Python primarily uses <code>for</code> and <code>while</code> loops.</p>
+
+    <!-- 1. FOR LOOP -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">For Loop with range()</h3>
+        <p>The <code>range()</code> function generates a sequence of numbers (starting from 0 by default).</p>
+        <div class="code-block">
+            <div class="code-header">range_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">5</span>):
+    <span class="c-fn">print</span>(<span class="c-str">f"Current number: {i}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 2. LIST LOOP -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Iterating Through a List</h3>
+        <p>You can loop directly through items in a collection like a list.</p>
+        <div class="code-block">
+            <div class="code-header">list_loop.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">fruits</span> = [<span class="c-str">"apple"</span>, <span class="c-str">"banana"</span>, <span class="c-str">"cherry"</span>]
+
+<span class="c-kw">for</span> fruit <span class="c-kw">in</span> fruits:
+    <span class="c-fn">print</span>(<span class="c-str">f"Scanning: {fruit}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 3. ENUMERATE -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Using enumerate()</h3>
+        <p>Use <code>enumerate()</code> when you need both the <b>index</b> (position) and the <b>value</b>.</p>
+        <div class="code-block">
+            <div class="code-header">enumerate_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">fruits</span> = [<span class="c-str">"apple"</span>, <span class="c-str">"banana"</span>]
+
+<span class="c-kw">for</span> index, fruit <span class="c-kw">in</span> <span class="c-fn">enumerate</span>(fruits):
+    <span class="c-fn">print</span>(<span class="c-str">f"Index {index} is {fruit}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 4. WHILE LOOP -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">While Loop</h3>
+        <p>A <code>while</code> loop runs as long as a specific condition is <b>True</b>.</p>
+        <div class="code-block">
+            <div class="code-header">while_loop.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">count</span> = <span class="c-num">0</span>
+
+<span class="c-kw">while</span> count < <span class="c-num">3</span>:
+    <span class="c-fn">print</span>(<span class="c-str">f"Count is: {count}"</span>)
+    count += <span class="c-num">1</span></div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 5. BREAK -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">The break Statement</h3>
+        <p>Use <code>break</code> to exit a loop prematurely, even if the condition is still true.</p>
+        <div class="code-block">
+            <div class="code-header">break_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">for</span> n <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>):
+    <span class="c-kw">if</span> n == <span class="c-num">5</span>:
+        <span class="c-fn">print</span>(<span class="c-str">"Breaching Loop..."</span>)
+        <span class="c-kw">break</span>
+    <span class="c-fn">print</span>(<span class="c-str">f"Processing: {n}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 6. CONTINUE -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">The continue Statement</h3>
+        <p>Use <code>continue</code> to skip the rest of the current iteration and move to the next one.</p>
+        <div class="code-block">
+            <div class="code-header">continue_example.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">for</span> n <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">5</span>):
+    <span class="c-kw">if</span> n == <span class="c-num">2</span>:
+        <span class="c-fn">print</span>(<span class="c-str">"Skipping 2..."</span>)
+        <span class="c-kw">continue</span>
+    <span class="c-fn">print</span>(<span class="c-str">f"Number: {n}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 7. NESTED LOOPS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Nested Loops</h3>
+        <p>You can place a loop inside another loop.</p>
+        <div class="code-block">
+            <div class="code-header">nested_loops.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">for</span> i <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">2</span>):
+    <span class="c-kw">for</span> j <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">2</span>):
+        <span class="c-fn">print</span>(<span class="c-str">f"Coordinates: {i}, {j}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+
+</section>
+
+
+<!-- MODULE 8: FUNCTIONS -->
+<section id="functions" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-network-wired"></i> Neural Functions</h2>
+    <p>Functions encapsulate logic into reusable blocks. Define once using <code>def</code>, execute anywhere.</p>
+
+    <!-- 1. DEFINING & CALLING -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Defining & Calling</h3>
+        <p>Use <code>def</code> to create a function and <code>()</code> to call it.</p>
+        <div class="code-block">
+            <div class="code-header">basic_func.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">def</span> <span class="c-fn">initialize_system</span>():
+    <span class="c-fn">print</span>(<span class="c-str">"System: Online"</span>)
+    <span class="c-fn">print</span>(<span class="c-str">"Ready for input."</span>)
+
+<span class="c-cm"># Call the function</span>
+<span class="c-fn">initialize_system</span>()</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 2. PARAMETERS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Parameters & Arguments</h3>
+        <p>Pass data into functions to make them dynamic.</p>
+        <div class="code-block">
+            <div class="code-header">params.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">def</span> <span class="c-fn">authenticate</span>(user):
+    <span class="c-fn">print</span>(<span class="c-str">f"Access granted to: {user}"</span>)
+
+<span class="c-fn">authenticate</span>(<span class="c-str">"Commander"</span>)
+<span class="c-fn">authenticate</span>(<span class="c-str">"Guest_01"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 3. DEFAULT PARAMETERS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Default Parameters</h3>
+        <p>Set a fallback value if no argument is provided.</p>
+        <div class="code-block">
+            <div class="code-header">defaults.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">def</span> <span class="c-fn">set_power</span>(level=<span class="c-num">100</span>):
+    <span class="c-fn">print</span>(<span class="c-str">f"Power Level: {level}%"</span>)
+
+<span class="c-fn">set_power</span>(<span class="c-num">50</span>)   <span class="c-cm"># Uses provided value</span>
+<span class="c-fn">set_power</span>()     <span class="c-cm"># Uses default (100)</span></div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 4. RETURN VALUES -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Return Values</h3>
+        <p>Use <code>return</code> to send data back to the caller. You can return multiple values as a tuple.</p>
+        <div class="code-block">
+            <div class="code-header">return_data.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">def</span> <span class="c-fn">analyze_data</span>(data):
+    <span class="c-kw">return</span> <span class="c-fn">min</span>(data), <span class="c-fn">max</span>(data)
+
+<span class="c-kw">low</span>, <span class="c-kw">high</span> = <span class="c-fn">analyze_data</span>([<span class="c-num">10</span>, <span class="c-num">50</span>, <span class="c-num">90</span>])
+
+<span class="c-fn">print</span>(<span class="c-str">f"Low: {low}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"High: {high}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 5. LAMBDA FUNCTIONS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Lambda & Filter</h3>
+        <p>Anonymous one-line functions using the <code>lambda</code> keyword. Often used with <code>filter()</code> or <code>map()</code>.</p>
+        <div class="code-block">
+            <div class="code-header">lambda_logic.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">square</span> = <span class="c-kw">lambda</span> x: x**<span class="c-num">2</span>
+<span class="c-fn">print</span>(<span class="c-str">f"Squared: {square(5)}"</span>)
+
+<span class="c-kw">signals</span> = [<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>]
+<span class="c-cm"># Filter even numbers</span>
+<span class="c-kw">evens</span> = <span class="c-fn">list</span>(<span class="c-fn">filter</span>(<span class="c-kw">lambda</span> x: x % <span class="c-num">2</span> == <span class="c-num">0</span>, signals))
+
+<span class="c-fn">print</span>(<span class="c-str">f"Even Signals: {evens}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 6. BUILT-INS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">System Introspection</h3>
+        <p>Built-in functions like <code>id()</code> and <code>callable()</code> help analyze objects in memory.</p>
+        <div class="code-block">
+            <div class="code-header">system_check.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">x</span> = <span class="c-str">"Data"</span>
+
+<span class="c-fn">print</span>(<span class="c-str">f"Can print be called? {callable(print)}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Memory ID: {id(x)}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Type: {type(x)}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+
+</section>
+
+<!-- MODULE 8: CLASSES -->
+<section id="classes" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-cubes"></i> Object Classes</h2>
+    <p>Classes are blueprints. Objects are the things you build from those blueprints. Use them to group data and functions together.</p>
+
+    <!-- 1. DEFINING A CLASS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">The Blueprint (Class)</h3>
+        <p>Use <code>class</code> to define the blueprint. The <code>__init__</code> function sets up the object when created. <code>self</code> refers to the specific object being built.</p>
+        <div class="code-block">
+            <div class="code-header">dog_blueprint.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">class</span> <span class="c-fn">Dog</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-kw">self</span>, name, age):
+        <span class="c-kw">self</span>.name = name  <span class="c-cm"># Save the name</span>
+        <span class="c-kw">self</span>.age = age    <span class="c-cm"># Save the age</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">bark</span>(<span class="c-kw">self</span>):
+        <span class="c-kw">return</span> <span class="c-str">f"{self.name} says Woof!"</span>
+
+<span class="c-cm"># Create an object (Instance)</span>
+<span class="c-kw">my_dog</span> = <span class="c-fn">Dog</span>(<span class="c-str">"Frieda"</span>, <span class="c-num">3</span>)
+
+<span class="c-fn">print</span>(my_dog.bark())
+<span class="c-fn">print</span>(<span class="c-str">f"Age: {my_dog.age}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 2. ATTRIBUTES -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Class vs Instance Attributes</h3>
+        <p><b>Instance Attributes</b> (`self.name`) are unique to each object.<br><b>Class Attributes</b> (`species`) are shared by all objects of that type.</p>
+        <div class="code-block">
+            <div class="code-header">cats.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">class</span> <span class="c-fn">Cat</span>:
+    <span class="c-kw">species</span> = <span class="c-str">"Felis catus"</span>   <span class="c-cm"># Shared by all cats</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-kw">self</span>, name):
+        <span class="c-kw">self</span>.name = name      <span class="c-cm"># Unique to this cat</span>
+
+<span class="c-kw">cat1</span> = <span class="c-fn">Cat</span>(<span class="c-str">"Luna"</span>)
+<span class="c-kw">cat2</span> = <span class="c-fn">Cat</span>(<span class="c-str">"Milo"</span>)
+
+<span class="c-fn">print</span>(<span class="c-str">f"{cat1.name} is a {cat1.species}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"{cat2.name} is a {cat2.species}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 3. INHERITANCE -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Inheritance</h3>
+        <p>You can create a new class that "inherits" features from an existing one. It prevents you from writing the same code twice.</p>
+        <div class="code-block">
+            <div class="code-header">inheritance.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-cm"># Parent Class</span>
+<span class="c-kw">class</span> <span class="c-fn">Animal</span>:
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(<span class="c-kw">self</span>, name):
+        <span class="c-kw">self</span>.name = name
+    
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-kw">self</span>):
+        <span class="c-fn">print</span>(<span class="c-str">"Some sound..."</span>)
+
+<span class="c-cm"># Child Class (Inherits from Animal)</span>
+<span class="c-kw">class</span> <span class="c-fn">Dog</span>(<span class="c-fn">Animal</span>):
+    <span class="c-kw">def</span> <span class="c-fn">speak</span>(<span class="c-kw">self</span>):
+        <span class="c-fn">print</span>(<span class="c-str">f"{self.name} Barks!"</span>)
+
+<span class="c-kw">pet</span> = <span class="c-fn">Dog</span>(<span class="c-str">"Buddy"</span>)
+<span class="c-fn">pet</span>.speak()</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+
+</section>
+
+<!-- MODULE 10: EXCEPTIONS -->
+<section id="exceptions" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-triangle-exclamation"></i> Error Handling</h2>
+    <p>When Python encounters an error, it stops. This is called an "Exception". You can handle these errors so your program doesn't crash.</p>
+
+    <!-- 1. TRY - EXCEPT -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Try & Except</h3>
+        <p>Wrap risky code in a <code>try</code> block. If it fails, the <code>except</code> block runs instead of crashing.</p>
+        <div class="code-block">
+            <div class="code-header">safe_division.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">try</span>:
+    <span class="c-kw">numerator</span> = <span class="c-num">10</span>
+    <span class="c-kw">denominator</span> = <span class="c-num">0</span>
+    
+    <span class="c-kw">result</span> = <span class="c-kw">numerator</span> / <span class="c-kw">denominator</span>
+    <span class="c-fn">print</span>(<span class="c-kw">result</span>)
+
+<span class="c-kw">except</span> <span class="c-fn">ZeroDivisionError</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Error: You cannot divide by zero!"</span>)
+
+<span class="c-fn">print</span>(<span class="c-str">"Program continues..."</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 2. ELSE & FINALLY -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Else & Finally</h3>
+        <p><code>else</code> runs if <b>no</b> errors happened.<br><code>finally</code> runs <b>always</b>, no matter what (good for cleanup).</p>
+        <div class="code-block">
+            <div class="code-header">process_check.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">try</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Attempting connection..."</span>)
+    <span class="c-kw">status</span> = <span class="c-str">"Connected"</span>
+
+<span class="c-kw">except</span> <span class="c-fn">Exception</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Connection Failed."</span>)
+
+<span class="c-kw">else</span>:
+    <span class="c-fn">print</span>(<span class="c-str">f"Success: {status}"</span>)
+
+<span class="c-kw">finally</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"--- Operation Closed ---"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 3. COMMON EXCEPTIONS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Common Errors</h3>
+        <p>Different mistakes cause different exceptions. You can catch specific ones.</p>
+        <div class="code-block">
+            <div class="code-header">error_types.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">my_list</span> = [<span class="c-str">"A"</span>, <span class="c-str">"B"</span>, <span class="c-str">"C"</span>]
+
+<span class="c-kw">try</span>:
+    <span class="c-fn">print</span>(my_list[<span class="c-num">5</span>]) <span class="c-cm"># Index 5 does not exist</span>
+
+<span class="c-kw">except</span> <span class="c-fn">IndexError</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Error: That item is not in the list!"</span>)
+
+<span class="c-kw">except</span> <span class="c-fn">TypeError</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Error: Wrong data type."</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 4. RAISING EXCEPTIONS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Raising Exceptions</h3>
+        <p>You can force an error to happen if something is wrong using <code>raise</code>.</p>
+        <div class="code-block">
+            <div class="code-header">validator.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">def</span> <span class="c-fn">set_age</span>(age):
+    <span class="c-kw">if</span> age < <span class="c-num">0</span>:
+        <span class="c-kw">raise</span> <span class="c-fn">ValueError</span>(<span class="c-str">"Age cannot be negative!"</span>)
+    <span class="c-fn">print</span>(<span class="c-str">f"Age set to {age}"</span>)
+
+<span class="c-kw">try</span>:
+    <span class="c-fn">set_age</span>(-<span class="c-num">5</span>)
+<span class="c-kw">except</span> <span class="c-fn">ValueError</span> <span class="c-kw">as</span> <span class="c-kw">e</span>:
+    <span class="c-fn">print</span>(<span class="c-str">f"Blocked: {e}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+
+</section>
+
+<!-- MODULE 11: COLLECTIONS -->
+<section id="collections" class="glass-card" data-aos="fade-up">
+    <h2 class="module-header"><i class="fa-solid fa-layer-group"></i> Data Collections</h2>
+    <p>Collections are containers for storing multiple items. Each type has a specific superpower.</p>
+
+    <!-- 1. LISTS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Lists (The Flexible Arrays)</h3>
+        <p>Ordered, mutable (changeable), and allow duplicates. Use `[]`.</p>
+        <div class="code-block">
+            <div class="code-header">list_ops.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">fruits</span> = [<span class="c-str">"banana"</span>, <span class="c-str">"apple"</span>]
+
+<span class="c-cm"># Modify List</span>
+<span class="c-kw">fruits</span>.append(<span class="c-str">"orange"</span>)   <span class="c-cm"># Add to end</span>
+<span class="c-kw">fruits</span>.insert(<span class="c-num">0</span>, <span class="c-str">"kiwi"</span>)    <span class="c-cm"># Add to start</span>
+
+<span class="c-fn">print</span>(<span class="c-str">f"Fruits: {fruits}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"First: {fruits[0]}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Total: {len(fruits)}"</span>)
+
+<span class="c-cm"># Check existence</span>
+<span class="c-kw">if</span> <span class="c-str">"apple"</span> <span class="c-kw">in</span> <span class="c-kw">fruits</span>:
+    <span class="c-fn">print</span>(<span class="c-str">"Apple detected."</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 2. TUPLES -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Tuples (The Immutable Seals)</h3>
+        <p>Ordered but <b>immutable</b> (cannot change after creation). Faster than lists. Use `()`.</p>
+        <div class="code-block">
+            <div class="code-header">tuple_unpack.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">point</span> = (<span class="c-num">3</span>, <span class="c-num">4</span>)
+
+<span class="c-cm"># Unpacking (Assign to variables)</span>
+<span class="c-kw">x</span>, <span class="c-kw">y</span> = <span class="c-kw">point</span>
+<span class="c-fn">print</span>(<span class="c-str">f"X: {x}, Y: {y}"</span>)
+
+<span class="c-cm"># Extended Unpacking</span>
+<span class="c-kw">data</span> = (<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>, <span class="c-num">4</span>)
+<span class="c-kw">first</span>, *<span class="c-kw">rest</span> = <span class="c-kw">data</span>
+
+<span class="c-fn">print</span>(<span class="c-str">f"First: {first}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Rest: {rest}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 3. SETS -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Sets (Unique & Math)</h3>
+        <p>Unordered and <b>no duplicates</b>. Great for math operations like Union and Intersection. Use `{}`.</p>
+        <div class="code-block">
+            <div class="code-header">set_math.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">a</span> = {<span class="c-num">1</span>, <span class="c-num">2</span>, <span class="c-num">3</span>}
+<span class="c-kw">b</span> = {<span class="c-num">3</span>, <span class="c-num">4</span>, <span class="c-num">5</span>}
+
+<span class="c-cm"># Math Operations</span>
+<span class="c-fn">print</span>(<span class="c-str">f"Union (All): {a | b}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Intersect (Common): {a & b}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Difference (Only A): {a - b}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+<p></p>
+    <!-- 4. DICTIONARIES -->
+    <div class="subgroup">
+        <h3 class="subgroup-header">Dictionaries (Key-Value Maps)</h3>
+        <p>Store data in `Key: Value` pairs. Fast lookups using keys.</p>
+        <div class="code-block">
+            <div class="code-header">dict_ops.py</div>
+            <div class="code-content" style="white-space: pre;">
+<span class="c-kw">pet</span> = {<span class="c-str">"name"</span>: <span class="c-str">"Leo"</span>, <span class="c-str">"age"</span>: <span class="c-num">4</span>}
+
+<span class="c-cm"># Modify</span>
+<span class="c-kw">pet</span>[<span class="c-str">"sound"</span>] = <span class="c-str">"Meow"</span>   <span class="c-cm"># Add</span>
+<span class="c-kw">pet</span>[<span class="c-str">"age"</span>] = <span class="c-num">5</span>          <span class="c-cm"># Update</span>
+
+<span class="c-fn">print</span>(<span class="c-str">f"Pet: {pet}"</span>)
+
+<span class="c-cm"># Accessing Methods</span>
+<span class="c-fn">print</span>(<span class="c-str">f"Keys: {list(pet.keys())}"</span>)
+<span class="c-fn">print</span>(<span class="c-str">f"Values: {list(pet.values())}"</span>)</div>
+        </div>
+        <button class="btn-exec" onclick="runLocalCode(this)">
+            <i class="fa-solid fa-play"></i> RUN CODE
+        </button>
+        <div class="output-terminal"></div>
+    </div>
+
+</section>
+
+
+<section id="comprehensions" class="glass-card" data-aos="fade-up">
+<h2 class="module-header"><i class="fa-solid fa-bolt"></i> Pythonic Comprehensions</h2>
+<p>Comprehensions provide a concise way to create collections. They are generally faster and more readable than traditional loops.</p>
+
+<div class="subgroup">
+    <h3 class="subgroup-header">List Comprehensions</h3>
+    <p>Create a new list by applying an expression to each item in an iterable.</p>
+    
+    <div class="code-block">
+        <div class="code-header">list_comp.py</div>
+        <div class="code-content" style="white-space: pre;">
+<span class="c-cm"># Basic: Squares of 0-9</span>
+<span class="c-kw">squares</span> = [x**<span class="c-num">2</span> <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">10</span>)]
+<span class="c-fn">print</span>(<span class="c-str">f"Squares: {squares}"</span>)
+
+<span class="c-cm"># With Condition: Even numbers only</span>
+<span class="c-kw">evens</span> = [x <span class="c-kw">for</span> x <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">20</span>) <span class="c-kw">if</span> x % <span class="c-num">2</span> == <span class="c-num">0</span>]
+<span class="c-fn">print</span>(<span class="c-str">f"Evens: {evens}"</span>)</div>
+</div>
+<button class="btn-exec" onclick="runLocalCode(this)">
+<i class="fa-solid fa-play"></i> RUN CODE
+</button>
+<div class="output-terminal"></div>
+</div>
+<p></p>
+<div class="subgroup">
+    <h3 class="subgroup-header">Dictionary & Set Comprehensions</h3>
+    <p>You can use the same logic to create dictionaries (key-value) and sets (unique items).</p>
+    <div class="code-block">
+        <div class="code-header">other_comp.py</div>
+        <div class="code-content" style="white-space: pre;">
+<span class="c-kw">words</span> = [<span class="c-str">"hello"</span>, <span class="c-str">"world"</span>, <span class="c-str">"python"</span>]
+
+<span class="c-cm"># Dictionary: {word: length}</span>
+<span class="c-kw">word_map</span> = {w: <span class="c-fn">len</span>(w) <span class="c-kw">for</span> w <span class="c-kw">in</span> words}
+<span class="c-fn">print</span>(<span class="c-str">f"Dict: {word_map}"</span>)
+
+<span class="c-cm"># Set: Unique lengths</span>
+<span class="c-kw">unique_lens</span> = {<span class="c-fn">len</span>(w) <span class="c-kw">for</span> w <span class="c-kw">in</span> words}
+<span class="c-fn">print</span>(<span class="c-str">f"Set: {unique_lens}"</span>)</div>
+</div>
+<button class="btn-exec" onclick="runLocalCode(this)">
+<i class="fa-solid fa-play"></i> RUN CODE
+</button>
+<div class="output-terminal"></div>
+</div>
+<p></p>
+<div class="subgroup">
+    <h3 class="subgroup-header">Nested Comprehensions</h3>
+    <p>Useful for generating multi-dimensional structures like matrices. A nested comprehension acts like a loop inside another loop.</p>
+
+    <div class="code-block">
+        <div class="code-header">matrix_comp.py</div>
+        <div class="code-content" style="white-space: pre;">
+<span class="c-cm"># Create a 3x3 Identity Matrix</span>
+<span class="c-kw">matrix</span> = [[<span class="c-num">1</span> <span class="c-kw">if</span> r == c <span class="c-kw">else</span> <span class="c-num">0</span> <span class="c-kw">for</span> c <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)] <span class="c-kw">for</span> r <span class="c-kw">in</span> <span class="c-fn">range</span>(<span class="c-num">3</span>)]
+
+<span class="c-kw">for</span> row <span class="c-kw">in</span> matrix:
+    <span class="c-fn">print</span>(row)</div>
+    </div>
+    <button class="btn-exec" onclick="runLocalCode(this)">
+        <i class="fa-solid fa-play"></i> RUN CODE
+    </button>
+    <div class="output-terminal"></div>
+</div>
+
+
+</section>
+
+<section id="imports" class="glass-card" data-aos="fade-up">
+<h2 class="module-header"><i class="fa-solid fa-box-open"></i> Imports & Modules</h2>
+<p>Modules allow you to organize code into separate files. You can import built-in libraries, third-party packages, or your own code.</p>
+
+<div class="subgroup">
+    <h3 class="subgroup-header">Import Styles</h3>
+    <p>There are different ways to bring external code into your script. Prefer explicit imports over <code>import *</code>.</p>
+    <div class="code-block">
+        <div class="code-header">import_styles.py</div>
+        <div class="code-content" style="white-space: pre;">
+<span class="c-kw">import</span> math
+<span class="c-fn">print</span>(math.sqrt(<span class="c-num">16</span>))
+
+<span class="c-cm"># Specific import</span>
+<span class="c-kw">from</span> math <span class="c-kw">import</span> pi
+<span class="c-fn">print</span>(<span class="c-str">f"Pi is {pi}"</span>)
+
+<span class="c-cm"># Import with Alias</span>
+<span class="c-kw">import</span> datetime <span class="c-kw">as</span> dt
+<span class="c-fn">print</span>(dt.datetime.now())</div>
+</div>
+<button class="btn-exec" onclick="runLocalCode(this)">
+<i class="fa-solid fa-play"></i> RUN CODE
+</button>
+<div class="output-terminal"></div>
+</div>
+<p></p>
+<div class="subgroup">
+    <h3 class="subgroup-header">Package Imports</h3>
+    <p>Packages are directories containing multiple modules. Use dot notation to navigate them.</p>
+    
+    <div class="code-block">
+        <div class="code-header">package_example.py</div>
+        <div class="code-content" style="white-space: pre;">
+<span class="c-cm"># General syntax (Pseudo-code)</span>
+<span class="c-cm"># from package.module import function</span>
+
+<span class="c-kw">import</span> statistics <span class="c-kw">as</span> stats
+<span class="c-kw">data</span> = [<span class="c-num">1</span>, <span class="c-num">5</span>, <span class="c-num">10</span>]
+
+<span class="c-fn">print</span>(<span class="c-str">f"Mean: {stats.mean(data)}"</span>)</div>
+</div>
+<button class="btn-exec" onclick="runLocalCode(this)">
+<i class="fa-solid fa-play"></i> RUN CODE
+</button>
+<div class="output-terminal"></div>
+</div>
+
+<div class="subgroup">
+    <h3 class="subgroup-header">Import Best Practices</h3>
+    <ul style="color: var(--text-color); line-height: 1.6;">
+        <li><b>Group your imports:</b> Start with Standard Libraries, then Third-party, then your own Modules.</li>
+        <li><b>Avoid <code>from module import *</code>:</b> It clutters your namespace and makes debugging difficult.</li>
+        <li><b>Use Aliases:</b> Shorten long module names like <code>import pandas as pd</code> for better readability.</li>
+    </ul>
+</div>
+</section>
+        </main>
+    </div>
+
+    <!-- GLOBAL JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script> 
+    
+    <script>
+        // 1. PAGE INIT
+        AOS.init({ duration: 800, once: true, offset: 50 });
+
+        // 2. SCROLL SPY
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".toc-link");
+        window.addEventListener("scroll", () => {
+            let current = "";
+            const h = document.documentElement;
+            const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) current = section.getAttribute("id");
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href").includes(current)) link.classList.add("active");
+            });
+        });
+
+        // 3. PYTHON NEURAL ENGINE SETUP
+        let pyodide = null;
+        let isEngineLoading = false;
+
+        async function initPyodide() {
+            if (pyodide || isEngineLoading) return;
+            isEngineLoading = true;
+            try {
+                pyodide = await loadPyodide();
+                console.log("NEURAL ENGINE ONLINE");
+            } catch (err) {
+                console.error("ENGINE FAILURE:", err);
+            }
+            isEngineLoading = false;
+        }
+
+        // Initialize immediately in background
+        initPyodide();
+
+        // 4. RUN CODE SNIPPET
+        async function runLocalCode(btn) {
+            playSound('click');
+
+            // Find elements
+            const codeBlock = btn.previousElementSibling.querySelector('.code-content');
+            const terminal = btn.nextElementSibling;
+            
+            // Get clean text (innerText preserves newlines but we need to be careful with HTML)
+            let code = codeBlock.innerText;
+
+            // UI Feedback: Loading
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> INITIALIZING...`;
+            terminal.style.display = 'block';
+            terminal.innerHTML = `<div class="term-line"><span class="loading-pulse"></span>ESTABLISHING UPLINK...</div>`;
+
+            // Wait for engine if not ready
+            if (!pyodide) {
+                await initPyodide();
+            }
+
+            // Capture Output Setup
+            terminal.innerHTML = ''; // Clear loading text
+            let outputLines = [];
+            
+            // Redirect stdout to our array
+            pyodide.setStdout({
+                batched: (msg) => {
+                    outputLines.push(msg);
+                }
+            });
+
+            try {
+                playSound('execute');
+                // Run the Python Code
+                await pyodide.runPythonAsync(code);
+                
+                // Display Output with Delay for "Typing" effect
+                if (outputLines.length === 0) outputLines.push(">>> Protocol executed silently.");
+                
+                outputLines.forEach((line, index) => {
+                    setTimeout(() => {
+                        const div = document.createElement('div');
+                        div.className = 'term-line';
+                        div.innerText = "> " + line;
+                        terminal.appendChild(div);
+                        playSound('success'); // Beep on output
+                    }, index * 200); // Staggered delay
+                });
+
+            } catch (err) {
+                playSound('error');
+                const div = document.createElement('div');
+                div.className = 'term-line';
+                div.style.color = '#ff5e57';
+                div.innerText = "ERR: " + err;
+                terminal.appendChild(div);
+            }
+
+            // Reset Button
+            btn.innerHTML = originalBtnText;
+        }
+
+        // 5. HYBRID AUDIO ENGINE 
+        // (Uses click.wav for buttons, but Synth for code running)
+        
+        const clickFile = new Audio('click.wav');
+        clickFile.preload = 'auto';
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            // 1. If it's a simple click, play the WAV file
+            if (type === 'click') {
+                const clone = clickFile.cloneNode();
+                clone.volume = 0.5; 
+                clone.play().catch(e => console.log("Audio waiting for interaction"));
+                return; // Stop here, don't play synth
+            }
+
+            // 2. If it's 'execute', 'success', or 'error', use the Sci-Fi Synth
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            const now = ctx.currentTime;
+
+            if (type === 'execute') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'success') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); 
+                gain.gain.setValueAtTime(0.03, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+        }
+    </script>
+</body>
+</html>
