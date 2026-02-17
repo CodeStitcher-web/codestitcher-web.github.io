@@ -169,7 +169,75 @@
             animation: pulse 1s infinite; margin-right: 8px;
         }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+		/* --- PREMIUM MOBILE OPTIMIZATION --- */
+@media (max-width: 768px) {
 
+    /* 1. FIX THE NAVBAR (Slim & Sleek) */
+    nav {
+        padding: 0 15px; 
+        height: 60px; /* Smaller height */
+        background: rgba(5, 5, 8, 0.95); /* Darker, less transparent for readability */
+    }
+
+    /* Resize Logo */
+    .nav-logo img { height: 28px !important; } 
+    .nav-text { font-size: 1.1rem; }
+    
+    /* Hide the "// LEARN PYTHON" badge on small phones to save space */
+    .nav-badge { display: none; } 
+
+    /* Compact Buttons (Icon Only) */
+    .nav-actions { gap: 8px; }
+    .nav-btn {
+        padding: 8px; 
+        width: 36px; height: 36px; /* Perfect square icons */
+        justify-content: center;
+        border-radius: 8px;
+    }
+    .nav-btn i { font-size: 1rem; margin: 0; } /* Center icon */
+    .nav-btn span { display: none; } /* Hide text */
+
+    /* 2. FIX THE LAYOUT & CARDS (Full Width) */
+    .archive-container {
+        grid-template-columns: 1fr; /* Single column */
+        padding: 80px 15px 20px 15px; /* Adjust top padding for new nav */
+        margin-top: 0;
+        gap: 30px;
+    }
+    
+    /* Hide Sidebar completely on mobile */
+    .archive-nav { display: none; }
+
+    /* 3. PREMIUM CARD TYPOGRAPHY */
+    h1 { font-size: 2.2rem !important; margin-bottom: 5px; } /* Fix giant title */
+    .module-header { font-size: 1.5rem; margin-bottom: 15px; }
+    .module-header i { font-size: 1.2rem; }
+
+    /* Make Cards Look Wide & touch-friendly */
+    .glass-card {
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(20, 20, 25, 0.6);
+    }
+
+    /* 4. FIX CODE BLOCKS (Scrollable) */
+    .code-block {
+        font-size: 0.75rem; /* Smaller code font */
+        padding: 15px;
+        overflow-x: auto; /* Allow horizontal scrolling for code */
+        white-space: nowrap; /* Keep lines on one line so they scroll */
+    }
+
+    /* 5. BIGGER TOUCH TARGETS FOR RUN BUTTON */
+    .btn-exec {
+        width: 100%; /* Full width button */
+        justify-content: center;
+        padding: 12px;
+        margin-top: 15px;
+    }
+}
     </style>
 </head>
 <body>
@@ -1612,4 +1680,5 @@ a = b = c = <span class="c-num">0</span>                               <span cla
         }
     </script>
 </body>
+
 </html>
