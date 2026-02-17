@@ -34,22 +34,14 @@
         .founder-btn { color: #00F0FF; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2); }
         .founder-btn:hover { background: #00F0FF;transform: scale(1.05); color: black; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
 
-        /* Mobile Adjustments */
-        @media (max-width: 900px) {
-            .nav-btn span { display: none; }
-            .nav-btn { padding: 8px 12px; }
-            .learn-text { display: none; }
-            .learn-btn i { font-size: 1.1rem; }
-        }
-
-        /* --- 1. CORE LAYOUT --- */
+         /* --- 1. CORE LAYOUT & RESET --- */
         body { 
             margin: 0; padding: 0; overflow: hidden; 
             width: 100vw; height: 100vh; background: #050507; 
             color: white; font-family: 'Outfit', sans-serif;
         }
 
-        /* NAVBAR */
+        /* --- 2. NAVBAR STYLES (Desktop Default) --- */
         nav {
             position: fixed; top: 0; left: 0; width: 100%; height: 70px;
             display: flex; align-items: center; justify-content: space-between;
@@ -57,31 +49,16 @@
             border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 2000; box-sizing: border-box;
         }
 
-        /* IDE WRAPPER */
-        #ide-wrapper {
-            margin-top: 70px; height: calc(100vh - 70px); width: 100%;
-            display: none; /* Hidden until loaded */
-            grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px;
-            box-sizing: border-box; position: relative; z-index: 10;
-        }
-
-        @media (max-width: 900px) {
-            #ide-wrapper { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; padding: 10px; gap: 10px; }
-            .nav-text { display: none; }
-            .nav-logo img { height: 32px !important; }
-        }
-
-        /* --- 2. LOGO & VISUALS --- */
         .nav-logo { display: flex; align-items: center; gap: 15px; text-decoration: none; }
         .nav-logo img {
             height: 45px !important; width: auto; 
             filter: drop-shadow(0 0 5px rgba(255,255,255,0.2)); transition: 0.3s ease;
-			border-radius: 7px;
+            border-radius: 7px;
             border: 1px solid rgba(191, 161, 255, 0.2);
         }
         .nav-logo:hover img { transform: scale(1.3); filter: drop-shadow(0 0 15px #00D26A) drop-shadow(0 0 30px #00D26A); }
         .nav-text { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
-        .nav-text { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+        
         .nav-badge { 
             font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #bfa1ff;
             background: rgba(191, 161, 255, 0.1); padding: 4px 8px; border-radius: 4px;
@@ -90,13 +67,38 @@
 
         .nav-actions { display: flex; gap: 10px; }
 
-        /* --- 3. PANELS --- */
+        /* NAV BUTTONS */
+        .nav-btn {
+            text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
+            border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center;
+            gap: 8px; border: 1px solid transparent; cursor: pointer;
+        }
+        /* Color Variants */
+        .exit-btn { color: #ff5e57; background: rgba(255, 94, 87, 0.1); border: 1px solid rgba(255, 94, 87, 0.2); }
+        .exit-btn:hover { background: #ff5e57; transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(255, 94, 87, 0.4); }
+
+        .learn-btn { color: #00D26A; background: rgba(0, 210, 106, 0.1); border: 1px solid rgba(0, 210, 106, 0.2); }
+        .learn-btn:hover { background: #00D26A; transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(0, 210, 106, 0.4); }
+
+        .founder-btn { color: #00F0FF; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2); }
+        .founder-btn:hover { background: #00F0FF; transform: scale(1.05); color: black; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+
+        /* --- 3. IDE WRAPPER (Desktop Grid) --- */
+        #ide-wrapper {
+            margin-top: 70px; height: calc(100vh - 70px); width: 100%;
+            display: none; /* Hidden until loaded */
+            grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px;
+            box-sizing: border-box; position: relative; z-index: 10;
+        }
+
+        /* --- 4. PANELS & GLASS EFFECT --- */
         .glass-panel {
             background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
             backdrop-filter: blur(5px); position: relative;
         }
         .glass-panel.processing { border-color: #00D26A; box-shadow: 0 0 30px rgba(0, 210, 106, 0.1) inset; }
+        
         .panel-header {
             padding: 0 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.08);
             display: flex; justify-content: space-between; align-items: center;
@@ -104,13 +106,14 @@
         }
 
         #monaco-container { flex: 1; width: 100%; min-height: 0; }
+        
         #console-output {
             flex: 1; padding: 20px; font-family: 'JetBrains Mono'; font-size: 0.9rem;
             color: #eee; overflow-y: auto; scroll-behavior: smooth; min-height: 0;
             background: radial-gradient(circle at top right, rgba(0, 210, 106, 0.03), transparent 70%);
         }
 
-        /* --- 4. ANIMATIONS --- */
+        /* --- 5. ANIMATIONS & LOGS --- */
         @keyframes decodeText { 0% { opacity: 0; transform: translateX(-10px); } 100% { opacity: 1; transform: translateX(0); } }
         .log-line { margin-bottom: 6px; animation: decodeText 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; border-left: 2px solid transparent; padding-left: 8px; }
         .log-sys { color: #777; font-style: italic; font-size: 0.8rem; }
@@ -118,7 +121,7 @@
         .log-err { color: #ff5e57; border-left-color: #ff5e57; background: rgba(255, 94, 87, 0.05); }
         .log-success { color: #00D26A; margin-top: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:10px; }
 
-        /* --- 5. CONTROLS --- */
+        /* --- 6. CONTROLS --- */
         .run-btn {
             background: #00D26A; color: black; border: none; padding: 6px 18px;
             font-family: 'JetBrains Mono'; font-weight: bold; border-radius: 4px; cursor: pointer;
@@ -130,10 +133,70 @@
         .font-btn { background: transparent; border: none; color: #aaa; width: 24px; height: 24px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .font-btn:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        /* LOADER (Simplified) */
+        /* LOADER */
         #boot-loader { position: fixed; inset: 0; z-index: 6000; background: #050507; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .bar-bg { width: 300px; height: 3px; background: #222; margin-top: 15px; border-radius: 2px; }
         .bar-fill { width: 0%; height: 100%; background: #00D26A; transition: width 0.3s; box-shadow: 0 0 15px #00D26A; }
+
+        /* --- 7. PREMIUM MOBILE LAYOUT (The Fix) --- */
+        @media (max-width: 900px) {
+            
+            /* RESET */
+            html, body { overflow-x: hidden; width: 100vw; font-size: 14px; }
+
+            /* NAVBAR (Matches Learn-Python) */
+            nav {
+                height: 60px;
+                padding: 0 15px;
+                background: rgba(10, 10, 15, 0.98);
+                backdrop-filter: blur(20px);
+                
+                /* Force Single Line */
+                display: flex;
+                flex-direction: row !important;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* Left Side: Logo + Text */
+            .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+            .nav-logo img { height: 28px !important; width: auto; }
+            .nav-text { display: block !important; font-size: 1.1rem; font-weight: 700; }
+            .nav-badge { display: none; } 
+
+            /* Right Side: 3 Icon Buttons */
+            .nav-actions { display: flex; gap: 8px; align-items: center; }
+            
+            .nav-btn {
+                padding: 0; width: 36px; height: 36px; /* Square Icons */
+                border-radius: 8px;
+                justify-content: center; align-items: center;
+                background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            }
+            .nav-btn span, .learn-text { display: none !important; } /* Hide Text */
+            .nav-btn i { font-size: 1rem; margin: 0; }
+            
+            /* Ensure Buttons Visible */
+            .exit-btn, .learn-btn, .founder-btn { display: flex !important; }
+            .exit-btn i { color: #ff5e57; }
+            .learn-btn i { color: #00D26A; }
+            .founder-btn i { color: #00F0FF; }
+
+            /* IDE WRAPPER (Vertical Stack) */
+            #ide-wrapper {
+                margin-top: 60px;
+                height: calc(100vh - 60px);
+                padding: 10px; gap: 10px;
+                grid-template-columns: 1fr; 
+                grid-template-rows: 1.5fr 1fr; /* Editor 60%, Terminal 40% */
+            }
+
+            /* PANEL ADJUSTMENTS */
+            .panel-header { height: 40px; padding: 0 10px; font-size: 0.75rem; }
+            .font-controls { transform: scale(0.9); }
+            .run-btn { padding: 4px 12px; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
@@ -357,4 +420,5 @@
         }
     </script>
 </body>
+
 </html>
