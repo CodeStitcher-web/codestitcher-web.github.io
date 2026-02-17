@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CodeStitcher | Protocol Archives</title>
     <link rel="icon" type="image/png" href="codestitcher.png">
 
@@ -169,73 +169,108 @@
             animation: pulse 1s infinite; margin-right: 8px;
         }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
-		/* --- PREMIUM MOBILE OPTIMIZATION --- */
-@media (max-width: 768px) {
+		/* --- PREMIUM MOBILE OVERRIDES --- */
+@media (max-width: 900px) {
 
-    /* 1. FIX THE NAVBAR (Slim & Sleek) */
-    nav {
-        padding: 0 15px; 
-        height: 60px; /* Smaller height */
-        background: rgba(5, 5, 8, 0.95); /* Darker, less transparent for readability */
+    /* 1. GLOBAL LAYOUT FIXES (Stops the Zoom/Scroll issue) */
+    html, body {
+        width: 100vw;
+        overflow-x: hidden; /* Cuts off anything sticking out */
+        font-size: 14px; /* Base font size for mobile */
     }
 
-    /* Resize Logo */
-    .nav-logo img { height: 28px !important; } 
-    .nav-text { font-size: 1.1rem; }
-    
-    /* Hide the "// LEARN PYTHON" badge on small phones to save space */
-    .nav-badge { display: none; } 
+    /* 2. NAVBAR REDESIGN (App Header Style) */
+    nav {
+        height: 60px;
+        padding: 0 15px;
+        background: rgba(10, 10, 15, 0.95); /* Solid dark bg */
+        backdrop-filter: blur(20px);
+        justify-content: space-between;
+    }
 
-    /* Compact Buttons (Icon Only) */
+    /* Left Side: Just the Logo Icon */
+    .nav-logo { gap: 0; }
+    .nav-logo img { height: 32px !important; width: auto; } /* Smaller logo */
+    .nav-text, .nav-badge { display: none; } /* Hide text clutter */
+
+    /* Right Side: Icon Buttons Only */
     .nav-actions { gap: 8px; }
     .nav-btn {
-        padding: 8px; 
-        width: 36px; height: 36px; /* Perfect square icons */
+        padding: 0;
+        width: 38px; height: 38px; /* Perfect square touch targets */
+        border-radius: 50%; /* Circle buttons look more modern */
         justify-content: center;
-        border-radius: 8px;
+        background: rgba(255,255,255,0.05); /* Subtle bg */
     }
-    .nav-btn i { font-size: 1rem; margin: 0; } /* Center icon */
-    .nav-btn span { display: none; } /* Hide text */
-
-    /* 2. FIX THE LAYOUT & CARDS (Full Width) */
-    .archive-container {
-        grid-template-columns: 1fr; /* Single column */
-        padding: 80px 15px 20px 15px; /* Adjust top padding for new nav */
-        margin-top: 0;
-        gap: 30px;
-    }
+    .nav-btn span { display: none; } /* Hide button text */
+    .nav-btn i { font-size: 1rem; margin: 0; }
     
-    /* Hide Sidebar completely on mobile */
+    /* Specific Colors for Icons */
+    .exit-btn i { color: #ff5e57; }
+    .learn-btn i { color: #00D26A; }
+    .founder-btn { display: none; } /* Hide founder btn on mobile to save space */
+
+    /* 3. CONTENT CONTAINER (Full Width Stream) */
+    .archive-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding: 80px 12px 100px 12px; /* Top padding clears navbar */
+        margin: 0;
+        gap: 20px;
+    }
+
+    /* Hide Sidebar (TOC) */
     .archive-nav { display: none; }
 
-    /* 3. PREMIUM CARD TYPOGRAPHY */
-    h1 { font-size: 2.2rem !important; margin-bottom: 5px; } /* Fix giant title */
-    .module-header { font-size: 1.5rem; margin-bottom: 15px; }
+    /* 4. TYPOGRAPHY & HEADERS */
+    h1 {
+        font-size: 2rem !important; /* Smaller Title */
+        text-align: left;
+        padding: 0 5px;
+    }
+    .module-header {
+        font-size: 1.4rem;
+        flex-direction: row; /* Keep icon next to text */
+        gap: 10px;
+    }
     .module-header i { font-size: 1.2rem; }
 
-    /* Make Cards Look Wide & touch-friendly */
+    /* 5. GLASS CARDS (Premium Look) */
     .glass-card {
-        padding: 20px;
-        border-radius: 16px;
-        margin-bottom: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(20, 20, 25, 0.6);
+        padding: 18px;
+        border-radius: 12px;
+        background: linear-gradient(145deg, rgba(20, 20, 25, 0.6), rgba(10, 10, 12, 0.8));
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        width: 100%; /* Force full width */
     }
 
-    /* 4. FIX CODE BLOCKS (Scrollable) */
+    /* 6. CODE BLOCKS (The most common cause of breaking) */
     .code-block {
-        font-size: 0.75rem; /* Smaller code font */
+        width: 100%;
+        margin: 15px 0;
+        font-size: 0.8rem; /* Readable monospace */
         padding: 15px;
-        overflow-x: auto; /* Allow horizontal scrolling for code */
-        white-space: nowrap; /* Keep lines on one line so they scroll */
+        overflow-x: auto; /* Allow scrolling SIDEWAYS inside the box */
+        white-space: nowrap; /* Keep code formatting */
+        background: #000; /* Darker contrast */
+        border: 1px solid #333;
     }
 
-    /* 5. BIGGER TOUCH TARGETS FOR RUN BUTTON */
+    /* 7. RUN BUTTON (Thumb Friendly) */
     .btn-exec {
-        width: 100%; /* Full width button */
+        width: 100%;
         justify-content: center;
         padding: 12px;
-        margin-top: 15px;
+        font-size: 1rem;
+        background: rgba(0, 210, 106, 0.15); /* Slightly brighter */
+    }
+    
+    /* 8. TERMINAL OUTPUT */
+    .output-terminal {
+        width: 100%;
+        font-size: 0.75rem;
+        word-wrap: break-word; /* Wrap long error messages */
     }
 }
     </style>
@@ -1682,3 +1717,4 @@ a = b = c = <span class="c-num">0</span>                               <span cla
 </body>
 
 </html>
+
