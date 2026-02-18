@@ -548,77 +548,127 @@
 	const cameraAudio = new Audio('capture.wav');
 	
 	function triggerCinematicSnapshot() {
-	    const panel = document.getElementById('editor-panel'); 
-	    const watermark = document.getElementById('watermark');
-	    const flash = document.getElementById('shutter-flash');
-	    const toast = document.getElementById('toast-notification');
-	
-	    // 1. PLAY AUDIO & FLASH
-	    try {
-	        cameraAudio.currentTime = 0; 
-	        cameraAudio.play().catch(() => {}); // Ignore audio errors
-	    } catch(e) {}
-	
-	    flash.style.opacity = '1';
-	    setTimeout(() => { flash.style.opacity = '0'; }, 100);
-	
-	    // 2. ENTER PREVIEW MODE (Visuals)
-	    panel.classList.add('snapshot-mode');
-	    watermark.style.display = 'flex';
-	
-	    // 3. WAIT 3 SECONDS, THEN CAPTURE
-	    setTimeout(() => {
-	        
-	        // Configuration for html2canvas
-	        const options = {
-	            backgroundColor: "#050507",
-	            scale: 2, 
-	            useCORS: true, // Attempt to load external images
-	            logging: false,
-	            allowTaint: true, // IMPORTANT: Helps with rendering local images
-	            ignoreElements: (element) => {
-	                return element.classList.contains('cursor-dot') || 
-	                       element.classList.contains('cursor-outline');
-	            }
-	        };
-	
-	        // Execute Capture
-	        html2canvas(panel, options).then(canvas => {
-	            try {
-	                // Try to generate the image link
-	                const imgData = canvas.toDataURL('image/png');
-	                
-	                // Trigger Download
-	                const link = document.createElement('a');
-	                const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
-	                link.download = `CodeStitcher_Dev_${timestamp}.png`;
-	                link.href = imgData;
-	                document.body.appendChild(link);
-	                link.click();
-	                document.body.removeChild(link);
-	
-	                // Show Success Toast
-	                toast.classList.add('active');
-	                playSound('success');
-	                setTimeout(() => { toast.classList.remove('active'); }, 4000);
-	
-	            } catch (securityError) {
-	                // This happens if the canvas is "Tainted" (e.g., local images or CORS issues)
-	                console.error("Security Error:", securityError);
-	                alert("Snapshot captured but browser blocked download due to security/CORS policy. (Try running on a local server).");
-	            }
-	        }).catch(err => {
-	            console.error("Snapshot Failed:", err);
-	            alert("Snapshot failed to render.");
-	        }).finally(() => {
-	            // --- CLEANUP (ALWAYS RUNS) ---
-	            // This ensures the blue border and watermark ALWAYS go away
-	            panel.classList.remove('snapshot-mode');
-	            watermark.style.display = 'none';
-	        });
-	
-	    }, 3000); // 3 Second Preview Delay
-	}
+    const panel = document.getElementById('editor-panel');
+    const watermark = document.getElementById('watermark');
+    const flash = document.getElementById('shutter-flash');
+    const toast = document.getElementById('toast-notification');
+
+    // Cleanup helper — always called
+    function cleanup() {
+        panel.classList.remove('snapshot-mode');
+        watermark.style.display = 'none';
+    }
+
+    // 1. PLAY FLASH
+    flash.style.opacity = '1';
+    setTimeout(() => { flash.style.opacity = '0'; }, 100);
+    playSound('execute');
+
+    // 2. ENTER PREVIEW MODE
+    panel.classList.add('snapshot-mode');
+    watermark.style.display = 'flex';
+
+    // 3. WAIT 3 SECONDS, THEN CAPTURE
+    setTimeout(() => {
+        try {
+            // Get code from Monaco editor
+            const code = editor ? editor.getValue() : '// No code found';
+            const lines = code.split('\n');
+
+            // Build canvas manually from code text
+            const padding = 40;
+            const lineHeight = 22;
+            const canvasWidth = 900;
+            const canvasHeight = Math.max(400, lines.length * lineHeight + padding * 2 + 60);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx2 = canvas.getContext('2d');
+
+            // Background
+            ctx2.fillStyle = '#050507';
+            ctx2.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Neon border
+            ctx2.strokeStyle = '#00F0FF';
+            ctx2.lineWidth = 3;
+            ctx2.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
+
+            // Header bar
+            ctx2.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx2.fillRect(0, 0, canvasWidth, 50);
+            ctx2.fillStyle = '#FFD43B';
+            ctx2.font = 'bold 15px JetBrains Mono, monospace';
+            ctx2.fillText('🐍  main.py', padding, 32);
+
+            // Code lines
+            ctx2.font = '14px JetBrains Mono, monospace';
+            lines.forEach((line, i) => {
+                const y = 50 + padding + i * lineHeight;
+
+                // Simple syntax highlighting
+                if (line.trim().startsWith('#')) {
+                    ctx2.fillStyle = '#6A9955'; // comment green
+                } else if (/^\s*(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await)\b/.test(line)) {
+                    ctx2.fillStyle = '#569CD6'; // keyword blue
+                } else if (/print\s*\(/.test(line)) {
+                    ctx2.fillStyle = '#DCDCAA'; // function yellow
+                } else {
+                    ctx2.fillStyle = '#D4D4D4'; // default white-grey
+                }
+                ctx2.fillText(line, padding, y);
+            });
+
+            // Watermark bottom-right
+            ctx2.fillStyle = 'rgba(10,10,15,0.85)';
+            ctx2.beginPath();
+            ctx2.roundRect(canvasWidth - 230, canvasHeight - 60, 210, 45, 10);
+            ctx2.fill();
+            ctx2.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx2.lineWidth = 1;
+            ctx2.stroke();
+
+            ctx2.fillStyle = '#ffffff';
+            ctx2.font = 'bold 14px Outfit, sans-serif';
+            ctx2.fillText('CodeStitcher', canvasWidth - 210, canvasHeight - 38);
+            ctx2.fillStyle = '#00D26A';
+            ctx2.font = '11px JetBrains Mono, monospace';
+            ctx2.fillText('NEURAL_LAB', canvasWidth - 210, canvasHeight - 22);
+
+            // Download
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    alert('Snapshot failed: could not generate image.');
+                    cleanup();
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g, '');
+                link.download = `CodeStitcher_Dev_${timestamp}.png`;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                // Show toast
+                toast.classList.add('active');
+                playSound('success');
+                setTimeout(() => { toast.classList.remove('active'); }, 4000);
+
+                cleanup();
+            }, 'image/png');
+
+        } catch (err) {
+            console.error('Snapshot error:', err);
+            alert('Snapshot failed: ' + err.message);
+            cleanup();
+        }
+
+    }, 3000);
+}
 	</script>
 	<div id="shutter-flash"></div>
 	<div id="toast-notification">
@@ -628,6 +678,7 @@
 </body>
 
 </html>
+
 
 
 
