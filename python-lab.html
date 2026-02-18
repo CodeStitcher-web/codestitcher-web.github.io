@@ -254,22 +254,34 @@
 		}
 
 		/* --- ELEGANT NOTIFICATION TOAST --- */
+		/* --- ELEGANT NOTIFICATION TOAST --- */
 		#toast-notification {
-			position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px);
-			background: rgba(10, 15, 20, 0.95);
-			border: 1px solid #00D26A;
-			color: #fff;
-			padding: 12px 25px;
-			border-radius: 50px;
-			font-family: 'JetBrains Mono', monospace;
-			font-size: 0.9rem;
-			display: flex; align-items: center; gap: 10px;
-			box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-			z-index: 10000;
-			opacity: 0;
-			transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		    position: fixed; 
+		    bottom: 40px; 
+		    left: 50%; 
+		    transform: translateX(-50%) translateY(100px); /* Start hidden below */
+		    background: rgba(10, 15, 20, 0.95);
+		    border: 1px solid #00D26A;
+		    color: #fff;
+		    padding: 12px 25px;
+		    border-radius: 50px;
+		    font-family: 'JetBrains Mono', monospace;
+		    font-size: 0.9rem;
+		    display: flex; 
+		    align-items: center; 
+		    gap: 10px;
+		    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+		    z-index: 100000; /* Increased Z-Index */
+		    opacity: 0;
+		    pointer-events: none; /* Prevent clicks while hidden */
+		    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 		}
-		#toast-notification.active { opacity: 1; transform: translateX(-50%) translateY(0); }
+		
+		#toast-notification.active { 
+		    opacity: 1; 
+		    pointer-events: all;
+		    transform: translateX(-50%) translateY(0); /* Animate up */
+		}
     </style>
 </head>
 <body>
@@ -532,80 +544,80 @@
 		}
 	}
 	
-	// --- ROBUST SNAPSHOT ENGINE ---
+	// --- ROBUST SNAPSHOT ENGINE (FIXED) ---
 	const cameraAudio = new Audio('capture.wav');
 	
 	function triggerCinematicSnapshot() {
-		const panel = document.getElementById('editor-panel'); 
-		const watermark = document.getElementById('watermark');
-		const flash = document.getElementById('shutter-flash');
-		const toast = document.getElementById('toast-notification');
+	    const panel = document.getElementById('editor-panel'); 
+	    const watermark = document.getElementById('watermark');
+	    const flash = document.getElementById('shutter-flash');
+	    const toast = document.getElementById('toast-notification');
 	
-		// 1. PLAY AUDIO & FLASH
-		try {
-			cameraAudio.currentTime = 0; 
-			cameraAudio.play().catch(e => console.log("Audio blocked"));
-		} catch(e) {}
+	    // 1. PLAY AUDIO & FLASH
+	    try {
+	        cameraAudio.currentTime = 0; 
+	        cameraAudio.play().catch(() => {}); // Ignore audio errors
+	    } catch(e) {}
 	
-		flash.style.opacity = '1';
-		setTimeout(() => { flash.style.opacity = '0'; }, 100);
+	    flash.style.opacity = '1';
+	    setTimeout(() => { flash.style.opacity = '0'; }, 100);
 	
-		// 2. ENTER PREVIEW MODE
-		panel.classList.add('snapshot-mode');
-		watermark.style.display = 'flex';
+	    // 2. ENTER PREVIEW MODE (Visuals)
+	    panel.classList.add('snapshot-mode');
+	    watermark.style.display = 'flex';
 	
-		// 3. CAPTURE AFTER DELAY (WITH SAFETY VALVE)
-		setTimeout(() => {
-			
-			// Define the capture task
-			const captureTask = html2canvas(panel, {
-				backgroundColor: "#050507",
-				scale: 2, 
-				useCORS: true, // Try to load images
-				logging: true, // Enable logs to see errors in console
-				allowTaint: false,
-				ignoreElements: (element) => {
-					// Ignore cursor to prevent glitches
-					return element.classList.contains('cursor-dot') || element.classList.contains('cursor-outline');
-				}
-			});
+	    // 3. WAIT 3 SECONDS, THEN CAPTURE
+	    setTimeout(() => {
+	        
+	        // Configuration for html2canvas
+	        const options = {
+	            backgroundColor: "#050507",
+	            scale: 2, 
+	            useCORS: true, // Attempt to load external images
+	            logging: false,
+	            allowTaint: true, // IMPORTANT: Helps with rendering local images
+	            ignoreElements: (element) => {
+	                return element.classList.contains('cursor-dot') || 
+	                       element.classList.contains('cursor-outline');
+	            }
+	        };
 	
-			// Define the Timeout Safety Valve (4 seconds max)
-			const timeoutTask = new Promise((_, reject) => 
-				setTimeout(() => reject(new Error("Snapshot Timeout")), 4000)
-			);
+	        // Execute Capture
+	        html2canvas(panel, options).then(canvas => {
+	            try {
+	                // Try to generate the image link
+	                const imgData = canvas.toDataURL('image/png');
+	                
+	                // Trigger Download
+	                const link = document.createElement('a');
+	                const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
+	                link.download = `CodeStitcher_Dev_${timestamp}.png`;
+	                link.href = imgData;
+	                document.body.appendChild(link);
+	                link.click();
+	                document.body.removeChild(link);
 	
-			// RACE: Whichever finishes first wins
-			Promise.race([captureTask, timeoutTask])
-			.then(canvas => {
-				// --- SUCCESS ---
-				toast.classList.add('active');
-				playSound('success'); 
+	                // Show Success Toast
+	                toast.classList.add('active');
+	                playSound('success');
+	                setTimeout(() => { toast.classList.remove('active'); }, 4000);
 	
-				const link = document.createElement('a');
-				const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
-				link.download = `CodeStitcher_Dev_${timestamp}.png`;
-				link.href = canvas.toDataURL('image/png');
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
+	            } catch (securityError) {
+	                // This happens if the canvas is "Tainted" (e.g., local images or CORS issues)
+	                console.error("Security Error:", securityError);
+	                alert("Snapshot captured but browser blocked download due to security/CORS policy. (Try running on a local server).");
+	            }
+	        }).catch(err => {
+	            console.error("Snapshot Failed:", err);
+	            alert("Snapshot failed to render.");
+	        }).finally(() => {
+	            // --- CLEANUP (ALWAYS RUNS) ---
+	            // This ensures the blue border and watermark ALWAYS go away
+	            panel.classList.remove('snapshot-mode');
+	            watermark.style.display = 'none';
+	        });
 	
-				setTimeout(() => { toast.classList.remove('active'); }, 4000);
-			})
-			.catch(err => {
-				// --- ERROR ---
-				console.error("Snapshot Failed:", err);
-				// Use a more gentle alert or just log it
-				// alert("Snapshot failed or timed out. Check console.");
-			})
-			.finally(() => {
-				// --- CLEANUP (GUARANTEED TO RUN) ---
-				console.log("Cleaning up snapshot UI...");
-				panel.classList.remove('snapshot-mode');
-				watermark.style.display = 'none';
-			});
-	
-		}, 3000); // 3 Second Preview
+	    }, 3000); // 3 Second Preview Delay
 	}
 	</script>
 	<div id="shutter-flash"></div>
@@ -616,6 +628,7 @@
 </body>
 
 </html>
+
 
 
 
