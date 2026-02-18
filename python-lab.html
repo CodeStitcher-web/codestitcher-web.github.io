@@ -548,238 +548,323 @@
 	const cameraAudio = new Audio('capture.wav');
 	
 	function triggerCinematicSnapshot() {
-	    const panel = document.getElementById('editor-panel');
-	    const watermark = document.getElementById('watermark');
-	    const flash = document.getElementById('shutter-flash');
-	    const toast = document.getElementById('toast-notification');
-	
-	    // FIX 3: Create fresh Audio object and play IMMEDIATELY on click (still in gesture context)
-	    const snapSound = new Audio('capture.wav');
-	    snapSound.volume = 1.0;
-	    snapSound.play().catch(e => console.warn('Audio blocked:', e));
-	
-	    // Cleanup helper
-	    function cleanup() {
-	        panel.classList.remove('snapshot-mode');
-	        watermark.style.display = 'none';
-	    }
-	
-	    // Flash effect
-	    flash.style.opacity = '1';
-	    setTimeout(() => { flash.style.opacity = '0'; }, 100);
-	
-	    // Enter preview mode
-	    panel.classList.add('snapshot-mode');
-	    watermark.style.display = 'flex';
-	
-	    // FIX 2: Pre-load logo image BEFORE the 3s delay so it's ready
-	    const logoImg = new Image();
-	    logoImg.src = 'codestitcher.png';
-	
-	    setTimeout(() => {
-	        try {
-	            const code = editor ? editor.getValue() : '// No code found';
-	            const lines = code.split('\n');
-	
-	            // --- CINEMATIC RESIZE VALUES ---
-				const SCALE = 3;
-				const CANVAS_W = 1920;
-				const CANVAS_H = 1500;
-				
-				const padding = 90;          // More breathing space
-				const lineHeight = 48;       // Taller line spacing
-				const fontSize = 38;         // Bigger code font
-				const headerH = 100;         // Strong cinematic header
-				
-					
-	            const canvas = document.createElement('canvas');
-	            canvas.width = CANVAS_W * SCALE;
-	            canvas.height = CANVAS_H * SCALE;
-	            canvas.style.width = CANVAS_W + 'px';
-	            canvas.style.height = CANVAS_H + 'px';
-	
-	            const cx = canvas.getContext('2d');
-	            cx.scale(SCALE, SCALE);            // Scale up for sharpness
-	
-	            // --- BACKGROUND ---
-	            const bgGrad = cx.createLinearGradient(0, 0, 0, CANVAS_H);
-				bgGrad.addColorStop(0, '#0B0B0F');
-				bgGrad.addColorStop(1, '#111118');
-				cx.fillStyle = bgGrad;
-				cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-				cx.shadowColor = 'rgba(0,0,0,0.6)';
-				cx.shadowBlur = 120;
-				cx.shadowOffsetX = 0;
-				cx.shadowOffsetY = 0;
-				cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-				cx.shadowBlur = 0;
+    const panel = document.getElementById('editor-panel');
+    const watermark = document.getElementById('watermark');
+    const flash = document.getElementById('shutter-flash');
+    const toast = document.getElementById('toast-notification');
+
+    // FIX 3: Create fresh Audio object and play IMMEDIATELY
+    const snapSound = new Audio('capture.wav');
+    snapSound.volume = 1.0;
+    snapSound.play().catch(e => console.warn('Audio blocked:', e));
+
+    // Cleanup helper
+    function cleanup() {
+        panel.classList.remove('snapshot-mode');
+        watermark.style.display = 'none';
+    }
+
+    // Flash effect
+    flash.style.opacity = '1';
+    setTimeout(() => { flash.style.opacity = '0'; }, 100);
+
+    // Enter preview mode
+    panel.classList.add('snapshot-mode');
+    watermark.style.display = 'flex';
+
+    // FIX 2: Pre-load logo image BEFORE the delay
+    const logoImg = new Image();
+    logoImg.src = 'codestitcher.png';
+
+    setTimeout(() => {
+        try {
+            const code = editor ? editor.getValue() : '// No code found';
+            const lines = code.split('\n');
+
+            // --- CINEMATIC CONFIGURATION ---
+            const SCALE = 3;
+            const CANVAS_W = 1920;
+            const CANVAS_H = 1500;
+            
+            // Layout margins for the "Levitating Card" look
+            const cardMarginX = 120;
+            const cardMarginY = 140;
+            const cardW = CANVAS_W - (cardMarginX * 2);
+            const cardH = CANVAS_H - (cardMarginY * 2);
+            const cardX = cardMarginX;
+            const cardY = cardMarginY;
+
+            const lineHeight = 48;
+            const fontSize = 36;
+            const gutterWidth = 100; // Space for line numbers
+            const headerH = 90;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = CANVAS_W * SCALE;
+            canvas.height = CANVAS_H * SCALE;
+            canvas.style.width = CANVAS_W + 'px';
+            canvas.style.height = CANVAS_H + 'px';
+
+            const cx = canvas.getContext('2d');
+            cx.scale(SCALE, SCALE);
+
+            // ==========================================
+            // 1. BACKGROUND ART (Mesh Gradients)
+            // ==========================================
+            
+            // Deep Space Base
+            const bgGrad = cx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+            bgGrad.addColorStop(0, '#0f0c29');
+            bgGrad.addColorStop(0.5, '#302b63');
+            bgGrad.addColorStop(1, '#24243e');
+            cx.fillStyle = bgGrad;
+            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+            // Top-Left Glow (Purple/Pink)
+            const orb1 = cx.createRadialGradient(0, 0, 0, 0, 0, 1000);
+            orb1.addColorStop(0, 'rgba(123, 31, 162, 0.35)');
+            orb1.addColorStop(1, 'transparent');
+            cx.fillStyle = orb1;
+            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+            // Bottom-Right Glow (Teal/Cyan)
+            const orb2 = cx.createRadialGradient(CANVAS_W, CANVAS_H, 0, CANVAS_W, CANVAS_H, 1200);
+            orb2.addColorStop(0, 'rgba(0, 210, 106, 0.25)');
+            orb2.addColorStop(1, 'transparent');
+            cx.fillStyle = orb2;
+            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
 
-	            // Subtle radial glow (top-right, like the IDE)
-	            const grd = cx.createRadialGradient(CANVAS_W, 0, 100, CANVAS_W, 0, 700);
-	            grd.addColorStop(0, 'rgba(0, 210, 106, 0.06)');
-	            grd.addColorStop(1, 'transparent');
-	            cx.fillStyle = grd;
-	            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-	
-	            // --- NEON BORDER ---
-	            cx.strokeStyle = 'rgba(255,255,255,0.08)';
-				cx.lineWidth = 2;
+            // ==========================================
+            // 2. THE LEVITATING EDITOR CARD
+            // ==========================================
 
-	            cx.strokeRect(3, 3, CANVAS_W - 6, CANVAS_H - 6);
-	
-	            // --- HEADER BAR ---
-	            cx.fillStyle = 'rgba(20, 20, 25, 0.65)';
-				cx.strokeStyle = 'rgba(255,255,255,0.06)';
-				cx.lineWidth = 1;
+            // Huge Drop Shadow for Depth
+            cx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+            cx.shadowBlur = 120;
+            cx.shadowOffsetY = 50;
 
-	            cx.fillRect(0, 0, CANVAS_W, headerH);
-	            cx.strokeStyle = 'rgba(255,255,255,0.08)';
-	            cx.lineWidth = 3;
-	            cx.beginPath();
-	            cx.moveTo(0, headerH);
-	            cx.lineTo(CANVAS_W, headerH);
-	            cx.stroke();
-	
-	            // Python icon dot (yellow circle as stand-in)
-	            cx.fillStyle = '#FFD43B';
-	            cx.beginPath();
-	            cx.arc(padding - 25, headerH / 2, 18, 0, Math.PI * 2);
+            // Card Background
+            cx.fillStyle = '#0B0B0F'; // Deep IDE color
+            cx.beginPath();
+            cx.roundRect(cardX, cardY, cardW, cardH, 24); // Rounded corners
+            cx.fill();
 
-	            cx.fill();
-	
-	            // Filename
-	            cx.fillStyle = '#cccccc';
-	            cx.font = `600 34px 'JetBrains Mono', monospace`;
+            // Reset Shadow so text doesn't blur
+            cx.shadowBlur = 0;
+            cx.shadowOffsetY = 0;
+            cx.shadowColor = 'transparent';
 
-	            cx.fillText('main.py', padding + 8, headerH / 2 + 6);
-	
-	            // --- CODE LINES ---
-	            const maxLines = Math.floor((CANVAS_H - headerH - padding * 2) / lineHeight);
-	            const visibleLines = lines.slice(0, maxLines);
-	
-	            visibleLines.forEach((line, i) => {
-	                const y = headerH + padding + i * lineHeight;
-	                const trimmed = line.trim();
-	
-	                // Syntax coloring
-	                if (trimmed.startsWith('#')) {
-	                    cx.fillStyle = '#6A9955';
-	                } else if (/^\s*(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await|True|False|None)\b/.test(line)) {
-	                    cx.fillStyle = '#6C8EF5';
-	                } else if (/\bprint\s*\(/.test(line)) {
-	                    cx.fillStyle = '#C8B86A';
-	                } else if (/["']/.test(line)) {
-	                    cx.fillStyle = '#CE9178';
-	                } else {
-	                    cx.fillStyle = '#D4D4D4';
-	                }
-	
-	                cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-	                cx.fillText(line, padding, y);
-	            });
-	
-	            // Show "..." if code was truncated
-	            if (lines.length > maxLines) {
-	                cx.fillStyle = '#555';
-	                cx.font = `italic ${fontSize}px 'JetBrains Mono', monospace`;
-	                cx.fillText(`... (${lines.length - maxLines} more lines)`, padding, headerH + padding + maxLines * lineHeight);
-	            }
-	
-	            // --- WATERMARK (bottom-right) ---
-				 // --- WATERMARK (bottom-right) ---
-	            // RESIZED: Sleeker dimensions for a premium badge look
-	            const wmW = 480;
-	            const wmH = 140;
-	            const wmX = CANVAS_W - wmW - 80;
-	            const wmY = CANVAS_H - wmH - 80;
-	
-	            // Watermark background pill
-	            cx.shadowColor = 'rgba(0,0,0,0.4)';
-	            cx.shadowBlur = 40;
-	            cx.shadowOffsetY = 10;
-	
-	            cx.fillStyle = 'rgba(255,255,255,0.06)';
-	
-	            cx.beginPath();
-	            cx.roundRect(wmX, wmY, wmW, wmH, 16); // Slightly rounder corners
-	            cx.fill();
-	
-	            cx.strokeStyle = 'rgba(255,255,255,0.12)';
-	            cx.lineWidth = 1;
-	            cx.stroke();
-	
-	            cx.shadowBlur = 0;
-	            cx.shadowOffsetY = 0;
-	
-	            // Function to draw text elements
-	            const drawWatermarkText = () => {
-	                // Title
-	                cx.fillStyle = 'rgba(255,255,255,0.9)';
-	                cx.font = `bold 36px 'Outfit', sans-serif`; // Reduced from 42px
-	                cx.textBaseline = 'middle';
-	                cx.fillText('CodeStitcher', wmX + 130, wmY + 55);
-	
-	                // Subtitle
-	                cx.fillStyle = '#8EDBB5';
-	                cx.font = `500 20px 'JetBrains Mono', monospace`; // Reduced from 30px
-	                cx.fillText('NEURAL_LAB', wmX + 132, wmY + 95);
-	            };
-	
-	             // Calculate Logo Position (vertically centered)
-	            const logoSize = 80; // Reduced from 90x120 to fit new height
-	            const logoY = wmY + (wmH - logoSize) / 2;
-	
-	            if (logoImg.complete && logoImg.naturalWidth > 0) {
-	                // Maintain aspect ratio if needed, or force square fit
-	                cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
-	                drawWatermarkText();
-	                finishAndDownload();
-	            } else {
-	                logoImg.onload = () => {
-	                    cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
-	                    drawWatermarkText();
-	                    finishAndDownload();
-	                };
-	                logoImg.onerror = () => {
-	                    // Draw without logo if image fails
-	                    drawWatermarkText();
-	                    finishAndDownload();
-	                };
-	            }
-	            function finishAndDownload() {
-	                canvas.toBlob((blob) => {
-	                    if (!blob) {
-	                        alert('Snapshot failed: could not generate image.');
-	                        cleanup();
-	                        return;
-	                    }
-	                    const url = URL.createObjectURL(blob);
-	                    const link = document.createElement('a');
-	                    const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
-	                    link.download = `CodeStitcher_Dev_${timestamp}.png`;
-	                    link.href = url;
-	                    document.body.appendChild(link);
-	                    link.click();
-	                    document.body.removeChild(link);
-	                    URL.revokeObjectURL(url);
-	
-	                    // Show toast
-	                    toast.classList.add('active');
-	                    playSound('success');
-	                    setTimeout(() => { toast.classList.remove('active'); }, 4000);
-	
-	                    cleanup();
-	                }, 'image/png');
-	            }
-	
-	        } catch (err) {
-	            console.error('Snapshot error:', err);
-	            alert('Snapshot failed: ' + err.message);
-	            cleanup();
-	        }
-	
-	    }, 3000);
+            // Card Inner Border (Subtle)
+            cx.strokeStyle = 'rgba(255,255,255,0.08)';
+            cx.lineWidth = 2;
+            cx.stroke();
+
+
+            // ==========================================
+            // 3. WINDOW CONTROLS (Mac Style)
+            // ==========================================
+            
+            // Header Background separator
+            cx.fillStyle = 'rgba(255,255,255,0.02)';
+            cx.beginPath();
+            cx.roundRect(cardX, cardY, cardW, headerH, [24, 24, 0, 0]);
+            cx.fill();
+
+            // Dots (Red, Yellow, Green)
+            const dotY = cardY + 45;
+            const dotStart = cardX + 50;
+            const dotGap = 35;
+
+            // Red
+            cx.fillStyle = '#FF5F56';
+            cx.beginPath(); cx.arc(dotStart, dotY, 10, 0, Math.PI*2); cx.fill();
+            // Yellow
+            cx.fillStyle = '#FFBD2E';
+            cx.beginPath(); cx.arc(dotStart + dotGap, dotY, 10, 0, Math.PI*2); cx.fill();
+            // Green
+            cx.fillStyle = '#27C93F';
+            cx.beginPath(); cx.arc(dotStart + dotGap*2, dotY, 10, 0, Math.PI*2); cx.fill();
+
+            // Centered Filename
+            cx.fillStyle = '#A0A0A0';
+            cx.font = `600 28px 'JetBrains Mono', monospace`;
+            cx.textAlign = 'center';
+            cx.fillText('main.py', cardX + (cardW / 2), dotY + 8);
+            cx.textAlign = 'left'; // Reset alignment
+
+
+            // ==========================================
+            // 4. CODE RENDERING (With Glow & Gutter)
+            // ==========================================
+
+            const codePaddingTop = headerH + 60;
+            const codeContentX = cardX + 60; // Left margin inside card
+            
+            const maxLines = Math.floor((cardH - codePaddingTop - 60) / lineHeight);
+            const visibleLines = lines.slice(0, maxLines);
+
+            visibleLines.forEach((line, i) => {
+                const y = cardY + codePaddingTop + i * lineHeight;
+                const trimmed = line.trim();
+
+                // 4a. Line Numbers (Gutter)
+                cx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                cx.font = `400 ${fontSize - 4}px 'JetBrains Mono', monospace`;
+                cx.textAlign = 'right';
+                cx.fillText((i + 1).toString(), codeContentX + 40, y);
+                cx.textAlign = 'left';
+
+                // 4b. Divider Line
+                cx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                cx.fillRect(codeContentX + 60, y - fontSize + 5, 2, lineHeight);
+
+                // 4c. The Code
+                const textX = codeContentX + gutterWidth;
+                cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+
+                // Syntax coloring + Bloom Effect
+                let color = '#D4D4D4';
+                let glow = false;
+
+                if (trimmed.startsWith('#')) {
+                    color = '#6A9955';
+                } else if (/^\s*(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await)\b/.test(line)) {
+                    color = '#C792EA'; // Purple keyword
+                    glow = true;
+                } else if (/\b(True|False|None)\b/.test(line)) {
+                     color = '#FF5874'; // Red/Pink constant
+                     glow = true;
+                } else if (/\bprint\s*\(/.test(line)) {
+                    color = '#82AAFF'; // Blue function
+                } else if (/["']/.test(line)) {
+                    color = '#C3E88D'; // Green string
+                }
+
+                cx.fillStyle = color;
+                
+                // Add Bloom for keywords
+                if (glow) {
+                    cx.shadowColor = color;
+                    cx.shadowBlur = 15;
+                }
+
+                cx.fillText(line, textX, y);
+
+                // Reset glow
+                cx.shadowBlur = 0;
+            });
+
+            // "..." if truncated
+            if (lines.length > maxLines) {
+                cx.fillStyle = 'rgba(255,255,255,0.3)';
+                cx.font = `italic ${fontSize}px 'JetBrains Mono', monospace`;
+                cx.fillText(`... (${lines.length - maxLines} more lines hidden)`, codeContentX + gutterWidth, cardY + codePaddingTop + maxLines * lineHeight);
+            }
+
+
+            // ==========================================
+            // 5. NOISE OVERLAY (For Texture)
+            // ==========================================
+            // A subtle grain to make it look less "plastic"
+            cx.globalCompositeOperation = 'overlay';
+            cx.fillStyle = 'rgba(255,255,255,0.03)';
+            for(let n = 0; n < 20000; n++) {
+                const nx = Math.random() * CANVAS_W;
+                const ny = Math.random() * CANVAS_H;
+                cx.fillRect(nx, ny, 2, 2);
+            }
+            cx.globalCompositeOperation = 'source-over'; // Reset
+
+
+            // ==========================================
+            // 6. SLEEK WATERMARK (Bottom-Right)
+            // ==========================================
+            const wmW = 480;
+            const wmH = 140;
+            const wmX = CANVAS_W - wmW - 80;
+            const wmY = CANVAS_H - wmH - 80;
+
+            cx.shadowColor = 'rgba(0,0,0,0.4)';
+            cx.shadowBlur = 40;
+            cx.shadowOffsetY = 10;
+
+            cx.fillStyle = 'rgba(255,255,255,0.06)';
+            cx.beginPath();
+            cx.roundRect(wmX, wmY, wmW, wmH, 16);
+            cx.fill();
+
+            cx.strokeStyle = 'rgba(255,255,255,0.12)';
+            cx.lineWidth = 1;
+            cx.stroke();
+
+            cx.shadowBlur = 0;
+            cx.shadowOffsetY = 0;
+
+            const drawWatermarkText = () => {
+                cx.fillStyle = 'rgba(255,255,255,0.9)';
+                cx.font = `bold 36px 'Outfit', sans-serif`;
+                cx.textBaseline = 'middle';
+                cx.fillText('CodeStitcher', wmX + 130, wmY + 55);
+
+                cx.fillStyle = '#8EDBB5';
+                cx.font = `500 20px 'JetBrains Mono', monospace`;
+                cx.fillText('NEURAL_LAB', wmX + 132, wmY + 95);
+            };
+
+            const logoSize = 80;
+            const logoY = wmY + (wmH - logoSize) / 2;
+
+            // Final Output Logic
+            if (logoImg.complete && logoImg.naturalWidth > 0) {
+                cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
+                drawWatermarkText();
+                finishAndDownload();
+            } else {
+                logoImg.onload = () => {
+                    cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
+                    drawWatermarkText();
+                    finishAndDownload();
+                };
+                logoImg.onerror = () => {
+                    drawWatermarkText();
+                    finishAndDownload();
+                };
+            }
+
+            function finishAndDownload() {
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        alert('Snapshot failed: could not generate image.');
+                        cleanup();
+                        return;
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
+                    link.download = `CodeStitcher_Art_${timestamp}.png`; // Changed filename slightly
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    toast.classList.add('active');
+                    // Assuming playSound is available globally or ignore if not
+                    if(typeof playSound === 'function') playSound('success');
+                    setTimeout(() => { toast.classList.remove('active'); }, 4000);
+
+                    cleanup();
+                }, 'image/png');
+            }
+
+        } catch (err) {
+            console.error('Snapshot error:', err);
+            alert('Snapshot failed: ' + err.message);
+            cleanup();
+        }
+
+    }, 3000);
 }
 	</script>
 	<div id="shutter-flash"></div>
@@ -790,6 +875,7 @@
 </body>
 
 </html>
+
 
 
 
