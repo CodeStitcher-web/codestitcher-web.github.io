@@ -16,7 +16,7 @@
     <!-- 3. ENGINES -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
-	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
 		/* --- TERMINAL LOG STYLES --- */
         .log-net { color: #00F0FF; font-weight: bold; } /* Cyan for Network */
@@ -330,12 +330,12 @@
 			</div>
             <div id="monaco-container"></div>
 			<div class="snapshot-watermark" id="watermark">
-				<!-- Ensure this image path is correct relative to your HTML file -->
-				<img src="codestitcher.png" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
-				<div style="display:flex; flex-direction:column;">
-					<span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
-					<span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
-				</div>
+			    <!-- ADDED crossorigin="anonymous" TO FIX SECURITY BLOCK -->
+			    <img src="codestitcher.png" crossorigin="anonymous" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+			    <div style="display:flex; flex-direction:column;">
+			        <span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
+			        <span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
+			    </div>
 			</div>
 			
         </div>
@@ -549,75 +549,69 @@
 		// Preload the audio to ensure no delay
 		const cameraAudio = new Audio('capture.wav');
 
+		// Preload the audio to ensure no delay
+		const cameraAudio = new Audio('capture.wav');
+		
 		function triggerCinematicSnapshot() {
-			const panel = document.getElementById('editor-panel'); 
-			const watermark = document.getElementById('watermark');
-			const flash = document.getElementById('shutter-flash');
-			const toast = document.getElementById('toast-notification');
-
-			// 1. PLAY CUSTOM AUDIO & VISUAL FLASH
-			// Reset audio time to 0 so it can be clicked rapidly
-			cameraAudio.currentTime = 0; 
-			cameraAudio.play().catch(e => console.log("Audio not found or blocked"));
-
-			flash.style.opacity = '1';
-			
-			setTimeout(() => {
-				flash.style.opacity = '0';
-			}, 100);
-
-			// 2. ENTER PREVIEW MODE
-			panel.classList.add('snapshot-mode');
-			watermark.style.display = 'flex';
-
-			// 3. WAIT 3 SECONDS (Cinematic Preview)
-			setTimeout(() => {
-				
-				// 4. CAPTURE
-				html2canvas(panel, {
-					backgroundColor: "#050507",
-					scale: 2, 
-					useCORS: true, 
-					// allowTaint: true,  <-- REMOVED (This was breaking the download)
-					logging: false
-				}).then(canvas => {
-					
-					// 5. SHOW SUCCESS TOAST
-					toast.classList.add('active');
-					playSound('success'); // Keep the sci-fi beep for the "Success" toast
-
-					// 6. DOWNLOAD
-					try {
-						const link = document.createElement('a');
-						const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
-						link.download = `CodeStitcher_Dev_${timestamp}.png`;
-						link.href = canvas.toDataURL('image/png');
-						document.body.appendChild(link); // Append to body (required for Firefox)
-						link.click();
-						document.body.removeChild(link);
-					} catch (e) {
-						console.error("Download blocked by browser security:", e);
-						alert("Snapshot generated, but browser blocked the download due to local file security.");
-					}
-
-					// 7. CLEANUP
-					setTimeout(() => {
-						panel.classList.remove('snapshot-mode');
-						watermark.style.display = 'none';
-						toast.classList.remove('active');
-					}, 3000); 
-
-				}).catch(err => {
-					console.error("Snapshot failed:", err);
-					// If it fails, likely due to the Logo Image on local file system
-					alert("Error: Browser security blocked the logo image. Try using 'Live Server' instead of double-clicking the file.");
-					
-					// Cleanup anyway so the user isn't stuck
-					panel.classList.remove('snapshot-mode');
-					watermark.style.display = 'none';
-				});
-
-			}, 3000); 
+		    const panel = document.getElementById('editor-panel'); 
+		    const watermark = document.getElementById('watermark');
+		    const flash = document.getElementById('shutter-flash');
+		    const toast = document.getElementById('toast-notification');
+		
+		    // 1. PLAY AUDIO & FLASH
+		    cameraAudio.currentTime = 0; 
+		    cameraAudio.play().catch(e => console.log("Audio auto-play blocked"));
+		
+		    flash.style.opacity = '1';
+		    setTimeout(() => { flash.style.opacity = '0'; }, 100);
+		
+		    // 2. ENTER PREVIEW MODE
+		    panel.classList.add('snapshot-mode');
+		    watermark.style.display = 'flex';
+		
+		    // 3. WAIT 3 SECONDS (Cinematic Preview)
+		    setTimeout(() => {
+		        
+		        // 4. CAPTURE
+		        html2canvas(panel, {
+		            backgroundColor: "#050507",
+		            scale: 2, // High Res
+		            useCORS: true, // IMPORTANT: Allows the image to be captured
+		            logging: false,
+		            allowTaint: false 
+		        }).then(canvas => {
+		            
+		            // --- SUCCESS ---
+		            
+		            // A. Show Toast
+		            toast.classList.add('active');
+		            playSound('success'); 
+		
+		            // B. Create Download
+		            const link = document.createElement('a');
+		            const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
+		            link.download = `CodeStitcher_Dev_${timestamp}.png`;
+		            link.href = canvas.toDataURL('image/png');
+		            document.body.appendChild(link);
+		            link.click();
+		            document.body.removeChild(link);
+		
+		            // Hide toast after a few seconds
+		            setTimeout(() => { toast.classList.remove('active'); }, 4000);
+		
+		        }).catch(err => {
+		            // --- ERROR ---
+		            console.error("Snapshot Failed:", err);
+		            alert("Snapshot Error: The browser blocked the image capture. This usually happens due to the Logo Image security. Check console for details.");
+		        
+		        }).finally(() => {
+		            // --- CLEANUP (ALWAYS RUNS) ---
+		            // This ensures the UI never gets "stuck" with the blue border
+		            panel.classList.remove('snapshot-mode');
+		            watermark.style.display = 'none';
+		        });
+		
+		    }, 3000); // 3 Second Preview
 		}
     </script>
 	<div id="shutter-flash"></div>
@@ -628,5 +622,6 @@
 </body>
 
 </html>
+
 
 
