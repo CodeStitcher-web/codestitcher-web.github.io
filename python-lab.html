@@ -582,12 +582,12 @@
 	            const lines = code.split('\n');
 	
 	            // FIX 1: FHD resolution canvas
-	            const SCALE = 2;                   // Retina/HiDPI multiplier
+	            const SCALE = 3;                   // Retina/HiDPI multiplier
 	            const CANVAS_W = 1920;
-	            const CANVAS_H = 1080;
+	            const CANVAS_H = 1500;
 	            const padding = 60;
 	            const lineHeight = 28;
-	            const fontSize = 18;
+	            const fontSize = 24;
 	            const headerH = 64;
 	
 	            const canvas = document.createElement('canvas');
@@ -669,10 +669,10 @@
 	            }
 	
 	            // --- WATERMARK (bottom-right) ---
-	            const wmW = 260;
-	            const wmH = 60;
-	            const wmX = CANVAS_W - wmW - 30;
-	            const wmY = CANVAS_H - wmH - 25;
+	            const wmW = 360;
+	            const wmH = 100;
+	            const wmX = CANVAS_W - wmW - 50;
+	            const wmY = CANVAS_H - wmH - 35;
 	
 	            // Watermark background pill
 	            cx.fillStyle = 'rgba(10, 10, 15, 0.88)';
@@ -687,19 +687,19 @@
 	            const drawWatermarkText = () => {
 	                cx.fillStyle = '#ffffff';
 	                cx.font = `bold 18px 'Outfit', sans-serif`;
-	                cx.fillText('CodeStitcher', wmX + 70, wmY + 24);
+	                cx.fillText('CodeStitcher', wmX + 90, wmY + 24);
 	                cx.fillStyle = '#00D26A';
 	                cx.font = `12px 'JetBrains Mono', monospace`;
-	                cx.fillText('NEURAL_LAB', wmX + 70, wmY + 44);
+	                cx.fillText('NEURAL_LAB', wmX + 90, wmY + 44);
 	            };
 	
 	            if (logoImg.complete && logoImg.naturalWidth > 0) {
-	                cx.drawImage(logoImg, wmX + 12, wmY + 10, 42, 42);
+	                cx.drawImage(logoImg, wmX + 12, wmY + 10, 60, 81);
 	                drawWatermarkText();
 	                finishAndDownload();
 	            } else {
 	                logoImg.onload = () => {
-	                    cx.drawImage(logoImg, wmX + 12, wmY + 10, 42, 42);
+	                    cx.drawImage(logoImg, wmX + 12, wmY + 10, 60, 81);
 	                    drawWatermarkText();
 	                    finishAndDownload();
 	                };
@@ -753,6 +753,7 @@
 </body>
 
 </html>
+
 
 
 
