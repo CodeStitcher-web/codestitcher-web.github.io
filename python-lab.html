@@ -581,15 +581,17 @@
 	            const code = editor ? editor.getValue() : '// No code found';
 	            const lines = code.split('\n');
 	
-	            // FIX 1: FHD resolution canvas
-	            const SCALE = 3;                   // Retina/HiDPI multiplier
-	            const CANVAS_W = 1920;
-	            const CANVAS_H = 1500;
-	            const padding = 60;
-	            const lineHeight = 35;
-	            const fontSize = 35;
-	            const headerH = 64;
-	
+	            // --- CINEMATIC RESIZE VALUES ---
+				const SCALE = 3;
+				const CANVAS_W = 1920;
+				const CANVAS_H = 1500;
+				
+				const padding = 90;          // More breathing space
+				const lineHeight = 48;       // Taller line spacing
+				const fontSize = 38;         // Bigger code font
+				const headerH = 100;         // Strong cinematic header
+				
+					
 	            const canvas = document.createElement('canvas');
 	            canvas.width = CANVAS_W * SCALE;
 	            canvas.height = CANVAS_H * SCALE;
@@ -600,9 +602,19 @@
 	            cx.scale(SCALE, SCALE);            // Scale up for sharpness
 	
 	            // --- BACKGROUND ---
-	            cx.fillStyle = '#050507';
-	            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-	
+	            const bgGrad = cx.createLinearGradient(0, 0, 0, CANVAS_H);
+				bgGrad.addColorStop(0, '#0B0B0F');
+				bgGrad.addColorStop(1, '#111118');
+				cx.fillStyle = bgGrad;
+				cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+				cx.shadowColor = 'rgba(0,0,0,0.6)';
+				cx.shadowBlur = 120;
+				cx.shadowOffsetX = 0;
+				cx.shadowOffsetY = 0;
+				cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+				cx.shadowBlur = 0;
+
+
 	            // Subtle radial glow (top-right, like the IDE)
 	            const grd = cx.createRadialGradient(CANVAS_W, 0, 100, CANVAS_W, 0, 700);
 	            grd.addColorStop(0, 'rgba(0, 210, 106, 0.06)');
@@ -611,12 +623,16 @@
 	            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 	
 	            // --- NEON BORDER ---
-	            cx.strokeStyle = '#00F0FF';
-	            cx.lineWidth = 2.5;
+	            cx.strokeStyle = 'rgba(255,255,255,0.08)';
+				cx.lineWidth = 2;
+
 	            cx.strokeRect(3, 3, CANVAS_W - 6, CANVAS_H - 6);
 	
 	            // --- HEADER BAR ---
-	            cx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+	            cx.fillStyle = 'rgba(20, 20, 25, 0.65)';
+				cx.strokeStyle = 'rgba(255,255,255,0.06)';
+				cx.lineWidth = 1;
+
 	            cx.fillRect(0, 0, CANVAS_W, headerH);
 	            cx.strokeStyle = 'rgba(255,255,255,0.08)';
 	            cx.lineWidth = 3;
@@ -628,12 +644,14 @@
 	            // Python icon dot (yellow circle as stand-in)
 	            cx.fillStyle = '#FFD43B';
 	            cx.beginPath();
-	            cx.arc(padding - 10, headerH / 2, 10, 0, Math.PI * 2);
+	            cx.arc(padding - 25, headerH / 2, 18, 0, Math.PI * 2);
+
 	            cx.fill();
 	
 	            // Filename
 	            cx.fillStyle = '#cccccc';
-	            cx.font = `500 24px 'JetBrains Mono', monospace`;
+	            cx.font = `600 34px 'JetBrains Mono', monospace`;
+
 	            cx.fillText('main.py', padding + 8, headerH / 2 + 6);
 	
 	            // --- CODE LINES ---
@@ -648,9 +666,9 @@
 	                if (trimmed.startsWith('#')) {
 	                    cx.fillStyle = '#6A9955';
 	                } else if (/^\s*(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await|True|False|None)\b/.test(line)) {
-	                    cx.fillStyle = '#569CD6';
+	                    cx.fillStyle = '#6C8EF5';
 	                } else if (/\bprint\s*\(/.test(line)) {
-	                    cx.fillStyle = '#DCDCAA';
+	                    cx.fillStyle = '#C8B86A';
 	                } else if (/["']/.test(line)) {
 	                    cx.fillStyle = '#CE9178';
 	                } else {
@@ -669,32 +687,46 @@
 	            }
 	
 	            // --- WATERMARK (bottom-right) ---
-	            const wmW = 460;
-	            const wmH = 200;
-	            const wmX = CANVAS_W - wmW - 80;
-	            const wmY = CANVAS_H - wmH - 60;
-	
+				const wmW = 620;
+				const wmH = 240;
+				const wmX = CANVAS_W - wmW - 120;
+				const wmY = CANVAS_H - wmH - 100;
+
 	            // Watermark background pill
-	            cx.fillStyle = 'rgba(10, 10, 15, 0.95)';
+				cx.shadowColor = 'rgba(0,0,0,0.4)';
+				cx.shadowBlur = 40;
+				cx.shadowOffsetY = 10;
+
+	            cx.fillStyle = 'rgba(255,255,255,0.06)';
+
 	            cx.beginPath();
 	            cx.roundRect(wmX, wmY, wmW, wmH, 12);
 	            cx.fill();
-	            cx.strokeStyle = 'rgba(255,255,255,0.25)';
-	            cx.lineWidth = 1;
+	            cx.strokeStyle = 'rgba(255,255,255,0.12)';
+				cx.lineWidth = 1;
+
 	            cx.stroke();
+				cx.shadowBlur = 0;
+				cx.shadowOffsetY = 0;
+
 	
 	            // FIX 2: Draw logo image if loaded
 	            const drawWatermarkText = () => {
-	                cx.fillStyle = '#ffffff';
-	                cx.font = `bold 28px 'Outfit', sans-serif`;
-	                cx.fillText('CodeStitcher', wmX + 90, wmY + 40);
-	                cx.fillStyle = '#00D26A';
-	                cx.font = `24px 'JetBrains Mono', monospace`;
-	                cx.fillText('NEURAL_LAB', wmX + 90, wmY + 60);
+	                cx.fillStyle = 'rgba(255,255,255,0.85)';
+
+	                cx.font = `bold 42px 'Outfit', sans-serif`;
+
+					cx.fillText('CodeStitcher', wmX + 140, wmY + 95);
+	                cx.fillStyle = '#8EDBB5';
+
+	                cx.font = `30px 'JetBrains Mono', monospace`;
+
+	                cx.fillText('NEURAL_LAB', wmX + 140, wmY + 140);
 	            };
 	
 	            if (logoImg.complete && logoImg.naturalWidth > 0) {
-	                cx.drawImage(logoImg, wmX + 12, wmY + 10, 60, 81);
+	                cx.drawImage(logoImg, wmX + 30, wmY + 35, 90, 120);
+
 	                drawWatermarkText();
 	                finishAndDownload();
 	            } else {
@@ -753,6 +785,7 @@
 </body>
 
 </html>
+
 
 
 
