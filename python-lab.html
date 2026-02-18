@@ -608,22 +608,7 @@
             const cx = canvas.getContext('2d');
             cx.scale(SCALE, SCALE);
 
-           // ==========================================
-            // 1. BACKGROUND ART (Minimalist "Void")
-            // ==========================================
-            
-            // Solid, Deep Matte Background (Almost Black)
-            // This creates high contrast for the shadow and neon text
-            cx.fillStyle = '#050505'; 
-            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-            // Optional: Very subtle vignette to draw eye to center
-            const vignette = cx.createRadialGradient(CANVAS_W/2, CANVAS_H/2, CANVAS_H/3, CANVAS_W/2, CANVAS_H/2, CANVAS_H);
-            vignette.addColorStop(0, 'rgba(0,0,0,0)');
-            vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
-            cx.fillStyle = vignette;
-            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
+           
             // ==========================================
             // 2. THE LEVITATING EDITOR CARD
             // ==========================================
@@ -864,6 +849,7 @@
 </body>
 
 </html>
+
 
 
 
