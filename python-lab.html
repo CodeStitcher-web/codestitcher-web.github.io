@@ -16,7 +16,7 @@
     <!-- 3. ENGINES -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
-
+	<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
 		/* --- TERMINAL LOG STYLES --- */
         .log-net { color: #00F0FF; font-weight: bold; } /* Cyan for Network */
@@ -201,6 +201,75 @@
             .font-controls { transform: scale(0.9); }
             .run-btn { padding: 4px 12px; font-size: 0.8rem; }
         }
+		/* --- IMPROVED CAMERA BUTTON --- */
+		.camera-btn {
+			background: rgba(0, 240, 255, 0.1); 
+			border: 1px solid rgba(0, 240, 255, 0.3);
+			color: #00F0FF;
+			width: 32px; height: 32px;
+			border-radius: 6px;
+			cursor: pointer;
+			display: flex; align-items: center; justify-content: center;
+			transition: all 0.3s ease;
+			margin-right: 15px; /* Separate from font controls */
+			box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+		}
+		.camera-btn:hover {
+			background: #00F0FF;
+			color: black;
+			box-shadow: 0 0 20px #00F0FF;
+			transform: scale(1.1);
+		}
+
+		/* --- CINEMATIC SHUTTER FLASH --- */
+		#shutter-flash {
+			position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+			background: white; z-index: 99999;
+			opacity: 0; pointer-events: none;
+			transition: opacity 0.1s ease-out;
+		}
+
+		/* --- SNAPSHOT PREVIEW MODE --- */
+		.snapshot-mode {
+			position: relative;
+			background: #050507 !important;
+			/* Neon Border Pulse */
+			border: 2px solid #00F0FF !important;
+			box-shadow: 0 0 50px rgba(0, 240, 255, 0.15), inset 0 0 30px rgba(0, 240, 255, 0.05) !important;
+			overflow: hidden;
+		}
+
+		/* --- WATERMARK --- */
+		.snapshot-watermark {
+			position: absolute; bottom: 20px; right: 25px;
+			display: none; /* Flex when active */
+			align-items: center; gap: 12px;
+			z-index: 999;
+			background: rgba(10, 10, 15, 0.8);
+			backdrop-filter: blur(4px);
+			padding: 10px 18px;
+			border-radius: 12px;
+			border: 1px solid rgba(255,255,255,0.15);
+			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+		}
+
+		/* --- ELEGANT NOTIFICATION TOAST --- */
+		#toast-notification {
+			position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(100px);
+			background: rgba(10, 15, 20, 0.95);
+			border: 1px solid #00D26A;
+			color: #fff;
+			padding: 12px 25px;
+			border-radius: 50px;
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.9rem;
+			display: flex; align-items: center; gap: 10px;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+			z-index: 10000;
+			opacity: 0;
+			transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		}
+		#toast-notification.active { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -239,16 +308,36 @@
     <!-- IDE GRID -->
     <div id="ide-wrapper">
         <!-- EDITOR -->
-        <div class="glass-panel">
+        <div class="glass-panel"id="editor-panel">
             <div class="panel-header">
-                <div><i class="fa-brands fa-python" style="color:#FFD43B; margin-right:8px;"></i> main.py</div>
-                <div class="font-controls">
-                    <span style="font-size:0.75rem; margin-right:5px; color:#666;">FONT</span>
-                    <button class="font-btn" onclick="resizeFont(-1)"><i class="fa-solid fa-minus"></i></button>
-                    <button class="font-btn" onclick="resizeFont(1)"><i class="fa-solid fa-plus"></i></button>
-                </div>
-            </div>
+				<div style="display:flex; align-items:center;">
+					<i class="fa-brands fa-python" style="color:#FFD43B; margin-right:8px;"></i> 
+					<span style="letter-spacing:1px;">main.py</span>
+				</div>
+				
+				<div style="display:flex; align-items:center;">
+					<!-- NEW "MIND-BLOWING" CAMERA BUTTON -->
+					<button class="camera-btn" onclick="triggerCinematicSnapshot()" title="Neural Snapshot">
+						<i class="fa-solid fa-camera-retro"></i>
+					</button>
+
+					<div class="font-controls">
+						<span style="font-size:0.75rem; margin-right:5px; color:#666;">FONT</span>
+						<button class="font-btn" onclick="resizeFont(-1)"><i class="fa-solid fa-minus"></i></button>
+						<button class="font-btn" onclick="resizeFont(1)"><i class="fa-solid fa-plus"></i></button>
+					</div>
+				</div>
+			</div>
             <div id="monaco-container"></div>
+			<div class="snapshot-watermark" id="watermark">
+				<!-- Ensure this image path is correct relative to your HTML file -->
+				<img src="codestitcher.png" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+				<div style="display:flex; flex-direction:column;">
+					<span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
+					<span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
+				</div>
+			</div>
+			
         </div>
 
         <!-- TERMINAL -->
@@ -457,8 +546,87 @@
                 osc.start(now); osc.stop(now + 0.3);
             }
         }
+		// Preload the audio to ensure no delay
+		const cameraAudio = new Audio('capture.wav');
+
+		function triggerCinematicSnapshot() {
+			const panel = document.getElementById('editor-panel'); 
+			const watermark = document.getElementById('watermark');
+			const flash = document.getElementById('shutter-flash');
+			const toast = document.getElementById('toast-notification');
+
+			// 1. PLAY CUSTOM AUDIO & VISUAL FLASH
+			// Reset audio time to 0 so it can be clicked rapidly
+			cameraAudio.currentTime = 0; 
+			cameraAudio.play().catch(e => console.log("Audio not found or blocked"));
+
+			flash.style.opacity = '1';
+			
+			setTimeout(() => {
+				flash.style.opacity = '0';
+			}, 100);
+
+			// 2. ENTER PREVIEW MODE
+			panel.classList.add('snapshot-mode');
+			watermark.style.display = 'flex';
+
+			// 3. WAIT 3 SECONDS (Cinematic Preview)
+			setTimeout(() => {
+				
+				// 4. CAPTURE
+				html2canvas(panel, {
+					backgroundColor: "#050507",
+					scale: 2, 
+					useCORS: true, 
+					// allowTaint: true,  <-- REMOVED (This was breaking the download)
+					logging: false
+				}).then(canvas => {
+					
+					// 5. SHOW SUCCESS TOAST
+					toast.classList.add('active');
+					playSound('success'); // Keep the sci-fi beep for the "Success" toast
+
+					// 6. DOWNLOAD
+					try {
+						const link = document.createElement('a');
+						const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
+						link.download = `CodeStitcher_Dev_${timestamp}.png`;
+						link.href = canvas.toDataURL('image/png');
+						document.body.appendChild(link); // Append to body (required for Firefox)
+						link.click();
+						document.body.removeChild(link);
+					} catch (e) {
+						console.error("Download blocked by browser security:", e);
+						alert("Snapshot generated, but browser blocked the download due to local file security.");
+					}
+
+					// 7. CLEANUP
+					setTimeout(() => {
+						panel.classList.remove('snapshot-mode');
+						watermark.style.display = 'none';
+						toast.classList.remove('active');
+					}, 3000); 
+
+				}).catch(err => {
+					console.error("Snapshot failed:", err);
+					// If it fails, likely due to the Logo Image on local file system
+					alert("Error: Browser security blocked the logo image. Try using 'Live Server' instead of double-clicking the file.");
+					
+					// Cleanup anyway so the user isn't stuck
+					panel.classList.remove('snapshot-mode');
+					watermark.style.display = 'none';
+				});
+
+			}, 3000); 
+		}
     </script>
+	<div id="shutter-flash"></div>
+	<div id="toast-notification">
+		<i class="fa-solid fa-circle-check" style="color:#00D26A;"></i> 
+		<span>SNAPSHOT SECURED. DOWNLOADING...</span>
+	</div>
 </body>
 
 </html>
+
 
