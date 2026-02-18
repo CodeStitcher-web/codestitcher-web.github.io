@@ -330,8 +330,8 @@
 			</div>
             <div id="monaco-container"></div>
 			<div class="snapshot-watermark" id="watermark">
-			    <!-- ADDED crossorigin="anonymous" TO FIX SECURITY BLOCK -->
-			    <img src="codestitcher.png" crossorigin="anonymous" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+			    <!-- REMOVED crossorigin attribute for better stability -->
+			    <img src="codestitcher.png" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
 			    <div style="display:flex; flex-direction:column;">
 			        <span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
 			        <span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
@@ -355,263 +355,259 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-        let editor, pyodide;
-        let fontSize = 14;
-        
-        // 1. CHECK FOR COPIED CODE FROM URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const incomingCode = urlParams.get('code');
-        
-        let initialCode = `# CodeStitcher Neural IDE\n# Write your Python code below\n\nimport sys\nimport random\n\nprint("=== SYSTEM DIAGNOSTICS ===")\nprint(f"Python Kernel: {sys.version.split()[0]}")\nprint(f"Engine: Pyodide WebAssembly")\n\ndef neural_sync():\n    print("\\n> SYNCING NEURAL NETWORKS...")\n    return random.randint(85, 100)\n\nsync = neural_sync()\nprint(f"> SYNC COMPLETE: {sync}% Efficiency")\nprint("\\nReady for instructions.")`;
-
-        if (incomingCode) {
-            initialCode = decodeURIComponent(incomingCode);
-        }
-
-        // 2. AUTO START ON PAGE LOAD
-        window.onload = function() {
-            // Start the loading process immediately
-            loadEngines();
-        };
-
-        function updateLoad(p) { document.getElementById('loader-bar').style.width = p + "%"; }
-
-         async function loadEngines() {
-            try {
-                updateLoad(30);
-                pyodide = await loadPyodide();
-                updateLoad(50);
-                
-                await pyodide.loadPackage("micropip");
-                
-                // --- STYLISH INSTALLER FUNCTION ---
-                // We define a Python function that prints with special tags
-                await pyodide.runPythonAsync(`
-                    import micropip, sys
-                    async def install(packages):
-                        print(f"[NET] ESTABLISHING UPLINK FOR: {packages}...")
-                        await micropip.install(packages)
-                        print(f"[OK] MODULE '{packages}' INTEGRATED.")
-                `);
-
-                updateLoad(70);
-
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
-                require(['vs/editor/editor.main'], function() {
-                    updateLoad(100);
-                    
-                    monaco.editor.defineTheme('glass', {
-                        base: 'vs-dark', inherit: true,
-                        rules: [{ background: '00000000' }],
-                        colors: { 'editor.background': '#00000000', 'minimap.background': '#00000000' }
-                    });
-
-                    setTimeout(() => {
-                        document.getElementById('boot-loader').style.display = 'none';
-                        document.getElementById('ide-wrapper').style.display = 'grid'; 
-                        playSound('startup');
-
-                        editor = monaco.editor.create(document.getElementById('monaco-container'), {
-                            value: initialCode,
-                            language: 'python', theme: 'glass',
-                            fontFamily: 'JetBrains Mono', fontSize: fontSize,
-                            automaticLayout: true, minimap: { enabled: false },
-                            scrollBeyondLastLine: false, padding: { top: 15 }
-                        });
-                        
-                        if(incomingCode) log(">>> DATA UPLINK SUCCESSFUL.", "log-success");
-                    }, 500);
-                });
-            } catch (e) { alert("Error loading engines."); }
-        }
-
-        async function runCode() {
-            if(!pyodide) return;
-            const btn = document.getElementById('exec-btn');
-            const panel = document.getElementById('term-panel');
-            
-            playSound('execute');
-            
-            // 1. PREPARE TERMINAL
-            document.getElementById('console-output').innerHTML = '';
-            panel.classList.add('processing');
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...';
-            
-            let rawCode = editor.getValue();
-            
-            // --- NEURAL PRE-PROCESSOR ---
-            let processedCode = "import micropip\n" + rawCode;
-            processedCode = processedCode.replace(
-                /^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 
-                'await install("$1")' 
-            );
-
-            log(">>> EXECUTING PROTOCOL...", "log-sys");
-
-            setTimeout(async () => {
-                try {
-                    // 2. CAPTURE OUTPUT (Don't print yet!)
-                    let outputQueue = [];
-                    pyodide.setStdout({ batched: (msg) => outputQueue.push(msg) });
-
-                    // 3. RUN PYTHON (Silently fills the queue)
-                    await pyodide.runPythonAsync(processedCode);
-
-                    // 4. THE CINEMATIC REPLAY LOOP
-                    if (outputQueue.length === 0) outputQueue.push(">>> Protocol executed silently.");
-
-                    let totalDelay = 0;
-                    const delayPerLine = 200; // Speed of typing (ms)
-
-                    outputQueue.forEach((line, index) => {
-                        // Calculate specific time for this line
-                        totalDelay = index * delayPerLine;
-
-                        setTimeout(() => {
-                            // Smart Styling Logic
-                            let type = "log-out";
-                            if(line.includes("[NET]")) type = "log-net";
-                            else if(line.includes("[SYS]")) type = "log-sys";
-                            else if(line.includes("[OK]")) type = "log-ok";
-
-                            log(line, type);
-                            playSound('success'); // Beep for every line
-                        }, totalDelay);
-                    });
-
-                    // 5. FINISH AFTER ANIMATION
-                    // We wait for (total lines * delay) + a small buffer
-                    setTimeout(() => {
-                        log("✔ EXECUTION COMPLETE.", "log-success");
-                        btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
-                        panel.classList.remove('processing');
-                    }, totalDelay + 300);
-
-                } catch (err) {
-                    // Handle Errors
-                    log(String(err), "log-err");
-                    playSound('error');
-                    btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
-                    panel.classList.remove('processing');
-                }
-            }, 100); 
-        }
-        function log(msg, type) {
-            const div = document.createElement('div');
-            div.className = `log-line ${type}`;
-            div.innerText = msg;
-            const term = document.getElementById('console-output');
-            term.appendChild(div);
-            term.scrollTop = term.scrollHeight;
-        }
-
-        function resizeFont(delta) {
-            if(!editor) return;
-            fontSize = Math.max(10, Math.min(32, fontSize + delta));
-            editor.updateOptions({ fontSize: fontSize });
-            playSound('click');
-        }
-
-        // AUDIO ENGINE
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            if (ctx.state === 'suspended') ctx.resume();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            const now = ctx.currentTime;
-            
-            if (type === 'click') {
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'startup') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(220, now); osc.frequency.linearRampToValueAtTime(440, now + 0.5);
-                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 1);
-                osc.start(now); osc.stop(now + 1);
-            } else if (type === 'execute') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
-                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc.start(now); osc.stop(now + 0.15);
-            } else if (type === 'success') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.setValueAtTime(1000, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            }
-        }
+	<script>
+	let editor, pyodide;
+	let fontSize = 14;
+	
+	// 1. CHECK FOR COPIED CODE FROM URL
+	const urlParams = new URLSearchParams(window.location.search);
+	const incomingCode = urlParams.get('code');
+	
+	let initialCode = `# CodeStitcher Neural IDE\n# Write your Python code below\n\nimport sys\nimport random\n\nprint("=== SYSTEM DIAGNOSTICS ===")\nprint(f"Python Kernel: {sys.version.split()[0]}")\nprint(f"Engine: Pyodide WebAssembly")\n\ndef neural_sync():\n    print("\\n> SYNCING NEURAL NETWORKS...")\n    return random.randint(85, 100)\n\nsync = neural_sync()\nprint(f"> SYNC COMPLETE: {sync}% Efficiency")\nprint("\\nReady for instructions.")`;
+	
+	if (incomingCode) {
+		initialCode = decodeURIComponent(incomingCode);
+	}
+	
+	// 2. AUTO START ON PAGE LOAD
+	window.onload = function() {
+		loadEngines();
+	};
+	
+	function updateLoad(p) { document.getElementById('loader-bar').style.width = p + "%"; }
+	
+	 async function loadEngines() {
+		try {
+			updateLoad(30);
+			pyodide = await loadPyodide();
+			updateLoad(50);
+			
+			await pyodide.loadPackage("micropip");
+			
+			await pyodide.runPythonAsync(`
+				import micropip, sys
+				async def install(packages):
+					print(f"[NET] ESTABLISHING UPLINK FOR: {packages}...")
+					await micropip.install(packages)
+					print(f"[OK] MODULE '{packages}' INTEGRATED.")
+			`);
+	
+			updateLoad(70);
+	
+			require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
+			require(['vs/editor/editor.main'], function() {
+				updateLoad(100);
+				
+				monaco.editor.defineTheme('glass', {
+					base: 'vs-dark', inherit: true,
+					rules: [{ background: '00000000' }],
+					colors: { 'editor.background': '#00000000', 'minimap.background': '#00000000' }
+				});
+	
+				setTimeout(() => {
+					document.getElementById('boot-loader').style.display = 'none';
+					document.getElementById('ide-wrapper').style.display = 'grid'; 
+					playSound('startup');
+	
+					editor = monaco.editor.create(document.getElementById('monaco-container'), {
+						value: initialCode,
+						language: 'python', theme: 'glass',
+						fontFamily: 'JetBrains Mono', fontSize: fontSize,
+						automaticLayout: true, minimap: { enabled: false },
+						scrollBeyondLastLine: false, padding: { top: 15 }
+					});
+					
+					if(incomingCode) log(">>> DATA UPLINK SUCCESSFUL.", "log-success");
+				}, 500);
+			});
+		} catch (e) { console.error(e); }
+	}
+	
+	async function runCode() {
+		if(!pyodide) return;
+		const btn = document.getElementById('exec-btn');
+		const panel = document.getElementById('term-panel');
 		
-		// Preload the audio to ensure no delay
-		const cameraAudio = new Audio('capture.wav');
+		playSound('execute');
 		
-		function triggerCinematicSnapshot() {
-		    const panel = document.getElementById('editor-panel'); 
-		    const watermark = document.getElementById('watermark');
-		    const flash = document.getElementById('shutter-flash');
-		    const toast = document.getElementById('toast-notification');
+		// PREPARE TERMINAL
+		document.getElementById('console-output').innerHTML = '';
+		panel.classList.add('processing');
+		btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...';
 		
-		    // 1. PLAY AUDIO & FLASH
-		    cameraAudio.currentTime = 0; 
-		    cameraAudio.play().catch(e => console.log("Audio auto-play blocked"));
+		let rawCode = editor.getValue();
+		let processedCode = "import micropip\n" + rawCode;
+		processedCode = processedCode.replace(
+			/^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 
+			'await install("$1")' 
+		);
+	
+		log(">>> EXECUTING PROTOCOL...", "log-sys");
+	
+		setTimeout(async () => {
+			try {
+				let outputQueue = [];
+				pyodide.setStdout({ batched: (msg) => outputQueue.push(msg) });
+				await pyodide.runPythonAsync(processedCode);
+	
+				if (outputQueue.length === 0) outputQueue.push(">>> Protocol executed silently.");
+	
+				let totalDelay = 0;
+				const delayPerLine = 200; 
+	
+				outputQueue.forEach((line, index) => {
+					totalDelay = index * delayPerLine;
+					setTimeout(() => {
+						let type = "log-out";
+						if(line.includes("[NET]")) type = "log-net";
+						else if(line.includes("[SYS]")) type = "log-sys";
+						else if(line.includes("[OK]")) type = "log-ok";
+						log(line, type);
+						playSound('success'); 
+					}, totalDelay);
+				});
+	
+				setTimeout(() => {
+					log("✔ EXECUTION COMPLETE.", "log-success");
+					btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
+					panel.classList.remove('processing');
+				}, totalDelay + 300);
+	
+			} catch (err) {
+				log(String(err), "log-err");
+				playSound('error');
+				btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
+				panel.classList.remove('processing');
+			}
+		}, 100); 
+	}
+	
+	function log(msg, type) {
+		const div = document.createElement('div');
+		div.className = `log-line ${type}`;
+		div.innerText = msg;
+		const term = document.getElementById('console-output');
+		term.appendChild(div);
+		term.scrollTop = term.scrollHeight;
+	}
+	
+	function resizeFont(delta) {
+		if(!editor) return;
+		fontSize = Math.max(10, Math.min(32, fontSize + delta));
+		editor.updateOptions({ fontSize: fontSize });
+		playSound('click');
+	}
+	
+	// --- AUDIO ENGINE ---
+	const ctx = new (window.AudioContext || window.webkitAudioContext)();
+	function playSound(type) {
+		if (ctx.state === 'suspended') ctx.resume();
+		const osc = ctx.createOscillator();
+		const gain = ctx.createGain();
+		osc.connect(gain); gain.connect(ctx.destination);
+		const now = ctx.currentTime;
 		
-		    flash.style.opacity = '1';
-		    setTimeout(() => { flash.style.opacity = '0'; }, 100);
-		
-		    // 2. ENTER PREVIEW MODE
-		    panel.classList.add('snapshot-mode');
-		    watermark.style.display = 'flex';
-		
-		    // 3. WAIT 3 SECONDS (Cinematic Preview)
-		    setTimeout(() => {
-		        
-		        // 4. CAPTURE
-		        html2canvas(panel, {
-		            backgroundColor: "#050507",
-		            scale: 2, // High Res
-		            useCORS: true, // IMPORTANT: Allows the image to be captured
-		            logging: false,
-		            allowTaint: false 
-		        }).then(canvas => {
-		            
-		            // --- SUCCESS ---
-		            
-		            // A. Show Toast
-		            toast.classList.add('active');
-		            playSound('success'); 
-		
-		            // B. Create Download
-		            const link = document.createElement('a');
-		            const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
-		            link.download = `CodeStitcher_Dev_${timestamp}.png`;
-		            link.href = canvas.toDataURL('image/png');
-		            document.body.appendChild(link);
-		            link.click();
-		            document.body.removeChild(link);
-		
-		            // Hide toast after a few seconds
-		            setTimeout(() => { toast.classList.remove('active'); }, 4000);
-		
-		        }).catch(err => {
-		            // --- ERROR ---
-		            console.error("Snapshot Failed:", err);
-		            alert("Snapshot Error: The browser blocked the image capture. This usually happens due to the Logo Image security. Check console for details.");
-		        
-		        }).finally(() => {
-		            // --- CLEANUP (ALWAYS RUNS) ---
-		            // This ensures the UI never gets "stuck" with the blue border
-		            panel.classList.remove('snapshot-mode');
-		            watermark.style.display = 'none';
-		        });
-		
-		    }, 3000); // 3 Second Preview
+		if (type === 'click') {
+			osc.frequency.setValueAtTime(800, now);
+			osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+			gain.gain.setValueAtTime(0.1, now);
+			gain.gain.linearRampToValueAtTime(0, now + 0.1);
+			osc.start(now); osc.stop(now + 0.1);
+		} else if (type === 'startup') {
+			osc.type = 'triangle'; osc.frequency.setValueAtTime(220, now); osc.frequency.linearRampToValueAtTime(440, now + 0.5);
+			gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 1);
+			osc.start(now); osc.stop(now + 1);
+		} else if (type === 'execute') {
+			osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+			gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+			osc.start(now); osc.stop(now + 0.15);
+		} else if (type === 'success') {
+			osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.setValueAtTime(1000, now + 0.1);
+			gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+			osc.start(now); osc.stop(now + 0.4);
+		} else if (type === 'error') {
+			osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
+			gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+			osc.start(now); osc.stop(now + 0.3);
 		}
-    </script>
+	}
+	
+	// --- ROBUST SNAPSHOT ENGINE ---
+	const cameraAudio = new Audio('capture.wav');
+	
+	function triggerCinematicSnapshot() {
+		const panel = document.getElementById('editor-panel'); 
+		const watermark = document.getElementById('watermark');
+		const flash = document.getElementById('shutter-flash');
+		const toast = document.getElementById('toast-notification');
+	
+		// 1. PLAY AUDIO & FLASH
+		try {
+			cameraAudio.currentTime = 0; 
+			cameraAudio.play().catch(e => console.log("Audio blocked"));
+		} catch(e) {}
+	
+		flash.style.opacity = '1';
+		setTimeout(() => { flash.style.opacity = '0'; }, 100);
+	
+		// 2. ENTER PREVIEW MODE
+		panel.classList.add('snapshot-mode');
+		watermark.style.display = 'flex';
+	
+		// 3. CAPTURE AFTER DELAY (WITH SAFETY VALVE)
+		setTimeout(() => {
+			
+			// Define the capture task
+			const captureTask = html2canvas(panel, {
+				backgroundColor: "#050507",
+				scale: 2, 
+				useCORS: true, // Try to load images
+				logging: true, // Enable logs to see errors in console
+				allowTaint: false,
+				ignoreElements: (element) => {
+					// Ignore cursor to prevent glitches
+					return element.classList.contains('cursor-dot') || element.classList.contains('cursor-outline');
+				}
+			});
+	
+			// Define the Timeout Safety Valve (4 seconds max)
+			const timeoutTask = new Promise((_, reject) => 
+				setTimeout(() => reject(new Error("Snapshot Timeout")), 4000)
+			);
+	
+			// RACE: Whichever finishes first wins
+			Promise.race([captureTask, timeoutTask])
+			.then(canvas => {
+				// --- SUCCESS ---
+				toast.classList.add('active');
+				playSound('success'); 
+	
+				const link = document.createElement('a');
+				const timestamp = new Date().toISOString().slice(0,19).replace(/[-T:]/g,"");
+				link.download = `CodeStitcher_Dev_${timestamp}.png`;
+				link.href = canvas.toDataURL('image/png');
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+	
+				setTimeout(() => { toast.classList.remove('active'); }, 4000);
+			})
+			.catch(err => {
+				// --- ERROR ---
+				console.error("Snapshot Failed:", err);
+				// Use a more gentle alert or just log it
+				// alert("Snapshot failed or timed out. Check console.");
+			})
+			.finally(() => {
+				// --- CLEANUP (GUARANTEED TO RUN) ---
+				console.log("Cleaning up snapshot UI...");
+				panel.classList.remove('snapshot-mode');
+				watermark.style.display = 'none';
+			});
+	
+		}, 3000); // 3 Second Preview
+	}
+	</script>
 	<div id="shutter-flash"></div>
 	<div id="toast-notification">
 		<i class="fa-solid fa-circle-check" style="color:#00D26A;"></i> 
@@ -620,6 +616,7 @@
 </body>
 
 </html>
+
 
 
 
