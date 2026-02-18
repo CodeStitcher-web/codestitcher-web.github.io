@@ -608,32 +608,21 @@
             const cx = canvas.getContext('2d');
             cx.scale(SCALE, SCALE);
 
-            // ==========================================
-            // 1. BACKGROUND ART (Mesh Gradients)
+           // ==========================================
+            // 1. BACKGROUND ART (Minimalist "Void")
             // ==========================================
             
-            // Deep Space Base
-            const bgGrad = cx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
-            bgGrad.addColorStop(0, '#0f0c29');
-            bgGrad.addColorStop(0.5, '#302b63');
-            bgGrad.addColorStop(1, '#24243e');
-            cx.fillStyle = bgGrad;
+            // Solid, Deep Matte Background (Almost Black)
+            // This creates high contrast for the shadow and neon text
+            cx.fillStyle = '#050505'; 
             cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-            // Top-Left Glow (Purple/Pink)
-            const orb1 = cx.createRadialGradient(0, 0, 0, 0, 0, 1000);
-            orb1.addColorStop(0, 'rgba(123, 31, 162, 0.35)');
-            orb1.addColorStop(1, 'transparent');
-            cx.fillStyle = orb1;
+            // Optional: Very subtle vignette to draw eye to center
+            const vignette = cx.createRadialGradient(CANVAS_W/2, CANVAS_H/2, CANVAS_H/3, CANVAS_W/2, CANVAS_H/2, CANVAS_H);
+            vignette.addColorStop(0, 'rgba(0,0,0,0)');
+            vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
+            cx.fillStyle = vignette;
             cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-            // Bottom-Right Glow (Teal/Cyan)
-            const orb2 = cx.createRadialGradient(CANVAS_W, CANVAS_H, 0, CANVAS_W, CANVAS_H, 1200);
-            orb2.addColorStop(0, 'rgba(0, 210, 106, 0.25)');
-            orb2.addColorStop(1, 'transparent');
-            cx.fillStyle = orb2;
-            cx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
 
             // ==========================================
             // 2. THE LEVITATING EDITOR CARD
@@ -875,6 +864,7 @@
 </body>
 
 </html>
+
 
 
 
