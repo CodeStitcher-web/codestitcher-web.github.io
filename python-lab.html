@@ -586,8 +586,8 @@
 	            const CANVAS_W = 1920;
 	            const CANVAS_H = 1500;
 	            const padding = 60;
-	            const lineHeight = 28;
-	            const fontSize = 24;
+	            const lineHeight = 35;
+	            const fontSize = 35;
 	            const headerH = 64;
 	
 	            const canvas = document.createElement('canvas');
@@ -619,7 +619,7 @@
 	            cx.fillStyle = 'rgba(0, 0, 0, 0.45)';
 	            cx.fillRect(0, 0, CANVAS_W, headerH);
 	            cx.strokeStyle = 'rgba(255,255,255,0.08)';
-	            cx.lineWidth = 1;
+	            cx.lineWidth = 3;
 	            cx.beginPath();
 	            cx.moveTo(0, headerH);
 	            cx.lineTo(CANVAS_W, headerH);
@@ -628,12 +628,12 @@
 	            // Python icon dot (yellow circle as stand-in)
 	            cx.fillStyle = '#FFD43B';
 	            cx.beginPath();
-	            cx.arc(padding - 10, headerH / 2, 7, 0, Math.PI * 2);
+	            cx.arc(padding - 10, headerH / 2, 10, 0, Math.PI * 2);
 	            cx.fill();
 	
 	            // Filename
 	            cx.fillStyle = '#cccccc';
-	            cx.font = `500 16px 'JetBrains Mono', monospace`;
+	            cx.font = `500 24px 'JetBrains Mono', monospace`;
 	            cx.fillText('main.py', padding + 8, headerH / 2 + 6);
 	
 	            // --- CODE LINES ---
@@ -669,28 +669,28 @@
 	            }
 	
 	            // --- WATERMARK (bottom-right) ---
-	            const wmW = 360;
-	            const wmH = 100;
-	            const wmX = CANVAS_W - wmW - 50;
-	            const wmY = CANVAS_H - wmH - 35;
+	            const wmW = 460;
+	            const wmH = 200;
+	            const wmX = CANVAS_W - wmW - 80;
+	            const wmY = CANVAS_H - wmH - 60;
 	
 	            // Watermark background pill
-	            cx.fillStyle = 'rgba(10, 10, 15, 0.88)';
+	            cx.fillStyle = 'rgba(10, 10, 15, 0.95)';
 	            cx.beginPath();
 	            cx.roundRect(wmX, wmY, wmW, wmH, 12);
 	            cx.fill();
-	            cx.strokeStyle = 'rgba(255,255,255,0.12)';
+	            cx.strokeStyle = 'rgba(255,255,255,0.25)';
 	            cx.lineWidth = 1;
 	            cx.stroke();
 	
 	            // FIX 2: Draw logo image if loaded
 	            const drawWatermarkText = () => {
 	                cx.fillStyle = '#ffffff';
-	                cx.font = `bold 18px 'Outfit', sans-serif`;
-	                cx.fillText('CodeStitcher', wmX + 90, wmY + 24);
+	                cx.font = `bold 28px 'Outfit', sans-serif`;
+	                cx.fillText('CodeStitcher', wmX + 90, wmY + 40);
 	                cx.fillStyle = '#00D26A';
-	                cx.font = `12px 'JetBrains Mono', monospace`;
-	                cx.fillText('NEURAL_LAB', wmX + 90, wmY + 44);
+	                cx.font = `24px 'JetBrains Mono', monospace`;
+	                cx.fillText('NEURAL_LAB', wmX + 90, wmY + 60);
 	            };
 	
 	            if (logoImg.complete && logoImg.naturalWidth > 0) {
@@ -753,6 +753,7 @@
 </body>
 
 </html>
+
 
 
 
