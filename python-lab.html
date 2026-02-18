@@ -687,51 +687,57 @@
 	            }
 	
 	            // --- WATERMARK (bottom-right) ---
-				const wmW = 620;
-				const wmH = 240;
-				const wmX = CANVAS_W - wmW - 120;
-				const wmY = CANVAS_H - wmH - 100;
-
-	            // Watermark background pill
-				cx.shadowColor = 'rgba(0,0,0,0.4)';
-				cx.shadowBlur = 40;
-				cx.shadowOffsetY = 10;
-
-	            cx.fillStyle = 'rgba(255,255,255,0.06)';
-
-	            cx.beginPath();
-	            cx.roundRect(wmX, wmY, wmW, wmH, 12);
-	            cx.fill();
-	            cx.strokeStyle = 'rgba(255,255,255,0.12)';
-				cx.lineWidth = 1;
-
-	            cx.stroke();
-				cx.shadowBlur = 0;
-				cx.shadowOffsetY = 0;
-
+				 // --- WATERMARK (bottom-right) ---
+	            // RESIZED: Sleeker dimensions for a premium badge look
+	            const wmW = 480;
+	            const wmH = 140;
+	            const wmX = CANVAS_W - wmW - 80;
+	            const wmY = CANVAS_H - wmH - 80;
 	
-	            // FIX 2: Draw logo image if loaded
+	            // Watermark background pill
+	            cx.shadowColor = 'rgba(0,0,0,0.4)';
+	            cx.shadowBlur = 40;
+	            cx.shadowOffsetY = 10;
+	
+	            cx.fillStyle = 'rgba(255,255,255,0.06)';
+	
+	            cx.beginPath();
+	            cx.roundRect(wmX, wmY, wmW, wmH, 16); // Slightly rounder corners
+	            cx.fill();
+	
+	            cx.strokeStyle = 'rgba(255,255,255,0.12)';
+	            cx.lineWidth = 1;
+	            cx.stroke();
+	
+	            cx.shadowBlur = 0;
+	            cx.shadowOffsetY = 0;
+	
+	            // Function to draw text elements
 	            const drawWatermarkText = () => {
-	                cx.fillStyle = 'rgba(255,255,255,0.85)';
-
-	                cx.font = `bold 42px 'Outfit', sans-serif`;
-
-					cx.fillText('CodeStitcher', wmX + 140, wmY + 95);
+	                // Title
+	                cx.fillStyle = 'rgba(255,255,255,0.9)';
+	                cx.font = `bold 36px 'Outfit', sans-serif`; // Reduced from 42px
+	                cx.textBaseline = 'middle';
+	                cx.fillText('CodeStitcher', wmX + 130, wmY + 55);
+	
+	                // Subtitle
 	                cx.fillStyle = '#8EDBB5';
-
-	                cx.font = `30px 'JetBrains Mono', monospace`;
-
-	                cx.fillText('NEURAL_LAB', wmX + 140, wmY + 140);
+	                cx.font = `500 20px 'JetBrains Mono', monospace`; // Reduced from 30px
+	                cx.fillText('NEURAL_LAB', wmX + 132, wmY + 95);
 	            };
 	
+	             // Calculate Logo Position (vertically centered)
+	            const logoSize = 80; // Reduced from 90x120 to fit new height
+	            const logoY = wmY + (wmH - logoSize) / 2;
+	
 	            if (logoImg.complete && logoImg.naturalWidth > 0) {
-	                cx.drawImage(logoImg, wmX + 30, wmY + 35, 90, 120);
-
+	                // Maintain aspect ratio if needed, or force square fit
+	                cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
 	                drawWatermarkText();
 	                finishAndDownload();
 	            } else {
 	                logoImg.onload = () => {
-	                    cx.drawImage(logoImg, wmX + 12, wmY + 10, 60, 81);
+	                    cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
 	                    drawWatermarkText();
 	                    finishAndDownload();
 	                };
@@ -741,7 +747,6 @@
 	                    finishAndDownload();
 	                };
 	            }
-	
 	            function finishAndDownload() {
 	                canvas.toBlob((blob) => {
 	                    if (!blob) {
@@ -785,6 +790,7 @@
 </body>
 
 </html>
+
 
 
 
