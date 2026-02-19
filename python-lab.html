@@ -667,6 +667,14 @@
             cx.fillText('main.py', cardX + (cardW / 2), dotY + 8);
             cx.textAlign = 'left'; // Reset alignment
 
+			const DRACULA = {
+			    keyword: '#FF79C6',
+			    string: '#F1FA8C',
+			    number: '#BD93F9',
+			    comment: '#6272A4',
+			    function: '#50FA7B',
+			    default: '#F8F8F2'
+			};
 
             // ==========================================
             // 4. CODE RENDERING (With Glow & Gutter)
@@ -739,7 +747,53 @@
 				    displayLine += '...';
 				}
 				
-				cx.fillText(displayLine, textX, y);
+				let currentX = textX;
+
+				const tokenRegex = /(#.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|\b(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await)\b|\b(True|False|None)\b|\b\d+\b|[A-Za-z_][A-Za-z0-9_]*/g;
+				
+				let match;
+				let lastIndex = 0;
+				
+				while ((match = tokenRegex.exec(displayLine)) !== null) {
+				    
+				    // Draw text before match
+				    if (match.index > lastIndex) {
+				        const plainText = displayLine.slice(lastIndex, match.index);
+				        cx.fillStyle = DRACULA.default;
+				        cx.fillText(plainText, currentX, y);
+				        currentX += cx.measureText(plainText).width;
+				    }
+				
+				    const token = match[0];
+				
+				    // Decide token color
+				    if (match[1]) { // comment
+				        cx.fillStyle = DRACULA.comment;
+				    } else if (match[2]) { // string
+				        cx.fillStyle = DRACULA.string;
+				    } else if (match[3]) { // keyword
+				        cx.fillStyle = DRACULA.keyword;
+				    } else if (match[4]) { // True/False/None
+				        cx.fillStyle = DRACULA.number;
+				    } else if (/^\d+$/.test(token)) {
+				        cx.fillStyle = DRACULA.number;
+				    } else {
+				        cx.fillStyle = DRACULA.default;
+				    }
+				
+				    cx.fillText(token, currentX, y);
+				    currentX += cx.measureText(token).width;
+				
+				    lastIndex = tokenRegex.lastIndex;
+				}
+				
+				// Draw remaining text
+				if (lastIndex < displayLine.length) {
+				    const remaining = displayLine.slice(lastIndex);
+				    cx.fillStyle = DRACULA.default;
+				    cx.fillText(remaining, currentX, y);
+				}
+
 
 
                 // Reset glow
@@ -887,6 +941,7 @@
 </body>
 
 </html>
+
 
 
 
