@@ -288,6 +288,75 @@
 			opacity: 0; pointer-events: none;
 			transition: opacity 0.1s ease-out;
 		}
+		/* --- MOBILE TOOLS MENU (New) --- */
+		.mobile-tools-dropdown {
+		    display: none; /* Hidden by default */
+		    position: absolute;
+		    top: 60px; right: 10px; /* Position below header */
+		    width: 200px;
+		    background: rgba(10, 15, 20, 0.98);
+		    backdrop-filter: blur(20px);
+		    border: 1px solid #00D26A; /* Green Border */
+		    border-radius: 12px;
+		    padding: 10px;
+		    flex-direction: column;
+		    gap: 8px;
+		    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+		    z-index: 5000;
+		}
+		
+		.mobile-tools-dropdown.active {
+		    display: flex;
+		    animation: slideDown 0.2s ease-out;
+		}
+		
+		/* The Mobile Item Button */
+		.m-tool-item {
+		    background: rgba(255,255,255,0.05);
+		    border: none;
+		    color: #eee;
+		    padding: 12px;
+		    border-radius: 8px;
+		    text-align: left;
+		    font-family: 'JetBrains Mono';
+		    font-size: 0.9rem;
+		    cursor: pointer;
+		    display: flex; align-items: center; gap: 10px;
+		    transition: 0.2s;
+		}
+		.m-tool-item:active { background: rgba(0, 210, 106, 0.2); }
+		
+		/* The Green Glowing Toggle Button (Exact style of Learn Button) */
+		.tools-toggle-btn {
+		    display: none; /* Hidden on Desktop */
+		    color: #00D26A; 
+		    background: rgba(0, 210, 106, 0.1); 
+		    border: 1px solid rgba(0, 210, 106, 0.2);
+		    width: 32px; height: 32px;
+		    border-radius: 6px;
+		    align-items: center; justify-content: center;
+		    cursor: pointer;
+		    transition: all 0.3s ease;
+		    margin-left: 10px;
+		}
+		/* Glow Effect */
+		.tools-toggle-btn:hover, .tools-toggle-btn.active { 
+		    background: #00D26A; 
+		    transform: scale(1.05); 
+		    color: white; 
+		    box-shadow: 0 0 20px rgba(0, 210, 106, 0.4); 
+		}
+		
+		/* --- RESPONSIVE LOGIC --- */
+		@media (max-width: 900px) {
+		    /* Hide specific desktop buttons */
+		    .desktop-tool { display: none !important; }
+		    
+		    /* Show the new Toggle Button */
+		    .tools-toggle-btn { display: flex !important; }
+		}
+		
+		@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
     </style>
 </head>
@@ -320,39 +389,73 @@
     <!-- IDE GRID -->
     <div id="ide-wrapper">
         <!-- EDITOR -->
-        <div class="glass-panel" id="editor-panel">
-            <div class="panel-header">
-                <!-- LEFT SIDE: File Info & File Actions -->
-                <div style="display:flex; align-items:center;">
-                    <i class="fa-brands fa-python" style="color:#FFD43B; margin-right:8px;"></i> 
-                    <span style="letter-spacing:1px; margin-right:5px;">main.py</span>
-                    
-                    <button class="file-btn save-btn" onclick="downloadCode()" title="Save .py File"><i class="fa-solid fa-download"></i></button>
-                    <button class="file-btn upload-btn" onclick="document.getElementById('file-upload').click()" title="Open .py File"><i class="fa-solid fa-folder-open"></i></button>
-                    <input type="file" id="file-upload" accept=".py,.txt" style="display:none" onchange="uploadCode(this)">
-                </div>
-                
-                <!-- RIGHT SIDE: Tools -->
-                <div style="display:flex; align-items:center;">
-                    <button class="camera-btn" onclick="triggerCinematicSnapshot()" title="Take Snapshot"><i class="fa-solid fa-camera-retro"></i></button>
-                    <button class="copy-btn" onclick="copyCodeToClipboard()" title="Copy to Clipboard"><i class="fa-regular fa-copy"></i></button>
-                    <button class="paste-btn" onclick="pasteCodeFromClipboard()" title="Paste from Clipboard"><i class="fa-regular fa-paste"></i></button>
-                    <div class="font-controls">
-                        <span style="font-size:0.75rem; margin-right:5px; color:#666;">FONT</span>
-                        <button class="font-btn" onclick="resizeFont(-1)"><i class="fa-solid fa-minus"></i></button>
-                        <button class="font-btn" onclick="resizeFont(1)"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div id="monaco-container"></div>
-            <div class="snapshot-watermark" id="watermark">
-                <img src="codestitcher.png" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
-                <div style="display:flex; flex-direction:column;">
-                    <span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
-                    <span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
-                </div>
-            </div>
+        <!-- EDITOR -->
+<div class="glass-panel" id="editor-panel">
+    <div class="panel-header">
+        <!-- LEFT SIDE: File Info & Desktop File Actions -->
+        <div style="display:flex; align-items:center;">
+            <i class="fa-brands fa-python" style="color:#FFD43B; margin-right:8px;"></i> 
+            <span style="letter-spacing:1px; margin-right:5px;">main.py</span>
+            
+            <!-- Added 'desktop-tool' class to hide these on mobile -->
+            <button class="file-btn save-btn desktop-tool" onclick="downloadCode()" title="Save .py File"><i class="fa-solid fa-download"></i></button>
+            <button class="file-btn upload-btn desktop-tool" onclick="document.getElementById('file-upload').click()" title="Open .py File"><i class="fa-solid fa-folder-open"></i></button>
+            <input type="file" id="file-upload" accept=".py,.txt" style="display:none" onchange="uploadCode(this)">
         </div>
+        
+        <!-- RIGHT SIDE: Tools -->
+        <div style="display:flex; align-items:center;">
+            
+            <!-- Snapshot (Remains Visible) -->
+            <button class="camera-btn" onclick="triggerCinematicSnapshot()" title="Take Snapshot"><i class="fa-solid fa-camera-retro"></i></button>
+            
+            <!-- Copy/Paste (Added 'desktop-tool' to hide on mobile) -->
+            <button class="copy-btn desktop-tool" onclick="copyCodeToClipboard()" title="Copy to Clipboard"><i class="fa-regular fa-copy"></i></button>
+            <button class="paste-btn desktop-tool" onclick="pasteCodeFromClipboard()" title="Paste from Clipboard"><i class="fa-regular fa-paste"></i></button>
+            
+            <!-- Font Controls (Remains Visible) -->
+            <div class="font-controls">
+                <span style="font-size:0.75rem; margin-right:5px; color:#666;">FONT</span>
+                <button class="font-btn" onclick="resizeFont(-1)"><i class="fa-solid fa-minus"></i></button>
+                <button class="font-btn" onclick="resizeFont(1)"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <!-- NEW: Mobile Tools Toggle (Green Glow) -->
+            <button class="tools-toggle-btn" id="m-tools-btn" onclick="toggleMobileTools()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- NEW: Mobile Dropdown Menu -->
+    <div class="mobile-tools-dropdown" id="m-tools-menu">
+        <button class="m-tool-item" onclick="toggleMobileTools(); copyCodeToClipboard()">
+            <i class="fa-regular fa-copy" style="color:#bd00ff;"></i> Copy Code
+        </button>
+        <button class="m-tool-item" onclick="toggleMobileTools(); pasteCodeFromClipboard()">
+            <i class="fa-regular fa-paste" style="color:#FF8800;"></i> Paste Code
+        </button>
+        <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
+        <button class="m-tool-item" onclick="toggleMobileTools(); downloadCode()">
+            <i class="fa-solid fa-download" style="color:#FF00FF;"></i> Save .py
+        </button>
+        <button class="m-tool-item" onclick="toggleMobileTools(); document.getElementById('file-upload').click()">
+            <i class="fa-solid fa-folder-open" style="color:#00F0FF;"></i> Open File
+        </button>
+    </div>
+
+    <div id="monaco-container"></div>
+    
+    <!-- Watermark (Unchanged) -->
+    <div class="snapshot-watermark" id="watermark">
+        <img src="codestitcher.png" style="height:35px; border-radius:6px; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+        <div style="display:flex; flex-direction:column;">
+            <span class="snap-logo-text" style="line-height:1;">CodeStitcher</span>
+            <span style="color:#00D26A; font-family:'JetBrains Mono'; font-size:0.7rem; letter-spacing:2px;">NEURAL_LAB</span>
+        </div>
+    </div>
+</div>
 
         <!-- TERMINAL -->
         <div class="glass-panel" id="term-panel">
@@ -1009,9 +1112,32 @@
 
 		}, 250);
         }
+		/* --- MOBILE TOOLS TOGGLE --- */
+		function toggleMobileTools() {
+		    const menu = document.getElementById('m-tools-menu');
+		    const btn = document.getElementById('m-tools-btn');
+		    
+		    menu.classList.toggle('active');
+		    btn.classList.toggle('active');
+		    
+		    // Play Click Sound
+		    playSound('click-local');
+		}
+		
+		// Close menu if clicking outside (Editor area)
+		document.addEventListener('click', function(e) {
+		    const menu = document.getElementById('m-tools-menu');
+		    const btn = document.getElementById('m-tools-btn');
+		    
+		    if (menu.classList.contains('active') && !menu.contains(e.target) && !btn.contains(e.target)) {
+		        menu.classList.remove('active');
+		        btn.classList.remove('active');
+		    }
+		});
     </script>
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
 
