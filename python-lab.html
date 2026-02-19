@@ -667,15 +667,19 @@
             cx.fillText('main.py', cardX + (cardW / 2), dotY + 8);
             cx.textAlign = 'left'; // Reset alignment
 
-			const DRACULA = {
-			    keyword: '#FF79C6',
-			    string: '#F1FA8C',
-			    number: '#BD93F9',
-			    comment: '#6272A4',
-			    function: '#50FA7B',
-			    default: '#F8F8F2'
+			// VS Code Dark+ Theme Palette (Matches the screenshot)
+			const THEME = {
+			    keyword:    '#C586C0', // Pink (def, class, return, import)
+			    function:   '#DCDCAA', // Yellow (init, print, super)
+			    type:       '#4EC9B0', // Teal (MyWidget, QWidget, QPushButton)
+			    string:     '#CE9178', // Orange/Brownish (strings)
+			    number:     '#B5CEA8', // Light Green (numbers, True/False)
+			    self:       '#569CD6', // Blue (self)
+			    comment:    '#6A9955', // Greenish Grey
+			    operator:   '#D4D4D4', // White/Grey (= . ,)
+			    text:       '#9CDCFE', // Light Blue (variables like self.button)
+			    default:    '#D4D4D4'  // Standard text
 			};
-
             // ==========================================
             // 4. CODE RENDERING (With Glow & Gutter)
             // ==========================================
@@ -691,114 +695,108 @@
 			
 
             visibleLines.forEach((line, i) => {
-                const y = cardY + codePaddingTop + i * lineHeight;
-                const trimmed = line.trim();
-
-                // 4a. Line Numbers (Gutter)
-                cx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                cx.font = `400 ${fontSize - 4}px 'JetBrains Mono', monospace`;
-                cx.textAlign = 'right';
-                cx.fillText((i + 1).toString(), codeContentX + 40, y);
-                cx.textAlign = 'left';
-
-                // 4b. Divider Line
-                cx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                cx.fillRect(codeContentX + 60, y - fontSize + 5, 2, lineHeight);
-
-                // 4c. The Code
-                const textX = codeContentX + gutterWidth;
-                cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-
-                // Syntax coloring + Bloom Effect
-                let color = '#D4D4D4';
-                let glow = false;
-
-                if (trimmed.startsWith('#')) {
-                    color = '#6A9955';
-                } else if (/^\s*(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await)\b/.test(line)) {
-                    color = '#C792EA'; // Purple keyword
-                    glow = true;
-                } else if (/\b(True|False|None)\b/.test(line)) {
-                     color = '#FF5874'; // Red/Pink constant
-                     glow = true;
-                } else if (/\bprint\s*\(/.test(line)) {
-                    color = '#82AAFF'; // Blue function
-                } else if (/["']/.test(line)) {
-                    color = '#C3E88D'; // Green string
-                }
-
-                cx.fillStyle = color;
-                
-                // Add Bloom for keywords
-                if (glow) {
-                    cx.shadowColor = color;
-                    cx.shadowBlur = 15;
-                }
-
-                let displayLine = line;
-
-				// Measure full width
-				let textWidth = cx.measureText(displayLine).width;
-				
-				if (textWidth > maxTextWidth) {
-				    while (displayLine.length > 0 && cx.measureText(displayLine + '...').width > maxTextWidth) {
-				        displayLine = displayLine.slice(0, -1);
-				    }
-				    displayLine += '...';
-				}
-				
-				let currentX = textX;
-
-				const tokenRegex = /(#.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|\b(def|class|import|from|return|if|else|elif|for|while|try|except|with|async|await)\b|\b(True|False|None)\b|\b\d+\b|[A-Za-z_][A-Za-z0-9_]*/g;
-				
-				let match;
-				let lastIndex = 0;
-				
-				while ((match = tokenRegex.exec(displayLine)) !== null) {
-				    
-				    // Draw text before match
-				    if (match.index > lastIndex) {
-				        const plainText = displayLine.slice(lastIndex, match.index);
-				        cx.fillStyle = DRACULA.default;
-				        cx.fillText(plainText, currentX, y);
-				        currentX += cx.measureText(plainText).width;
-				    }
-				
-				    const token = match[0];
-				
-				    // Decide token color
-				    if (match[1]) { // comment
-				        cx.fillStyle = DRACULA.comment;
-				    } else if (match[2]) { // string
-				        cx.fillStyle = DRACULA.string;
-				    } else if (match[3]) { // keyword
-				        cx.fillStyle = DRACULA.keyword;
-				    } else if (match[4]) { // True/False/None
-				        cx.fillStyle = DRACULA.number;
-				    } else if (/^\d+$/.test(token)) {
-				        cx.fillStyle = DRACULA.number;
-				    } else {
-				        cx.fillStyle = DRACULA.default;
-				    }
-				
-				    cx.fillText(token, currentX, y);
-				    currentX += cx.measureText(token).width;
-				
-				    lastIndex = tokenRegex.lastIndex;
-				}
-				
-				// Draw remaining text
-				if (lastIndex < displayLine.length) {
-				    const remaining = displayLine.slice(lastIndex);
-				    cx.fillStyle = DRACULA.default;
-				    cx.fillText(remaining, currentX, y);
-				}
-
-
-
-                // Reset glow
-                cx.shadowBlur = 0;
-            });
+			    const y = cardY + codePaddingTop + i * lineHeight;
+			    
+			    // -----------------------------
+			    // 4a. Line Numbers (Gutter)
+			    // -----------------------------
+			    cx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+			    cx.font = `400 ${fontSize - 4}px 'JetBrains Mono', monospace`;
+			    cx.textAlign = 'right';
+			    cx.fillText((i + 1).toString(), codeContentX + 40, y);
+			    cx.textAlign = 'left'; // Reset
+			
+			    // -----------------------------
+			    // 4b. The Code Logic
+			    // -----------------------------
+			    const textX = codeContentX + gutterWidth;
+			    cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+			
+			    let currentX = textX;
+			
+			    // A. Handle Truncation (Optimization)
+			    let displayLine = line;
+			    // Simple heuristic: if line is insanely long, cut it for performance
+			    if (displayLine.length > 200) displayLine = displayLine.substring(0, 200) + "...";
+			
+			    // B. MASTER REGEX for VS Code Syntax Highlighting
+			    // 1. Comments
+			    // 2. Strings (handles escaped quotes)
+			    // 3. Keywords
+			    // 4. "self"
+			    // 5. Booleans/None
+			    // 6. Numbers
+			    // 7. Decorators (@something)
+			    // 8. Function Definitions/Calls (Lookahead for open parenthesis)
+			    // 9. Class Types (Heuristic: Starts with Capital letter)
+			    // 10. Operators/Punctuation
+			    
+			    const tokenRegex = /([#].*$)|((?:r|f|b)?["'](?:[^\\"\r\n]|\\.)*["'])|\b(class|def|import|from|return|if|else|elif|for|while|try|except|with|as|pass|lambda|is|in|not|and|or|global|continue|break)\b|\b(self)\b|\b(True|False|None)\b|\b(\d+)\b|(@[\w.]+)|\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*\()|\b([A-Z][a-zA-Z0-9_]*)\b|([^\s\w])/g;
+			
+			    let lastIndex = 0;
+			    let match;
+			
+			    while ((match = tokenRegex.exec(displayLine)) !== null) {
+			        
+			        // 1. Draw plain text occurring BEFORE this match (whitespace, unknown vars)
+			        if (match.index > lastIndex) {
+			            const plainText = displayLine.slice(lastIndex, match.index);
+			            cx.fillStyle = THEME.text; // Default variable color (Light Blue)
+			            cx.fillText(plainText, currentX, y);
+			            currentX += cx.measureText(plainText).width;
+			        }
+			
+			        const token = match[0];
+			        
+			        // 2. Determine Color based on Capture Group
+			        if (match[1]) { // Comment (#...)
+			            cx.fillStyle = THEME.comment;
+			        } 
+			        else if (match[2]) { // String ("...")
+			            cx.fillStyle = THEME.string;
+			        } 
+			        else if (match[3]) { // Keyword (def, class)
+			            cx.fillStyle = THEME.keyword;
+			        } 
+			        else if (match[4]) { // self
+			            cx.fillStyle = THEME.self;
+			        } 
+			        else if (match[5]) { // Boolean (True)
+			            cx.fillStyle = THEME.number; // usually same as numbers in VS Code
+			        } 
+			        else if (match[6]) { // Number (123)
+			            cx.fillStyle = THEME.number;
+			        } 
+			        else if (match[7]) { // Decorator (@foo)
+			            cx.fillStyle = THEME.function;
+			        } 
+			        else if (match[8]) { // Function Call/Def (word followed by parens)
+			            cx.fillStyle = THEME.function;
+			        } 
+			        else if (match[9]) { // Class/Type (Capitalized Word)
+			            cx.fillStyle = THEME.type;
+			        } 
+			        else if (match[10]) { // Operators/Punctuation
+			            cx.fillStyle = THEME.operator;
+			        } 
+			        else {
+			            cx.fillStyle = THEME.text;
+			        }
+			
+			        // 3. Draw the colored token
+			        cx.fillText(token, currentX, y);
+			        currentX += cx.measureText(token).width;
+			
+			        lastIndex = tokenRegex.lastIndex;
+			    }
+			
+			    // 4. Draw any remaining text at end of line
+			    if (lastIndex < displayLine.length) {
+			        const remaining = displayLine.slice(lastIndex);
+			        cx.fillStyle = THEME.text;
+			        cx.fillText(remaining, currentX, y);
+			    }
+			});
 
             // "..." if truncated
             if (lines.length > maxLines) {
@@ -941,6 +939,7 @@
 </body>
 
 </html>
+
 
 
 
