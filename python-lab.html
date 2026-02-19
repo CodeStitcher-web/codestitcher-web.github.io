@@ -783,7 +783,7 @@
 
                 cx.fillStyle = '#8EDBB5';
                 cx.font = `500 20px 'JetBrains Mono', monospace`;
-                cx.fillText('N E U R A L _ L A B', wmX + 170, wmY + 115);
+                cx.fillText('N E U R A L _ L A B', wmX + 165, wmY + 115);
             };
 
             const logoWidth = 100; // You control size here
@@ -794,13 +794,31 @@
 
             // Final Output Logic
             if (logoImg.complete && logoImg.naturalWidth > 0) {
-                cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
+                cx.save();
+
+				cx.beginPath();
+				cx.roundRect(wmX + 30, logoY, logoWidth, logoHeight, 3);
+				cx.clip();
+				
+				cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
+				
+				cx.restore();
+
                 drawWatermarkText();
                 finishAndDownload();
             } else {
                 logoImg.onload = () => {
-                    cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
-                    drawWatermarkText();
+                    cx.save();
+
+					cx.beginPath();
+					cx.roundRect(wmX + 30, logoY, logoWidth, logoHeight, 3);
+					cx.clip();
+					
+					cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
+					
+					cx.restore();
+					
+					                    drawWatermarkText();
                     finishAndDownload();
                 };
                 logoImg.onerror = () => {
@@ -852,6 +870,7 @@
 </body>
 
 </html>
+
 
 
 
