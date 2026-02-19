@@ -777,16 +777,16 @@
 
             const drawWatermarkText = () => {
                 cx.fillStyle = 'rgba(255,255,255,0.9)';
-                cx.font = `bold 36px 'Outfit', sans-serif`;
+                cx.font = `bold 40px 'Outfit', sans-serif`;
                 cx.textBaseline = 'middle';
-                cx.fillText('CodeStitcher', wmX + 130, wmY + 55);
+                cx.fillText('CodeStitcher', wmX + 140, wmY + 65);
 
                 cx.fillStyle = '#8EDBB5';
                 cx.font = `500 30px 'JetBrains Mono', monospace`;
-                cx.fillText('NEURAL_LAB', wmX + 132, wmY + 95);
+                cx.fillText('NEURAL_LAB', wmX + 143, wmY + 105);
             };
 
-            const logoWidth = 120; // You control size here
+            const logoWidth = 100; // You control size here
 			const logoHeight = logoWidth * (443 / 336); // Maintain 336:443 ratio
 			
 			const logoY = wmY + (wmH - logoHeight) / 2;
@@ -852,6 +852,7 @@
 </body>
 
 </html>
+
 
 
 
