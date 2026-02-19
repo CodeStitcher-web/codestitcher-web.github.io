@@ -338,23 +338,30 @@
     <canvas id="neural-canvas"></canvas> <div class="noise-overlay"></div>
 
     <!-- NAVBAR -->
+
     <nav>
-        <a href="index.html" class="nav-logo">
+        <a href="javascript:void(0)" onclick="delayedNav('index.html')" class="nav-logo">
             <img src="codestitcher.png" alt="Logo">
             <span class="nav-text">CodeStitcher</span>
             <span class="nav-badge">// LAB</span>
         </a>
         <div class="nav-actions">
-			<a href="index.html" class="nav-btn exit-btn" onclick="playSound('click')">
+            <!-- 1. HOME BUTTON (Fixed Sound) -->
+            <a href="javascript:void(0)" class="nav-btn exit-btn" onclick="delayedNav('index.html')">
                 <i class="fa-solid fa-house"></i><span>Home</span>
             </a>
-            <a href="learn-python.html" class="nav-btn learn-btn" onclick="playSound('click')">
+
+            <!-- 2. LEARN PYTHON BUTTON (Fixed Sound) -->
+            <!-- Note: If you are ALREADY on python-lab.html, clicking this just plays sound. 
+                 If you want it to reload, use delayedNav('python-lab.html') -->
+            <a href="javascript:void(0)" class="nav-btn learn-btn" onclick="delayedNav('learn-python.html')">
                 <i class="fa-brands fa-python"></i> <span>Learn Python</span>
             </a>
-            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click')">
+
+            <!-- 3. FOUNDER BUTTON (Opens in New Tab, so sound works instantly) -->
+            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click-local')">
                 <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
             </a>
-            
         </div>
     </nav>
 
@@ -437,6 +444,7 @@
 		loadEngines();
 	};
 	
+	
 	function updateLoad(p) { document.getElementById('loader-bar').style.width = p + "%"; }
 	
 	 async function loadEngines() {
@@ -496,7 +504,8 @@
 		// PREPARE TERMINAL
 		document.getElementById('console-output').innerHTML = '';
 		panel.classList.add('processing');
-		btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...';
+		btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING<span class="anim-dots"></span>';
+
 		
 		let rawCode = editor.getValue();
 		let processedCode = "import micropip\n" + rawCode;
@@ -505,8 +514,20 @@
 			'await install("$1")' 
 		);
 	
-		log(">>> EXECUTING PROTOCOL...", "log-sys");
-	
+		// Create the log div
+		const protocolDiv = document.createElement('div');
+		protocolDiv.className = 'log-sys';
+		protocolDiv.textContent = ">>> EXECUTING PROTOCOL";
+
+		// Add animated dots
+		const dots = document.createElement('span');
+		dots.className = 'anim-dots';
+		protocolDiv.appendChild(dots);
+
+		// Append to console
+		document.getElementById('console-output').appendChild(protocolDiv);
+
+			
 		setTimeout(async () => {
 			try {
 				let outputQueue = [];
@@ -531,10 +552,18 @@
 				});
 	
 				setTimeout(() => {
+					// Remove the animated dots
+					const dotsSpan = protocolDiv.querySelector('.anim-dots');
+					if (dotsSpan) dotsSpan.remove();
+
+					// Add final success message
 					log("✔ EXECUTION COMPLETE.", "log-success");
+
+					// Reset button
 					btn.innerHTML = '<i class="fa-solid fa-play"></i> EXECUTE';
 					panel.classList.remove('processing');
 				}, totalDelay + 300);
+
 	
 			} catch (err) {
 				log(String(err), "log-err");
@@ -554,46 +583,98 @@
 		term.scrollTop = term.scrollHeight;
 	}
 	
+	function logWithDots(text, type = "log-sys") {
+		const output = document.createElement("div");
+		output.className = type;
+
+		// Add the main text
+		output.textContent = text;
+
+		// Create animated dots span
+		const dots = document.createElement("span");
+		dots.className = "anim-dots";
+		output.appendChild(dots);
+
+		// Append to console
+		document.getElementById("console-output").appendChild(output);
+	}
+
 	function resizeFont(delta) {
 		if(!editor) return;
 		fontSize = Math.max(10, Math.min(32, fontSize + delta));
 		editor.updateOptions({ fontSize: fontSize });
-		playSound('click');
+		playSound('click-local');
 	}
-	
+	function delayedNav(url) {
+            playSound('click-local'); // Play sound
+            setTimeout(() => {
+                window.location.href = url; // Go to page after 300ms
+            }, 300);
+        }
 	// --- AUDIO ENGINE ---
-	const ctx = new (window.AudioContext || window.webkitAudioContext)();
-	function playSound(type) {
-		if (ctx.state === 'suspended') ctx.resume();
-		const osc = ctx.createOscillator();
-		const gain = ctx.createGain();
-		osc.connect(gain); gain.connect(ctx.destination);
-		const now = ctx.currentTime;
-		
-		if (type === 'click') {
-			osc.frequency.setValueAtTime(800, now);
-			osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
-			gain.gain.setValueAtTime(0.1, now);
-			gain.gain.linearRampToValueAtTime(0, now + 0.1);
-			osc.start(now); osc.stop(now + 0.1);
-		} else if (type === 'startup') {
-			osc.type = 'triangle'; osc.frequency.setValueAtTime(220, now); osc.frequency.linearRampToValueAtTime(440, now + 0.5);
-			gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 1);
-			osc.start(now); osc.stop(now + 1);
-		} else if (type === 'execute') {
-			osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
-			gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-			osc.start(now); osc.stop(now + 0.15);
-		} else if (type === 'success') {
-			osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); osc.frequency.setValueAtTime(1000, now + 0.1);
-			gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-			osc.start(now); osc.stop(now + 0.4);
-		} else if (type === 'error') {
-			osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-			gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-			osc.start(now); osc.stop(now + 0.3);
-		}
-	}
+	// --- MERGED AUDIO ENGINE ---
+    // Create one global context for the synth sounds
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+        // 1. WAV FILE HANDLER (For 'click-local')
+        if (type === 'click-local') {
+            // Create a new Audio object for every click to allow rapid firing
+            const clickFile = new Audio('click.wav');
+            clickFile.volume = 0.5; 
+            clickFile.play().catch(e => console.log("Audio waiting for interaction"));
+            return; // Stop here, do not run the synth logic below
+        }
+
+        // 2. SYNTHESIZER HANDLER (For 'execute', 'success', 'startup', etc.)
+        if (ctx.state === 'suspended') ctx.resume();
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); 
+        gain.connect(ctx.destination);
+        
+        const now = ctx.currentTime;
+        
+        if (type === 'click') {
+            // Synthetic click (backup)
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        
+        } else if (type === 'startup') {
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(220, now); 
+            osc.frequency.linearRampToValueAtTime(440, now + 0.5);
+            gain.gain.setValueAtTime(0.05, now); 
+            gain.gain.linearRampToValueAtTime(0, now + 1);
+            osc.start(now); osc.stop(now + 1);
+        
+        } else if (type === 'execute') {
+            osc.type = 'square'; 
+            osc.frequency.setValueAtTime(880, now);
+            gain.gain.setValueAtTime(0.05, now); 
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc.start(now); osc.stop(now + 0.15);
+        
+        } else if (type === 'success') {
+            osc.type = 'sine'; 
+            osc.frequency.setValueAtTime(500, now); 
+            osc.frequency.setValueAtTime(1000, now + 0.1);
+            gain.gain.setValueAtTime(0.05, now); 
+            gain.gain.linearRampToValueAtTime(0, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        
+        } else if (type === 'error') {
+            osc.type = 'sawtooth'; 
+            osc.frequency.setValueAtTime(150, now);
+            gain.gain.setValueAtTime(0.1, now); 
+            gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        }
+    }
 	
 	// --- ROBUST SNAPSHOT ENGINE (FIXED) ---
 	const cameraAudio = new Audio('capture.wav');
@@ -990,6 +1071,7 @@
 </body>
 
 </html>
+
 
 
 
