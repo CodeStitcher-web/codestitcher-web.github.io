@@ -587,8 +587,8 @@
             const CANVAS_H = 1500;
             
             // Layout margins for the "Levitating Card" look
-            const cardMarginX = 0;
-            const cardMarginY = 0;
+            const cardMarginX = 10;
+            const cardMarginY = 10;
             const cardW = CANVAS_W - (cardMarginX * 2);
             const cardH = CANVAS_H - (cardMarginY * 2);
             const cardX = cardMarginX;
@@ -754,8 +754,8 @@
             // ==========================================
             // 6. SLEEK WATERMARK (Bottom-Right)
             // ==========================================
-            const wmW = 480;
-            const wmH = 140;
+            const wmW = 440;
+            const wmH = 180;
             const wmX = CANVAS_W - wmW - 80;
             const wmY = CANVAS_H - wmH - 80;
 
@@ -782,21 +782,24 @@
                 cx.fillText('CodeStitcher', wmX + 130, wmY + 55);
 
                 cx.fillStyle = '#8EDBB5';
-                cx.font = `500 20px 'JetBrains Mono', monospace`;
+                cx.font = `500 30px 'JetBrains Mono', monospace`;
                 cx.fillText('NEURAL_LAB', wmX + 132, wmY + 95);
             };
 
-            const logoSize = 80;
-            const logoY = wmY + (wmH - logoSize) / 2;
+            const logoWidth = 120; // You control size here
+			const logoHeight = logoWidth * (443 / 336); // Maintain 336:443 ratio
+			
+			const logoY = wmY + (wmH - logoHeight) / 2;
+
 
             // Final Output Logic
             if (logoImg.complete && logoImg.naturalWidth > 0) {
-                cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
+                cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
                 drawWatermarkText();
                 finishAndDownload();
             } else {
                 logoImg.onload = () => {
-                    cx.drawImage(logoImg, wmX + 30, logoY, logoSize, logoSize);
+                    cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
                     drawWatermarkText();
                     finishAndDownload();
                 };
@@ -849,6 +852,7 @@
 </body>
 
 </html>
+
 
 
 
