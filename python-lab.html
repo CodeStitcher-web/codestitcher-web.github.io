@@ -282,6 +282,53 @@
 		    pointer-events: all;
 		    transform: translateX(-50%) translateY(0); /* Animate up */
 		}
+		
+		
+		/* --- ANIMATED DOTS (0.3s Interval) --- */
+		.anim-dots::after {
+			content: '';
+			display: inline-block;
+			width: 2em;       /* Reserves space so the text doesn't jump */
+			text-align: left;
+			animation: dot-cycle 1.2s steps(1) infinite;
+		}
+
+		@keyframes dot-cycle {
+			0%   { content: ''; }    /* 0.0s - 0.3s */
+			25%  { content: '.'; }   /* 0.3s - 0.6s */
+			50%  { content: '..'; }  /* 0.6s - 0.9s */
+			75%  { content: '...'; } /* 0.9s - 1.2s */
+			100% { content: ''; }    /* Reset */
+		}
+		/* Style the main log line */
+		.anim-dotstwo {
+			color: #777;
+			font-style: italic;
+			font-size: 0.8rem;
+		}
+		/* --- ANIMATED DOTS (Styled like .log-sys) --- */
+		.anim-dotstwo::after {
+			content: '';
+			display: inline-block;
+
+			width: 2em;               /* Prevents layout shift */
+			text-align: left;
+
+			/* Borrowed from .log-sys */
+			color: #777;
+			font-style: italic;
+			font-size: 0.8rem;
+
+			animation: dot-cycle 1.2s steps(1) infinite;
+		}
+		@keyframes dot-cycle {
+			0%   { content: ''; }    /* 0.0s - 0.3s */
+			25%  { content: '.'; }   /* 0.3s - 0.6s */
+			50%  { content: '..'; }  /* 0.6s - 0.9s */
+			75%  { content: '...'; } /* 0.9s - 1.2s */
+			100% { content: ''; }    /* Reset */
+
+		
     </style>
 </head>
 <body>
@@ -313,9 +360,10 @@
 
     <!-- LOADING SCREEN (Runs Automatically) -->
     <div id="boot-loader">
-        <div style="font-family:'JetBrains Mono'; color:#00D26A; letter-spacing: 2px;">ESTABLISHING UPLINK...</div>
-        <div class="bar-bg"><div class="bar-fill" id="loader-bar"></div></div>
-    </div>
+		<!-- REMOVED THE "..." from the text here, added class "blink-text" -->
+		<div class="anim-dots" style="font-family:'JetBrains Mono'; color:#00D26A; letter-spacing: 2px;">ESTABLISHING UPLINK</div>
+		<div class="bar-bg"><div class="bar-fill" id="loader-bar"></div></div>
+	</div>
 
     <!-- IDE GRID -->
     <div id="ide-wrapper">
@@ -361,10 +409,13 @@
                 </button>
             </div>
             <div id="console-output">
-                <div class="log-line log-sys">System: Awaiting initialization...</div>
+                <div class="anim-dotstwo">System: Awaiting initialization</div>
             </div>
         </div>
     </div>
+
+
+
 
     <script src="script.js"></script>
 	<script>
@@ -934,12 +985,11 @@
 	<div id="shutter-flash"></div>
 	<div id="toast-notification">
 		<i class="fa-solid fa-circle-check" style="color:#00D26A;"></i> 
-		<span>SNAPSHOT SECURED. DOWNLOADING...</span>
+		<span class="anim-dots">SNAPSHOT SECURED. DOWNLOADING</span>
 	</div>
 </body>
 
 </html>
-
 
 
 
