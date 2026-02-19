@@ -16,6 +16,10 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
+		/* GLOBAL STYLE (Desktop Default) */
+		.mobile-toggle {
+			display: none; /* Hidden on large screens */
+		}
 		/* Navbar Styling */
 		nav {
 			display: flex;
@@ -366,71 +370,89 @@
         font-size: 14px; /* Base font size for mobile */
     }
 
-    /* 2. NAVBAR REDESIGN (Single Line, 3 Buttons) */
+    /* 2. HAMBURGER NAVBAR REDESIGN */
+    
+    /* Show the Toggle Button */
+    .mobile-toggle {
+        display: block !important; /* Force it to show on mobile */
+        font-size: 1.5rem;
+        color: white; 
+        padding: 8px 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* Navbar Container */
     nav {
-        height: 60px;
-        padding: 0 15px; 
-        background: rgba(10, 10, 15, 0.98); /* Solid dark background */
-        backdrop-filter: blur(20px);
-        
-        /* FORCE ROW LAYOUT */
+        height: auto; /* Allow height to adjust */
+        min-height: 70px;
+        padding: 0 20px;
+        /* Keep row layout for Logo + Toggle */
         display: flex;
-        flex-direction: row !important; 
+        flex-direction: row; 
         justify-content: space-between;
         align-items: center;
-        gap: 10px;
+        background: rgba(10, 15, 25, 0.95);
+        backdrop-filter: blur(20px);
     }
 
-    /* Left Side: Logo + Text */
-    .nav-logo { 
-        display: flex; 
-        align-items: center; 
-        gap: 8px; 
-        flex-shrink: 0; /* Prevent logo from squashing */
-        text-decoration: none;
-    }
-    .nav-logo img { 
-        height: 35px !important; 
-        width: auto; 
-    } 
-    .nav-text { 
-        display: block !important; /* Force text to show */
-        font-size: 1.1rem; 
-        color: white;
-        font-weight: 700;
-    }
-    .nav-badge { display: none; } /* Hide badge to save space */
+    /* Logo - Keep visible */
+    .nav-logo { display: flex; align-items: center; }
+    .nav-text { display: block; font-size: 1.1rem; }
+    .nav-badge { display: none; }
 
-    /* Right Side: 3 Action Buttons */
-    .nav-actions { 
+    /* --- THE DRAWER MENU (Hidden by default) --- */
+    .nav-actions {
+        position: absolute;
+        top: 100%; /* Push below navbar */
+        left: 0;
+        width: 100%;
+        background: rgba(8, 8, 12, 0.98); /* Solid dark background */
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 30px 20px;
+        
+        /* Vertical Stack */
         display: flex;
-        align-items: center;
-        gap: 8px; /* Tighter gap between buttons */
+        flex-direction: column;
+        gap: 15px;
+        
+        /* Animation Hide State */
+        opacity: 0;
+        transform: translateY(-20px);
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: -1; /* Behind everything until active */
     }
 
+    /* Active State (Toggled via JS) */
+    .nav-actions.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+        z-index: 1000;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    /* Make Buttons Full Width & Show Text */
     .nav-btn {
-        padding: 0;
-        width: 36px; height: 36px; /* Perfect square icons */
-        border-radius: 8px; /* Soft square look */
-        justify-content: center;
-        align-items: center;
-        background: rgba(255,255,255,0.08); /* Subtle glass bg */
-        border: 1px solid rgba(255,255,255,0.1);
+        width: 100%;
+        justify-content: center; /* Center text */
+        padding: 15px;
+        font-size: 1rem;
+        background: rgba(255,255,255,0.03);
     }
 
-    /* Force Icon Only (Hide Text) */
-    .nav-btn span { display: none !important; } 
-    .nav-btn i { font-size: 1rem; margin: 0; }
+    /* IMPORTANT: Force text to show again */
+    .nav-btn span { 
+        display: inline-block !important; 
+        margin-left: 10px;
+    }
 
-    /* Ensure all 3 buttons are visible */
-    .exit-btn { display: flex !important; }
-    .learn-btn { display: flex !important; }
-    .founder-btn { display: flex !important; } /* Un-hide founder button */
-    
-    /* Optional: Color tweaks for icons */
-    .exit-btn i { color: #ff5e57; }
-    .learn-btn i { color: #00D26A; }
-    .founder-btn i { color: #00F0FF; }
+    /* Ensure icons are visible */
+    .exit-btn, .learn-btn, .founder-btn { display: flex !important; }
+	
+	
     /* 3. CONTENT CONTAINER (Full Width Stream) */
     .archive-container {
         display: flex;
@@ -573,34 +595,41 @@
     <div class="noise-overlay"></div>
 
     <nav>
-		<a href="index.html" class="nav-logo">
-			<img src="codestitcher.png" alt="Logo">
-			<span class="nav-text">CodeStitcher</span>
-			<span class="nav-badge">// HOME</span>
-		</a>
+    <!-- Logo Section (Unchanged) -->
+    <a href="index.html" class="nav-logo">
+        <img src="codestitcher.png" alt="Logo">
+        <span class="nav-text">CodeStitcher</span>
+        <span class="nav-badge">// HOME</span>
+    </a>
 
-		<div class="nav-actions">
-            <!-- 1. LEARN PYTHON (Uses Delay) -->
-            <a href="javascript:void(0)" onclick="delayedNav('learn-python.html')" class="nav-btn learn-btn">
-                <i class="fa-brands fa-python"></i> <span>Learn Python</span>
-            </a>
+    <!-- NEW: Hamburger Menu Button (Visible only on mobile) -->
+    <div class="mobile-toggle" onclick="toggleMenu()">
+        <i class="fa-solid fa-bars" id="menu-icon"></i>
+    </div>
 
-            <!-- 2. OPEN IDE (Uses Delay) -->
-            <a href="javascript:void(0)" onclick="delayedNav('python-lab.html')" class="nav-btn learn-btn">
-                <i class="fa-solid fa-microchip"></i> <span>Open Python IDE</span>
-            </a>
-            
-            <!-- 3. FOUNDER (Works fine as is because of target="_blank") -->
-            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click')">
-                <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
-            </a>
-            
-            <!-- 4. PRODUCTS (Uses Delay) -->
-            <a href="javascript:void(0)" onclick="delayedNav('products/index.html')" class="nav-btn exit-btn">
-                <i class="fa-solid fa-download"></i> <span>Products</span>
-            </a>
-        </div>
-	</nav>
+    <!-- Navigation Buttons -->
+    <div class="nav-actions" id="nav-menu">
+        <!-- 1. LEARN PYTHON -->
+        <a href="javascript:void(0)" onclick="delayedNav('learn-python.html')" class="nav-btn learn-btn">
+            <i class="fa-brands fa-python"></i> <span>Learn Python</span>
+        </a>
+
+        <!-- 2. OPEN IDE -->
+        <a href="javascript:void(0)" onclick="delayedNav('python-lab.html')" class="nav-btn learn-btn">
+            <i class="fa-solid fa-microchip"></i> <span>Open Python IDE</span>
+        </a>
+        
+        <!-- 3. FOUNDER -->
+        <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click')">
+            <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
+        </a>
+        
+        <!-- 4. PRODUCTS -->
+        <a href="javascript:void(0)" onclick="delayedNav('products/index.html')" class="nav-btn exit-btn">
+            <i class="fa-solid fa-download"></i> <span>Products</span>
+        </a>
+    </div>
+</nav>
 
     <section class="hub-hero">
     <div data-aos="fade-up">
@@ -752,6 +781,34 @@
 		// 5. HYBRID AUDIO ENGINE 
 		// (Uses click.wav for buttons, but Synth for code running)
 		// DELAYED NAVIGATION (To let sound play)
+		function toggleMenu() {
+			const menu = document.getElementById('nav-menu');
+			const icon = document.getElementById('menu-icon');
+			
+			// Toggle the menu visibility
+			menu.classList.toggle('active');
+			
+			// Toggle the icon between 'bars' and 'X'
+			if (menu.classList.contains('active')) {
+				icon.classList.remove('fa-bars');
+				icon.classList.add('fa-xmark');
+				playSound('click'); // Optional: Play sound on open
+			} else {
+				icon.classList.remove('fa-xmark');
+				icon.classList.add('fa-bars');
+			}
+		}
+
+		// Optional: Close menu when clicking anywhere else on the screen
+		document.addEventListener('click', (e) => {
+			const menu = document.getElementById('nav-menu');
+			const toggle = document.querySelector('.mobile-toggle');
+			
+			// If click is NOT on the menu and NOT on the toggle button
+			if (!menu.contains(e.target) && !toggle.contains(e.target) && menu.classList.contains('active')) {
+				toggleMenu(); // Close it
+			}
+		});
         function delayedNav(url) {
             playSound('click'); // Play sound
             setTimeout(() => {
@@ -925,7 +982,6 @@
 </body>
 
 </html>
-
 
 
 
