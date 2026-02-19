@@ -677,6 +677,8 @@
             
             const maxLines = Math.floor((cardH - codePaddingTop - 60) / lineHeight);
             const visibleLines = lines.slice(0, maxLines);
+			const rightMargin = 100; // space from right edge
+			const maxTextWidth = cardX + cardW - rightMargin - textX;
 
             visibleLines.forEach((line, i) => {
                 const y = cardY + codePaddingTop + i * lineHeight;
@@ -723,7 +725,20 @@
                     cx.shadowBlur = 15;
                 }
 
-                cx.fillText(line, textX, y);
+                let displayLine = line;
+
+				// Measure full width
+				let textWidth = cx.measureText(displayLine).width;
+				
+				if (textWidth > maxTextWidth) {
+				    while (displayLine.length > 0 && cx.measureText(displayLine + '...').width > maxTextWidth) {
+				        displayLine = displayLine.slice(0, -1);
+				    }
+				    displayLine += '...';
+				}
+				
+				cx.fillText(displayLine, textX, y);
+
 
                 // Reset glow
                 cx.shadowBlur = 0;
@@ -783,7 +798,7 @@
 
                 cx.fillStyle = '#8EDBB5';
                 cx.font = `500 20px 'JetBrains Mono', monospace`;
-                cx.fillText('N E U R A L _ L A B', wmX + 160, wmY + 115);
+                cx.fillText('N E U R A L _ L A B', wmX + 158, wmY + 115);
             };
 
             const logoWidth = 100; // You control size here
@@ -870,6 +885,7 @@
 </body>
 
 </html>
+
 
 
 
