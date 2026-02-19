@@ -545,7 +545,7 @@
                             
                             // *** FIXED: SOUND RESTORED HERE ***
                             // Using a lighter click sound for each line so it's not too aggressive
-                            playSound('e'); 
+                            playSound('execute'); 
                             
                         }, totalDelay);
                     });
@@ -977,31 +977,30 @@
 				}
 
 				function finishAndDownload() {
-					canvas.toBlob((blob) => {
-						if (!blob) {
-							alert('Snapshot failed: could not generate image.');
-							cleanup();
-							return;
-						}
-						const url = URL.createObjectURL(blob);
-						const link = document.createElement('a');
-						const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
-						link.download = `CodeStitcher_Art_${timestamp}.png`; // Changed filename slightly
-						link.href = url;
-						document.body.appendChild(link);
-						link.click();
-						document.body.removeChild(link);
-						URL.revokeObjectURL(url);
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            alert('Snapshot failed: could not generate image.');
+                            cleanup();
+                            return;
+                        }
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
+                        link.download = `CodeStitcher_Art_${timestamp}.png`; 
+                        link.href = url;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
 
-						toast.classList.add('active');
-						// Assuming playSound is available globally or ignore if not
-						if(typeof playSound === 'function') playSound('success');
-						setTimeout(() => { toast.classList.remove('active'); }, 4000);
+                        /* --- FIX: Use showToast to update text AND show it --- */
+                        showToast("SNAPSHOT SECURED", "fa-camera");
+                        if(typeof playSound === 'function') playSound('success');
+                        /* ---------------------------------------------------- */
 
-						cleanup();
-					}, 'image/png');
-				}
-
+                        cleanup();
+                    }, 'image/png');
+                }
 			} catch (err) {
 				console.error('Snapshot error:', err);
 				alert('Snapshot failed: ' + err.message);
@@ -1014,4 +1013,5 @@
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
