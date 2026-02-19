@@ -677,8 +677,10 @@
             
             const maxLines = Math.floor((cardH - codePaddingTop - 60) / lineHeight);
             const visibleLines = lines.slice(0, maxLines);
-			const rightMargin = 100; // space from right edge
-			const maxTextWidth = cardX + cardW - rightMargin - textX;
+			const rightMargin = 100;
+			const textStartX = codeContentX + gutterWidth;
+			const maxTextWidth = (cardX + cardW - rightMargin) - textStartX;
+			
 
             visibleLines.forEach((line, i) => {
                 const y = cardY + codePaddingTop + i * lineHeight;
@@ -885,6 +887,7 @@
 </body>
 
 </html>
+
 
 
 
