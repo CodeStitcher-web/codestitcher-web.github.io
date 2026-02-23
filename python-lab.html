@@ -578,7 +578,7 @@
         let editor, pyodide;
         let fontSize = 14;
         
-        // 1. CHECK FOR COPIED CODE FROM URL
+        // 1. GET CODE FROM URL (Shared Links)
         const urlParams = new URLSearchParams(window.location.search);
         const incomingCode = urlParams.get('code');
         
@@ -586,15 +586,37 @@
         
         if (incomingCode) initialCode = decodeURIComponent(incomingCode);
         
-        window.onload = function() { loadEngines(); };
-        function updateLoad(p) { document.getElementById('loader-bar').style.width = p + "%"; }
+        // 2. ROBUST LOADER WITH ERROR HANDLING
+        window.addEventListener('load', loadEngines);
+
+        function updateLoad(p) { 
+            const bar = document.getElementById('loader-bar');
+            if(bar) bar.style.width = p + "%"; 
+        }
         
         async function loadEngines() {
+            const loaderText = document.querySelector('.anim-dots');
+            const loaderBar = document.querySelector('.bar-fill');
+
+            // A. Safety Timeout (If it hangs for 20s, tell the user)
+            const safetyTimer = setTimeout(() => {
+                if(document.getElementById('boot-loader').style.display !== 'none') {
+                    loaderText.innerHTML = "CONNECTION SLOW...<br><span style='font-size:0.8rem; color:#FFD43B'>Please wait or refresh.</span>";
+                    loaderText.classList.remove('anim-dots');
+                }
+            }, 20000);
+
             try {
+                // STEP 1: Load Python Engine
                 updateLoad(30);
-                pyodide = await loadPyodide();
+                // Explicitly pointing to the CDN improves stability
+                pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
+                });
+                
                 updateLoad(50);
                 
+                // STEP 2: Load Package Installer
                 await pyodide.loadPackage("micropip");
                 await pyodide.runPythonAsync(`
                     import micropip, sys
@@ -605,9 +627,13 @@
                 `);
         
                 updateLoad(70);
+
+                // STEP 3: Load Editor
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
+                
                 require(['vs/editor/editor.main'], function() {
                     updateLoad(100);
+                    clearTimeout(safetyTimer); // Success! Stop the timer.
                     
                     monaco.editor.defineTheme('glass', {
                         base: 'vs-dark', inherit: true,
@@ -618,7 +644,9 @@
                     setTimeout(() => {
                         document.getElementById('boot-loader').style.display = 'none';
                         document.getElementById('ide-wrapper').style.display = 'grid'; 
-                        playSound('startup');
+                        
+                        // Try to play sound (might be blocked by browser until click)
+                        try { playSound('startup'); } catch(e) {}
         
                         editor = monaco.editor.create(document.getElementById('monaco-container'), {
                             value: initialCode, language: 'python', theme: 'glass',
@@ -627,35 +655,40 @@
                             scrollBeyondLastLine: false, padding: { top: 15 }
                         });
                         
-                        // NEW: Add CTRL+ENTER Shortcut
                         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() { runCode(); });
                         
                         if(incomingCode) log(">>> DATA UPLINK SUCCESSFUL.", "log-success");
                     }, 500);
                 });
-            } catch (e) { console.error(e); }
+
+            } catch (e) { 
+                // ERROR HANDLER: Show the error on screen!
+                clearTimeout(safetyTimer);
+                console.error(e);
+                if(loaderText) {
+                    loaderText.innerHTML = "SYSTEM FAILURE.<br><span style='font-size:0.8rem; color:#ff5e57; font-weight:normal'>" + e.message + "</span>";
+                    loaderText.classList.remove('anim-dots');
+                }
+                if(loaderBar) loaderBar.style.backgroundColor = "#ff5e57";
+            }
         }
 		
 		
 		/* --- AI NEURAL ASSISTANT ENGINE --- */
         async function analyzeCode() {
-            // 1. Safety Checks
             if (!editor) return;
             const code = editor.getValue();
             
             if (!code.trim()) {
-                // Use a log line if toast isn't available, or alert
-                alert("SYSTEM WARNING: No code detected for analysis.");
+                alert("SYSTEM WARNING: No code detected.");
                 return;
             }
 
-            // 2. Open Interface
             const modal = document.getElementById('ai-modal');
             const content = document.getElementById('ai-response');
             
             modal.classList.add('active');
             
-            // 3. Show Loading State
             content.innerHTML = `
                 <div class="ai-loading">
                     <div class="loading-pulse" style="background:#bd00ff;"></div> 
@@ -666,56 +699,51 @@
             playSound('startup');
 
             try {
-            // 4. CALL BACKEND
-            const response = await fetch('/.netlify/functions/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
-            });
+                // CALL BACKEND
+                const response = await fetch('/.netlify/functions/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
+                console.log("AI Data:", data);
 
-            // DEBUGGING: Log the raw data to console (Press F12 to see it)
-            console.log("Gemini Response:", data);
-            
-            // Check for Errors
-            if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-            
-            // Check if Gemini blocked the response (Safety Filter)
-            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-                if (data.promptFeedback) {
-                    throw new Error("AI BLOCKED: " + JSON.stringify(data.promptFeedback));
+                // ERROR CHECKING
+                if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+                
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                    if (data.promptFeedback) throw new Error("AI BLOCKED: " + JSON.stringify(data.promptFeedback));
+                    throw new Error("AI returned empty response.");
                 }
-                throw new Error("AI returned an empty response.");
+
+                // SUCCESS
+                const resultText = data.candidates[0].content.parts[0].text;
+                
+                content.innerHTML = ""; 
+                playSound('success');
+                
+                const formattedText = resultText
+                    .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
+                    .replace(/```python/g, '')
+                    .replace(/```/g, '');
+
+                typewriterEffect(content, formattedText);
+
+            } catch (err) {
+                console.error(err);
+                content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
+                playSound('error');
             }
-
-            // 5. Display Result
-            const resultText = data.candidates[0].content.parts[0].text;
-            
-            content.innerHTML = ""; // Clear loader
-            playSound('success');
-            
-            // Format Bold Text to Neon Cyan
-            const formattedText = resultText
-                .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
-                .replace(/```python/g, '')
-                .replace(/```/g, '');
-
-            typewriterEffect(content, formattedText);
-
-        } catch (err) {
-            console.error(err); // Show full error in browser console
-            content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
-            playSound('error');
         }
+
         // Close Modal
         function closeAI() {
-            const modal = document.getElementById('ai-modal');
-            modal.classList.remove('active');
+            document.getElementById('ai-modal').classList.remove('active');
             playSound('click-local');
         }
 
-        // Smooth Typing Effect for HTML
+        // Smooth Typing Effect
         function typewriterEffect(element, html) {
             element.innerHTML = html; 
             element.style.opacity = 0;
@@ -727,8 +755,6 @@
             }, 30);
         }
 		
-		
-
         /* --- EDITOR FEATURES --- */
         async function copyCodeToClipboard() {
             if (!editor) return;
@@ -795,22 +821,19 @@
             
             playSound('execute');
             
-            // Lock Editor
             editor.updateOptions({ readOnly: true });
             editorContainer.classList.add('editor-locked');
             
-            // Reset Terminal
             document.getElementById('console-output').innerHTML = '';
             panel.classList.add('processing');
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> RUNNING...';
             btn.style.opacity = "0.7"; 
             btn.style.pointerEvents = "none";
 
-            // Pre-process code
+            // Process micropip
             let processedCode = "import micropip\n" + editor.getValue();
             processedCode = processedCode.replace(/^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 'await install("$1")');
 
-            // Add "Executing" log with the Animated Dots
             const protocolDiv = document.createElement('div');
             protocolDiv.className = 'log-sys';
             protocolDiv.innerHTML = ">>> EXECUTING PROTOCOL <span class='anim-dots'></span>";
@@ -827,7 +850,6 @@
                     let totalDelay = 0;
                     const delayPerLine = 150; 
 
-                    // --- OUTPUT LOOP ---
                     outputQueue.forEach((line, index) => {
                         totalDelay = index * delayPerLine;
                         setTimeout(() => {
@@ -837,20 +859,14 @@
                             else if(line.includes("[OK]")) type = "log-ok";
                             
                             log(line, type);
-                            
-                            // *** FIXED: SOUND RESTORED HERE ***
-                            // Using a lighter click sound for each line so it's not too aggressive
                             playSound('execute'); 
-                            
                         }, totalDelay);
                     });
 
-                    // Cleanup after all lines are printed
                     setTimeout(() => {
-                        // Remove the dots
                         if(protocolDiv.querySelector('.anim-dots')) protocolDiv.querySelector('.anim-dots').remove();
                         log("✔ EXECUTION COMPLETE.", "log-success");
-                        playSound('success'); // Final success sound
+                        playSound('success'); 
                         cleanupRunState();
                     }, totalDelay + 300);
 
@@ -919,391 +935,167 @@
             }
         }
         
-        // --- ROBUST SNAPSHOT ENGINE (FIXED) ---
-		const cameraAudio = new Audio('capture.wav');
-		
+        // --- SNAPSHOT ENGINE ---
 		function triggerCinematicSnapshot() {
-		const panel = document.getElementById('editor-panel');
-		const watermark = document.getElementById('watermark');
-		const flash = document.getElementById('shutter-flash');
-		const toast = document.getElementById('toast-notification');
-
-		// FIX 3: Create fresh Audio object and play IMMEDIATELY
-		const snapSound = new Audio('capture.wav');
-		snapSound.volume = 1.0;
-		snapSound.play().catch(e => console.warn('Audio blocked:', e));
-
-		// Cleanup helper
-		function cleanup() {
-			panel.classList.remove('snapshot-mode');
-			watermark.style.display = 'none';
-		}
-
-		// Flash effect
-		flash.style.opacity = '1';
-		setTimeout(() => { flash.style.opacity = '0'; }, 100);
-
-		// Enter preview mode
-		panel.classList.add('snapshot-mode');
-		watermark.style.display = 'flex';
-
-		// FIX 2: Pre-load logo image BEFORE the delay
-		const logoImg = new Image();
-		logoImg.src = 'codestitcher.png';
-
-		setTimeout(() => {
-			try {
-				const code = editor ? editor.getValue() : '// No code found';
-				const lines = code.split('\n');
-
-				// --- CINEMATIC CONFIGURATION ---
-				const SCALE = 1;
-				const CANVAS_W = 1920;
-				const CANVAS_H = 1500;
-				
-				// Layout margins for the "Levitating Card" look
-				const cardMarginX = 10;
-				const cardMarginY = 10;
-				const cardW = CANVAS_W - (cardMarginX * 2);
-				const cardH = CANVAS_H - (cardMarginY * 2);
-				const cardX = cardMarginX;
-				const cardY = cardMarginY;
-
-				const lineHeight = 48;
-				const fontSize = 36;
-				const gutterWidth = 100; // Space for line numbers
-				const headerH = 90;
-
-				const canvas = document.createElement('canvas');
-				canvas.width = CANVAS_W * SCALE;
-				canvas.height = CANVAS_H * SCALE;
-				canvas.style.width = CANVAS_W + 'px';
-				canvas.style.height = CANVAS_H + 'px';
-
-				const cx = canvas.getContext('2d');
-				cx.scale(SCALE, SCALE);
-
-			   
-				// ==========================================
-				// 2. THE LEVITATING EDITOR CARD
-				// ==========================================
-
-				// Huge Drop Shadow for Depth
-				cx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-				cx.shadowBlur = 120;
-				cx.shadowOffsetY = 50;
-
-				// Card Background
-				cx.fillStyle = '#0B0B0F'; // Deep IDE color
-				cx.beginPath();
-				cx.roundRect(cardX, cardY, cardW, cardH, 24); // Rounded corners
-				cx.fill();
-
-				// Reset Shadow so text doesn't blur
-				cx.shadowBlur = 0;
-				cx.shadowOffsetY = 0;
-				cx.shadowColor = 'transparent';
-
-				// Card Inner Border (Subtle)
-				cx.strokeStyle = 'rgba(255,255,255,0.08)';
-				cx.lineWidth = 2;
-				cx.stroke();
-
-
-				// ==========================================
-				// 3. WINDOW CONTROLS (Mac Style)
-				// ==========================================
-				
-				// Header Background separator
-				cx.fillStyle = 'rgba(255,255,255,0.02)';
-				cx.beginPath();
-				cx.roundRect(cardX, cardY, cardW, headerH, [24, 24, 0, 0]);
-				cx.fill();
-
-				// Dots (Red, Yellow, Green)
-				const dotY = cardY + 45;
-				const dotStart = cardX + 50;
-				const dotGap = 35;
-
-				// Red
-				cx.fillStyle = '#FF5F56';
-				cx.beginPath(); cx.arc(dotStart, dotY, 10, 0, Math.PI*2); cx.fill();
-				// Yellow
-				cx.fillStyle = '#FFBD2E';
-				cx.beginPath(); cx.arc(dotStart + dotGap, dotY, 10, 0, Math.PI*2); cx.fill();
-				// Green
-				cx.fillStyle = '#27C93F';
-				cx.beginPath(); cx.arc(dotStart + dotGap*2, dotY, 10, 0, Math.PI*2); cx.fill();
-
-				// Centered Filename
-				cx.fillStyle = '#A0A0A0';
-				cx.font = `600 28px 'JetBrains Mono', monospace`;
-				cx.textAlign = 'center';
-				cx.fillText('main.py', cardX + (cardW / 2), dotY + 8);
-				cx.textAlign = 'left'; // Reset alignment
-
-				// VS Code Dark+ Theme Palette (Matches the screenshot)
-				const THEME = {
-					keyword:    '#C586C0', // Pink (def, class, return, import)
-					function:   '#DCDCAA', // Yellow (init, print, super)
-					type:       '#4EC9B0', // Teal (MyWidget, QWidget, QPushButton)
-					string:     '#CE9178', // Orange/Brownish (strings)
-					number:     '#B5CEA8', // Light Green (numbers, True/False)
-					self:       '#569CD6', // Blue (self)
-					comment:    '#6A9955', // Greenish Grey
-					operator:   '#D4D4D4', // White/Grey (= . ,)
-					text:       '#9CDCFE', // Light Blue (variables like self.button)
-					default:    '#D4D4D4'  // Standard text
-				};
-				// ==========================================
-				// 4. CODE RENDERING (With Glow & Gutter)
-				// ==========================================
-
-				const codePaddingTop = headerH + 60;
-				const codeContentX = cardX + 60; // Left margin inside card
-				
-				const maxLines = Math.floor((cardH - codePaddingTop - 60) / lineHeight);
-				const visibleLines = lines.slice(0, maxLines);
-				const rightMargin = 100;
-				const textStartX = codeContentX + gutterWidth;
-				const maxTextWidth = (cardX + cardW - rightMargin) - textStartX;
-				
-
-				visibleLines.forEach((line, i) => {
-					const y = cardY + codePaddingTop + i * lineHeight;
-					
-					// -----------------------------
-					// 4a. Line Numbers (Gutter)
-					// -----------------------------
-					cx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-					cx.font = `400 ${fontSize - 4}px 'JetBrains Mono', monospace`;
-					cx.textAlign = 'right';
-					cx.fillText((i + 1).toString(), codeContentX + 40, y);
-					cx.textAlign = 'left'; // Reset
-				
-					// -----------------------------
-					// 4b. The Code Logic
-					// -----------------------------
-					const textX = codeContentX + gutterWidth;
-					cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-				
-					let currentX = textX;
-				
-					// A. Handle Truncation (Optimization)
-					let displayLine = line;
-					// Simple heuristic: if line is insanely long, cut it for performance
-					if (displayLine.length > 200) displayLine = displayLine.substring(0, 200) + "...";
-				
-					// B. MASTER REGEX for VS Code Syntax Highlighting
-					// 1. Comments
-					// 2. Strings (handles escaped quotes)
-					// 3. Keywords
-					// 4. "self"
-					// 5. Booleans/None
-					// 6. Numbers
-					// 7. Decorators (@something)
-					// 8. Function Definitions/Calls (Lookahead for open parenthesis)
-					// 9. Class Types (Heuristic: Starts with Capital letter)
-					// 10. Operators/Punctuation
-					
-					const tokenRegex = /([#].*$)|((?:r|f|b)?["'](?:[^\\"\r\n]|\\.)*["'])|\b(class|def|import|from|return|if|else|elif|for|while|try|except|with|as|pass|lambda|is|in|not|and|or|global|continue|break)\b|\b(self)\b|\b(True|False|None)\b|\b(\d+)\b|(@[\w.]+)|\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*\()|\b([A-Z][a-zA-Z0-9_]*)\b|([^\s\w])/g;
-				
-					let lastIndex = 0;
-					let match;
-				
-					while ((match = tokenRegex.exec(displayLine)) !== null) {
-						
-						// 1. Draw plain text occurring BEFORE this match (whitespace, unknown vars)
-						if (match.index > lastIndex) {
-							const plainText = displayLine.slice(lastIndex, match.index);
-							cx.fillStyle = THEME.text; // Default variable color (Light Blue)
-							cx.fillText(plainText, currentX, y);
-							currentX += cx.measureText(plainText).width;
-						}
-				
-						const token = match[0];
-						
-						// 2. Determine Color based on Capture Group
-						if (match[1]) { // Comment (#...)
-							cx.fillStyle = THEME.comment;
-						} 
-						else if (match[2]) { // String ("...")
-							cx.fillStyle = THEME.string;
-						} 
-						else if (match[3]) { // Keyword (def, class)
-							cx.fillStyle = THEME.keyword;
-						} 
-						else if (match[4]) { // self
-							cx.fillStyle = THEME.self;
-						} 
-						else if (match[5]) { // Boolean (True)
-							cx.fillStyle = THEME.number; // usually same as numbers in VS Code
-						} 
-						else if (match[6]) { // Number (123)
-							cx.fillStyle = THEME.number;
-						} 
-						else if (match[7]) { // Decorator (@foo)
-							cx.fillStyle = THEME.function;
-						} 
-						else if (match[8]) { // Function Call/Def (word followed by parens)
-							cx.fillStyle = THEME.function;
-						} 
-						else if (match[9]) { // Class/Type (Capitalized Word)
-							cx.fillStyle = THEME.type;
-						} 
-						else if (match[10]) { // Operators/Punctuation
-							cx.fillStyle = THEME.operator;
-						} 
-						else {
-							cx.fillStyle = THEME.text;
-						}
-				
-						// 3. Draw the colored token
-						cx.fillText(token, currentX, y);
-						currentX += cx.measureText(token).width;
-				
-						lastIndex = tokenRegex.lastIndex;
-					}
-				
-					// 4. Draw any remaining text at end of line
-					if (lastIndex < displayLine.length) {
-						const remaining = displayLine.slice(lastIndex);
-						cx.fillStyle = THEME.text;
-						cx.fillText(remaining, currentX, y);
-					}
-				});
-
-				// "..." if truncated
-				if (lines.length > maxLines) {
-					cx.fillStyle = 'rgba(255,255,255,0.3)';
-					cx.font = `italic ${fontSize}px 'JetBrains Mono', monospace`;
-					cx.fillText(`... (${lines.length - maxLines} more lines hidden)`, codeContentX + gutterWidth, cardY + codePaddingTop + maxLines * lineHeight);
-				}
-
-
-				// ==========================================
-				// 5. NOISE OVERLAY (For Texture)
-				// ==========================================
-				// A subtle grain to make it look less "plastic"
-				cx.globalCompositeOperation = 'overlay';
-				cx.fillStyle = 'rgba(255,255,255,0.03)';
-				for(let n = 0; n < 20000; n++) {
-					const nx = Math.random() * CANVAS_W;
-					const ny = Math.random() * CANVAS_H;
-					cx.fillRect(nx, ny, 2, 2);
-				}
-				cx.globalCompositeOperation = 'source-over'; // Reset
-
-
-				// ==========================================
-				// 6. SLEEK WATERMARK (Bottom-Right)
-				// ==========================================
-				const wmW = 440;
-				const wmH = 180;
-				const wmX = CANVAS_W - wmW - 80;
-				const wmY = CANVAS_H - wmH - 80;
-
-				cx.shadowColor = 'rgba(0,0,0,0.4)';
-				cx.shadowBlur = 40;
-				cx.shadowOffsetY = 10;
-
-				cx.fillStyle = 'rgba(255,255,255,0.06)';
-				cx.beginPath();
-				cx.roundRect(wmX, wmY, wmW, wmH, 16);
-				cx.fill();
-
-				cx.strokeStyle = 'rgba(255,255,255,0.12)';
-				cx.lineWidth = 1;
-				cx.stroke();
-
-				cx.shadowBlur = 0;
-				cx.shadowOffsetY = 0;
-
-				const drawWatermarkText = () => {
-					cx.fillStyle = 'rgba(255,255,255,0.9)';
-					cx.font = `bold 40px 'Outfit', sans-serif`;
-					cx.textBaseline = 'middle';
-					cx.fillText('CodeStitcher', wmX + 155, wmY + 75);
-
-					cx.fillStyle = '#8EDBB5';
-					cx.font = `500 20px 'JetBrains Mono', monospace`;
-					cx.fillText('N E U R A L _ L A B', wmX + 158, wmY + 115);
-				};
-
-				const logoWidth = 100; // You control size here
-				const logoHeight = logoWidth * (443 / 336); // Maintain 336:443 ratio
-				
-				const logoY = wmY + (wmH - logoHeight) / 2;
-
-
-				// Final Output Logic
-				if (logoImg.complete && logoImg.naturalWidth > 0) {
-					cx.save();
-
-					cx.beginPath();
-					cx.roundRect(wmX + 30, logoY, logoWidth, logoHeight, 5);
-					cx.clip();
-					
-					cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
-					
-					cx.restore();
-
-					drawWatermarkText();
-					finishAndDownload();
-				} else {
-					logoImg.onload = () => {
-						cx.save();
-
-						cx.beginPath();
-						cx.roundRect(wmX + 30, logoY, logoWidth, logoHeight, 5);
-						cx.clip();
-						
-						cx.drawImage(logoImg, wmX + 30, logoY, logoWidth, logoHeight);
-						
-						cx.restore();
-						
-											drawWatermarkText();
-						finishAndDownload();
-					};
-					logoImg.onerror = () => {
-						drawWatermarkText();
-						finishAndDownload();
-					};
-				}
-
-				function finishAndDownload() {
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            alert('Snapshot failed: could not generate image.');
-                            cleanup();
-                            return;
-                        }
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        const timestamp = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
-                        link.download = `CodeStitcher_Art_${timestamp}.png`; 
-                        link.href = url;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-
-                        /* --- FIX: Use showToast to update text AND show it --- */
-                        showToast("SNAPSHOT SECURED", "fa-camera");
-                        if(typeof playSound === 'function') playSound('success');
-                        /* ---------------------------------------------------- */
-
-                        cleanup();
-                    }, 'image/png');
-                }
-			} catch (err) {
-				console.error('Snapshot error:', err);
-				alert('Snapshot failed: ' + err.message);
-				cleanup();
-			}
-
-		}, 250);
+    		const panel = document.getElementById('editor-panel');
+    		const watermark = document.getElementById('watermark');
+    		const flash = document.getElementById('shutter-flash');
+    
+    		// Sound
+    		const snapSound = new Audio('capture.wav');
+    		snapSound.volume = 1.0;
+    		snapSound.play().catch(e => {});
+    
+    		function cleanup() {
+    			panel.classList.remove('snapshot-mode');
+    			watermark.style.display = 'none';
+    		}
+    
+    		flash.style.opacity = '1';
+    		setTimeout(() => { flash.style.opacity = '0'; }, 100);
+    
+    		panel.classList.add('snapshot-mode');
+    		watermark.style.display = 'flex';
+    
+    		const logoImg = new Image();
+    		logoImg.src = 'codestitcher.png';
+    
+    		setTimeout(() => {
+    			try {
+    				const code = editor ? editor.getValue() : '// No code found';
+    				const lines = code.split('\n');
+    				const SCALE = 1;
+    				const CANVAS_W = 1920;
+    				const CANVAS_H = 1500;
+    				const cardMarginX = 10, cardMarginY = 10;
+    				const cardW = CANVAS_W - (cardMarginX * 2);
+    				const cardH = CANVAS_H - (cardMarginY * 2);
+    				const cardX = cardMarginX, cardY = cardMarginY;
+    				const lineHeight = 48, fontSize = 36, gutterWidth = 100, headerH = 90;
+    
+    				const canvas = document.createElement('canvas');
+    				canvas.width = CANVAS_W * SCALE;
+    				canvas.height = CANVAS_H * SCALE;
+    				const cx = canvas.getContext('2d');
+    				cx.scale(SCALE, SCALE);
+    
+    				// Shadows
+    				cx.shadowColor = 'rgba(0, 0, 0, 0.55)'; cx.shadowBlur = 120; cx.shadowOffsetY = 50;
+    				cx.fillStyle = '#0B0B0F';
+    				cx.beginPath(); cx.roundRect(cardX, cardY, cardW, cardH, 24); cx.fill();
+    				
+    				cx.shadowBlur = 0; cx.shadowOffsetY = 0; cx.shadowColor = 'transparent';
+    				cx.strokeStyle = 'rgba(255,255,255,0.08)'; cx.lineWidth = 2; cx.stroke();
+    
+    				// Header
+    				cx.fillStyle = 'rgba(255,255,255,0.02)';
+    				cx.beginPath(); cx.roundRect(cardX, cardY, cardW, headerH, [24, 24, 0, 0]); cx.fill();
+    
+    				const dotY = cardY + 45, dotStart = cardX + 50, dotGap = 35;
+    				cx.fillStyle = '#FF5F56'; cx.beginPath(); cx.arc(dotStart, dotY, 10, 0, Math.PI*2); cx.fill();
+    				cx.fillStyle = '#FFBD2E'; cx.beginPath(); cx.arc(dotStart + dotGap, dotY, 10, 0, Math.PI*2); cx.fill();
+    				cx.fillStyle = '#27C93F'; cx.beginPath(); cx.arc(dotStart + dotGap*2, dotY, 10, 0, Math.PI*2); cx.fill();
+    
+    				cx.fillStyle = '#A0A0A0'; cx.font = `600 28px 'JetBrains Mono', monospace`; cx.textAlign = 'center';
+    				cx.fillText('main.py', cardX + (cardW / 2), dotY + 8); cx.textAlign = 'left';
+    
+    				// Theme
+    				const THEME = { keyword: '#C586C0', function: '#DCDCAA', type: '#4EC9B0', string: '#CE9178', number: '#B5CEA8', self: '#569CD6', comment: '#6A9955', operator: '#D4D4D4', text: '#9CDCFE' };
+    				
+    				const codePaddingTop = headerH + 60, codeContentX = cardX + 60;
+    				const maxLines = Math.floor((cardH - codePaddingTop - 60) / lineHeight);
+    				const visibleLines = lines.slice(0, maxLines);
+    
+    				visibleLines.forEach((line, i) => {
+    					const y = cardY + codePaddingTop + i * lineHeight;
+    					cx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    					cx.font = `400 ${fontSize - 4}px 'JetBrains Mono', monospace`;
+    					cx.textAlign = 'right';
+    					cx.fillText((i + 1).toString(), codeContentX + 40, y);
+    					cx.textAlign = 'left';
+    				
+    					const textX = codeContentX + gutterWidth;
+    					cx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+    					let currentX = textX;
+    					let displayLine = line.length > 200 ? line.substring(0, 200) + "..." : line;
+    					
+    					const tokenRegex = /([#].*$)|((?:r|f|b)?["'](?:[^\\"\r\n]|\\.)*["'])|\b(class|def|import|from|return|if|else|elif|for|while|try|except|with|as|pass|lambda|is|in|not|and|or|global|continue|break)\b|\b(self)\b|\b(True|False|None)\b|\b(\d+)\b|(@[\w.]+)|\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*\()|\b([A-Z][a-zA-Z0-9_]*)\b|([^\s\w])/g;
+    					let lastIndex = 0; let match;
+    				
+    					while ((match = tokenRegex.exec(displayLine)) !== null) {
+    						if (match.index > lastIndex) {
+    							const plainText = displayLine.slice(lastIndex, match.index);
+    							cx.fillStyle = THEME.text; cx.fillText(plainText, currentX, y);
+    							currentX += cx.measureText(plainText).width;
+    						}
+    						const token = match[0];
+    						if (match[1]) cx.fillStyle = THEME.comment;
+    						else if (match[2]) cx.fillStyle = THEME.string;
+    						else if (match[3]) cx.fillStyle = THEME.keyword;
+    						else if (match[4]) cx.fillStyle = THEME.self;
+    						else if (match[5] || match[6]) cx.fillStyle = THEME.number;
+    						else if (match[7] || match[8]) cx.fillStyle = THEME.function;
+    						else if (match[9]) cx.fillStyle = THEME.type;
+    						else if (match[10]) cx.fillStyle = THEME.operator;
+    						else cx.fillStyle = THEME.text;
+    				
+    						cx.fillText(token, currentX, y);
+    						currentX += cx.measureText(token).width;
+    						lastIndex = tokenRegex.lastIndex;
+    					}
+    					if (lastIndex < displayLine.length) {
+    						cx.fillStyle = THEME.text;
+    						cx.fillText(displayLine.slice(lastIndex), currentX, y);
+    					}
+    				});
+    
+    				// Watermark
+    				const wmW = 440, wmH = 180;
+    				const wmX = CANVAS_W - wmW - 80, wmY = CANVAS_H - wmH - 80;
+    
+    				cx.shadowColor = 'rgba(0,0,0,0.4)'; cx.shadowBlur = 40; cx.shadowOffsetY = 10;
+    				cx.fillStyle = 'rgba(255,255,255,0.06)';
+    				cx.beginPath(); cx.roundRect(wmX, wmY, wmW, wmH, 16); cx.fill();
+    				cx.shadowBlur = 0; cx.shadowOffsetY = 0;
+    
+    				cx.fillStyle = 'rgba(255,255,255,0.9)'; cx.font = `bold 40px 'Outfit', sans-serif`;
+    				cx.textBaseline = 'middle'; cx.fillText('CodeStitcher', wmX + 155, wmY + 75);
+    				cx.fillStyle = '#8EDBB5'; cx.font = `500 20px 'JetBrains Mono', monospace`;
+    				cx.fillText('N E U R A L _ L A B', wmX + 158, wmY + 115);
+    
+    				// Draw Logo Logic
+    				const finish = () => {
+    					canvas.toBlob((blob) => {
+    						if(blob) {
+    							const url = URL.createObjectURL(blob);
+    							const link = document.createElement('a');
+    							link.download = `CodeStitcher_Art_${Date.now()}.png`; link.href = url;
+    							document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    							URL.revokeObjectURL(url);
+    							showToast("SNAPSHOT SECURED", "fa-camera");
+    							playSound('success');
+    						}
+    						cleanup();
+    					}, 'image/png');
+    				};
+    
+    				const logoW = 100, logoH = 100 * (443/336);
+    				const logoY = wmY + (wmH - logoH) / 2;
+    
+    				if (logoImg.complete && logoImg.naturalWidth > 0) {
+    					cx.drawImage(logoImg, wmX + 30, logoY, logoW, logoH);
+    					finish();
+    				} else {
+    					logoImg.onload = () => { cx.drawImage(logoImg, wmX + 30, logoY, logoW, logoH); finish(); };
+    					logoImg.onerror = () => finish(); 
+    				}
+    
+    			} catch (err) {
+    				console.error(err); alert('Snapshot failed: ' + err.message); cleanup();
+    			}
+    		}, 250);
         }
+
 		/* --- MOBILE TOOLS TOGGLE --- */
 		function toggleMobileTools() {
 		    const menu = document.getElementById('m-tools-menu');
@@ -1312,11 +1104,9 @@
 		    menu.classList.toggle('active');
 		    btn.classList.toggle('active');
 		    
-		    // Play Click Sound
 		    playSound('click-local');
 		}
 		
-		// Close menu if clicking outside (Editor area)
 		document.addEventListener('click', function(e) {
 		    const menu = document.getElementById('m-tools-menu');
 		    const btn = document.getElementById('m-tools-btn');
