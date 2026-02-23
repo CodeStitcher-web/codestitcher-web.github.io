@@ -357,7 +357,88 @@
 		}
 		
 		@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+		/* --- AI NEURAL ASSISTANT STYLES --- */
+        
+        /* The Button */
+        .ai-btn {
+            background: rgba(189, 0, 255, 0.1); 
+            color: #bd00ff; 
+            border: 1px solid rgba(189, 0, 255, 0.3);
+            padding: 5px 12px; 
+            border-radius: 4px; 
+            font-weight: bold;
+            font-family: 'JetBrains Mono'; 
+            cursor: pointer;
+            display: flex; align-items: center; gap: 8px; 
+            transition: 0.3s;
+            margin-left: auto; /* Pushes it to the right */
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+        .ai-btn:hover {
+            background: #bd00ff; color: black;
+            box-shadow: 0 0 20px rgba(189, 0, 255, 0.6);
+            transform: translateY(-2px) scale(1.05);
+        }
 
+        /* The Overlay (Background Dim) */
+        .ai-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(8px);
+            display: none; /* Hidden by default */
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .ai-overlay.active { opacity: 1; display: flex; }
+
+        /* The Card (Holographic Window) */
+        .ai-card {
+            width: 700px; max-width: 90%; max-height: 80vh;
+            background: #0a0a0f; 
+            border: 1px solid #bd00ff;
+            border-radius: 16px; 
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 60px rgba(189, 0, 255, 0.15);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .ai-overlay.active .ai-card { transform: scale(1); }
+
+        /* Header */
+        .ai-header {
+            padding: 15px 20px; 
+            background: rgba(189, 0, 255, 0.1);
+            border-bottom: 1px solid rgba(189, 0, 255, 0.2);
+            color: #bd00ff; 
+            font-family: 'JetBrains Mono'; font-weight: bold; letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .close-ai { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .close-ai:hover { color: #ff5e57; transform: rotate(90deg); }
+        
+        /* Content Area */
+        .ai-content {
+            padding: 25px; 
+            color: #e0e0e0; 
+            font-family: 'JetBrains Mono'; font-size: 0.95rem;
+            line-height: 1.7; 
+            overflow-y: auto; 
+            white-space: pre-wrap; /* Preserves formatting */
+        }
+        
+        /* Loading Animation */
+        .ai-loading {
+            display: flex; align-items: center; gap: 12px; 
+            color: #bd00ff; font-style: italic; 
+            animation: pulseText 1.5s infinite;
+        }
+        @keyframes pulseText { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Mobile Fix */
+        @media (max-width: 900px) {
+            .ai-btn span { display: none; } /* Hide text on mobile */
+            .ai-card { width: 95%; max-height: 70vh; }
+        }
     </style>
 </head>
 <body>
@@ -457,22 +538,40 @@
     </div>
 </div>
 
-        <!-- TERMINAL -->
+        <!-- TERMINAL PANEL -->
         <div class="glass-panel" id="term-panel">
             <div class="panel-header">
                 <span>root@codestitcher:~#</span>
+                
+                <!-- 1. NEW ANALYZE BUTTON (Purple/Brain Theme) -->
+                <button class="ai-btn" onclick="analyzeCode()" title="Neural Diagnosis">
+                    <i class="fa-solid fa-brain"></i> ANALYZE
+                </button>
+
+                <!-- EXISTING BUTTONS -->
                 <button class="trash-btn" onclick="clearConsole()" title="Clear Terminal"><i class="fa-solid fa-trash-can"></i></button>
                 <button class="run-btn" id="exec-btn" onclick="runCode()"><i class="fa-solid fa-play"></i> EXECUTE</button>
             </div>
             <div id="console-output">
-                <div class="anim-dotstwo">System: Awaiting initialization</div>
+                <div class="log-line log-sys">System: Awaiting initialization...</div>
             </div>
         </div>
-    </div>
 
     <!-- NOTIFICATIONS -->
     <div id="shutter-flash"></div>
     <div id="toast-notification"></div>
+	<!-- 2. AI HOLOGRAPHIC MODAL -->
+    <div id="ai-modal" class="ai-overlay">
+        <div class="ai-card">
+            <div class="ai-header">
+                <span><i class="fa-solid fa-microchip"></i> NEURAL DIAGNOSTIC REPORT</span>
+                <button class="close-ai" onclick="closeAI()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="ai-content" id="ai-response">
+                <!-- Content injects here -->
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
     <script>
@@ -536,6 +635,89 @@
                 });
             } catch (e) { console.error(e); }
         }
+		
+		
+		/* --- AI NEURAL ASSISTANT ENGINE --- */
+        async function analyzeCode() {
+            // 1. Safety Checks
+            if (!editor) return;
+            const code = editor.getValue();
+            
+            if (!code.trim()) {
+                // Use a log line if toast isn't available, or alert
+                alert("SYSTEM WARNING: No code detected for analysis.");
+                return;
+            }
+
+            // 2. Open Interface
+            const modal = document.getElementById('ai-modal');
+            const content = document.getElementById('ai-response');
+            
+            modal.classList.add('active');
+            
+            // 3. Show Loading State
+            content.innerHTML = `
+                <div class="ai-loading">
+                    <div class="loading-pulse" style="background:#bd00ff;"></div> 
+                    ESTABLISHING SECURE UPLINK TO CORE...
+                </div>
+            `;
+            
+            playSound('startup');
+
+            try {
+                // 4. CALL YOUR SECURE BACKEND (The Tunnel)
+                const response = await fetch('/.netlify/functions/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) throw new Error("AI Service Unavailable");
+
+                // 5. Display Result
+                const resultText = data.candidates[0].content.parts[0].text;
+                
+                content.innerHTML = ""; // Clear loader
+                playSound('success');
+                
+                // Format Bold Text to Neon Cyan for readability
+                const formattedText = resultText
+                    .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
+                    .replace(/```python/g, '')
+                    .replace(/```/g, '');
+
+                // Animate Text
+                typewriterEffect(content, formattedText);
+
+            } catch (err) {
+                content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
+                playSound('error');
+            }
+        }
+
+        // Close Modal
+        function closeAI() {
+            const modal = document.getElementById('ai-modal');
+            modal.classList.remove('active');
+            playSound('click-local');
+        }
+
+        // Smooth Typing Effect for HTML
+        function typewriterEffect(element, html) {
+            element.innerHTML = html; 
+            element.style.opacity = 0;
+            let op = 0;
+            const fade = setInterval(() => {
+                if (op >= 1) clearInterval(fade);
+                element.style.opacity = op;
+                op += 0.1;
+            }, 30);
+        }
+		
+		
 
         /* --- EDITOR FEATURES --- */
         async function copyCodeToClipboard() {
@@ -1138,6 +1320,7 @@
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
 
 
