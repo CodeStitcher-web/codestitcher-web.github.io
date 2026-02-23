@@ -675,7 +675,7 @@
 
                 const data = await response.json();
                 
-                if (data.error) throw new Error("AI Service Unavailable");
+                if (data.error) throw new Error(data.error);
 
                 // 5. Display Result
                 const resultText = data.candidates[0].content.parts[0].text;
@@ -1320,6 +1320,7 @@
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
 
 
