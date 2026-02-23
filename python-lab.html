@@ -666,38 +666,48 @@
             playSound('startup');
 
             try {
-                // 4. CALL YOUR SECURE BACKEND (The Tunnel)
-                const response = await fetch('/.netlify/functions/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code })
-                });
+            // 4. CALL BACKEND
+            const response = await fetch('/.netlify/functions/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
 
-                const data = await response.json();
-                
-                if (data.error) throw new Error(data.error);
+            const data = await response.json();
 
-                // 5. Display Result
-                const resultText = data.candidates[0].content.parts[0].text;
-                
-                content.innerHTML = ""; // Clear loader
-                playSound('success');
-                
-                // Format Bold Text to Neon Cyan for readability
-                const formattedText = resultText
-                    .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
-                    .replace(/```python/g, '')
-                    .replace(/```/g, '');
-
-                // Animate Text
-                typewriterEffect(content, formattedText);
-
-            } catch (err) {
-                content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
-                playSound('error');
+            // DEBUGGING: Log the raw data to console (Press F12 to see it)
+            console.log("Gemini Response:", data);
+            
+            // Check for Errors
+            if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+            
+            // Check if Gemini blocked the response (Safety Filter)
+            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                if (data.promptFeedback) {
+                    throw new Error("AI BLOCKED: " + JSON.stringify(data.promptFeedback));
+                }
+                throw new Error("AI returned an empty response.");
             }
-        }
 
+            // 5. Display Result
+            const resultText = data.candidates[0].content.parts[0].text;
+            
+            content.innerHTML = ""; // Clear loader
+            playSound('success');
+            
+            // Format Bold Text to Neon Cyan
+            const formattedText = resultText
+                .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
+                .replace(/```python/g, '')
+                .replace(/```/g, '');
+
+            typewriterEffect(content, formattedText);
+
+        } catch (err) {
+            console.error(err); // Show full error in browser console
+            content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
+            playSound('error');
+        }
         // Close Modal
         function closeAI() {
             const modal = document.getElementById('ai-modal');
@@ -1320,6 +1330,7 @@
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
 
 
