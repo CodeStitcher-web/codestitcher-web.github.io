@@ -699,15 +699,36 @@
             playSound('startup');
 
             try {
-                // CALL BACKEND
-                const response = await fetch('/.netlify/functions/analyze', {
+                // --- CONFIGURATION ---
+                // PASTE YOUR GEMINI API KEY HERE INSIDE THE QUOTES
+                const API_KEY = "AIzaSyDGZQdWu7JUmQ6SYplRFDf29qTuhZmbhGU"; 
+                
+                // 4. CALL GOOGLE DIRECTLY
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code })
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `Act as a senior software architect. Analyze this Python code. 
+                                1. Briefly explain what it does. 
+                                2. Point out any errors. 
+                                3. Suggest one optimization. 
+                                Keep the tone technical, concise, and "cyberpunk/hacker" style. 
+                                Code:\n\n${code}`
+                            }]
+                        }],
+                        safetySettings: [
+                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                        ]
+                    })
                 });
 
                 const data = await response.json();
-                console.log("AI Data:", data);
+                console.log("Gemini Response:", data);
 
                 // ERROR CHECKING
                 if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
@@ -717,16 +738,17 @@
                     throw new Error("AI returned empty response.");
                 }
 
-                // SUCCESS
+                // 5. SUCCESS - FORMATTING
                 const resultText = data.candidates[0].content.parts[0].text;
                 
                 content.innerHTML = ""; 
                 playSound('success');
                 
                 const formattedText = resultText
-                    .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>')
+                    .replace(/\*\*(.*?)\*\*/g, '<span style="color:#00F0FF; font-weight:bold;">$1</span>') // Bold -> Neon
                     .replace(/```python/g, '')
-                    .replace(/```/g, '');
+                    .replace(/```/g, '')
+                    .replace(/\n/g, '<br>'); // Fix line breaks
 
                 typewriterEffect(content, formattedText);
 
@@ -735,7 +757,6 @@
                 content.innerHTML = `<span style="color:#ff5e57;">>> CRITICAL ERROR: UPLINK SEVERED.\n${err.message}</span>`;
                 playSound('error');
             }
-        }
 
         // Close Modal
         function closeAI() {
@@ -1120,6 +1141,7 @@
 	<div id="shutter-flash"></div>
 </body>
 </html>
+
 
 
 
