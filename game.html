@@ -1,1425 +1,1918 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CodeStitcher | Neural Simulation</title>
-<link rel="icon" type="image/png" href="codestitcher.png">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
-<style>
-:root {
-  --bg:#04050a; --s1:#080c14; --s2:#0d1220;
-  --cyan:#00F0FF; --cyand:rgba(0,240,255,.12); --cyanb:rgba(0,240,255,.3);
-  --gold:#FFD43B; --goldd:rgba(255,212,59,.12);
-  --green:#00D26A; --greend:rgba(0,210,106,.12);
-  --red:#FF3860; --redd:rgba(255,56,96,.12);
-  --purple:#9B5DE5; --purpled:rgba(155,93,229,.15);
-  --orange:#FF8C42; --oranged:rgba(255,140,66,.15);
-  --border:rgba(0,240,255,.07); --border2:rgba(0,240,255,.2);
-  --text:#cdd6e8; --textd:#3a4a60;
-  --mono:'JetBrains Mono',monospace; --ui:'Outfit',sans-serif;
-  --nav:54px;
-  --tab:52px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:var(--ui);display:flex;flex-direction:column;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeStitcher | Neural Simulation</title>
+    <link rel="icon" type="image/png" href="codestitcher.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    <style>
+        :root {
+            --bg: #04050a;
+            --surface: #080c14;
+            --surface2: #0d1220;
+            --border: rgba(0,240,255,0.08);
+            --border-bright: rgba(0,240,255,0.25);
+            --cyan: #00F0FF;
+            --cyan-dim: rgba(0,240,255,0.15);
+            --gold: #FFD43B;
+            --gold-dim: rgba(255,212,59,0.15);
+            --green: #00D26A;
+            --green-dim: rgba(0,210,106,0.15);
+            --red: #FF3860;
+            --red-dim: rgba(255,56,96,0.15);
+            --purple: #7C5CBF;
+            --text: #e0e8f0;
+            --text-dim: #4a5568;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-ui: 'Outfit', sans-serif;
+        }
 
-#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-nav{
-  height:var(--nav);flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;
-  background:rgba(4,5,10,.97);border-bottom:1px solid var(--border);
-  backdrop-filter:blur(20px);position:relative;z-index:200;
-}
-.n-left{display:flex;align-items:center;gap:12px;}
-.n-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-.n-logo img{height:34px;width:auto;}
-.n-title{font-weight:800;font-size:1.05rem;color:#fff;letter-spacing:-.3px;}
-.n-tag{font-family:var(--mono);font-size:.65rem;color:var(--cyan);background:var(--cyand);border:1px solid var(--cyanb);padding:2px 7px;border-radius:3px;letter-spacing:1px;}
-.n-xp{display:flex;align-items:center;gap:10px;flex:1;max-width:280px;margin:0 20px;}
-.n-xp-lbl{font-family:var(--mono);font-size:.65rem;color:var(--gold);white-space:nowrap;}
-.xp-track{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;}
-.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ff9900);border-radius:2px;width:0%;transition:width .8s cubic-bezier(.25,1,.5,1);box-shadow:0 0 8px rgba(255,212,59,.5);}
-.rank-badge{font-family:var(--mono);font-size:.6rem;color:var(--gold);background:var(--goldd);border:1px solid rgba(255,212,59,.2);padding:2px 7px;border-radius:3px;white-space:nowrap;letter-spacing:1px;}
-.n-right{display:flex;gap:6px;}
-.nb{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;font-size:.75rem;font-weight:700;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:all .22s ease;white-space:nowrap;}
-.nb-home{color:#7a8fa8;border-color:rgba(255,255,255,.06);background:rgba(255,255,255,.02);}
-.nb-home:hover{color:#fff;border-color:rgba(255,255,255,.18);}
-.nb-exit{color:var(--red);border-color:rgba(255,56,96,.2);background:var(--redd);}
-.nb-exit:hover{background:var(--red);color:#fff;box-shadow:0 0 18px rgba(255,56,96,.4);}
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-ui);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-#app{flex:1;display:flex;position:relative;z-index:10;overflow:hidden;min-height:0;}
+        /* ─── CANVAS BACKGROUND ─── */
+        #bg-canvas {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none;
+        }
 
-.panel{display:flex;flex-direction:column;overflow:hidden;}
-#panel-grid{width:50%;border-right:1px solid var(--border);}
-#panel-code{width:50%;background:rgba(6,9,16,.98);}
+        /* ─── NAV ─── */
+        nav {
+            position: relative; z-index: 100;
+            height: 58px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px;
+            background: rgba(4,5,10,0.96);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            flex-shrink: 0;
+        }
 
-.lv-header{
-  height:46px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;background:rgba(4,5,10,.95);border-bottom:1px solid var(--border);
-}
-.lv-info{display:flex;align-items:center;gap:10px;}
-.lv-num{font-family:var(--mono);font-size:.65rem;color:var(--cyan);background:var(--cyand);border:1px solid var(--cyanb);padding:2px 8px;border-radius:3px;letter-spacing:1px;}
-.lv-name{font-weight:700;font-size:.9rem;color:#fff;}
-.lv-story{font-size:.72rem;color:#3a4a60;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lv-right{display:flex;align-items:center;gap:10px;}
-.stars-row{display:flex;gap:3px;}
-.star{font-size:.9rem;color:#1a2535;transition:all .3s ease;}
-.star.on{color:var(--gold);text-shadow:0 0 10px rgba(255,212,59,.7);}
-.coord-btn{font-family:var(--mono);font-size:.6rem;color:#3a4a60;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all .2s ease;letter-spacing:1px;}
-.coord-btn:hover,.coord-btn.on{color:var(--cyan);border-color:var(--cyanb);background:var(--cyand);}
+        .nav-left { display: flex; align-items: center; gap: 16px; }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo img { height: 45px; width: auto; }
+        .nav-title { font-weight: 800; font-size: 1.1rem; color: white; letter-spacing: -0.3px; }
+        .nav-tag {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--cyan); background: var(--cyan-dim);
+            border: 1px solid rgba(0,240,255,0.2);
+            padding: 2px 7px; border-radius: 3px; letter-spacing: 1px;
+        }
 
-.grid-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;overflow:hidden;min-height:0;}
-.col-labels{display:flex;padding-left:24px;margin-bottom:3px;gap:2px;}
-.col-lbl,.row-lbl{font-family:var(--mono);font-size:9px;color:#2a3a50;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.grid-row-area{display:flex;gap:3px;}
-.row-labels{display:flex;flex-direction:column;gap:2px;margin-right:3px;}
-.grid-wrapper{position:relative;flex-shrink:0;}
-#game-grid{display:grid;gap:2px;position:relative;z-index:5;}
+        /* ─── XP BAR AREA ─── */
+        .xp-area {
+            display: flex; align-items: center; gap: 12px;
+            flex: 1; max-width: 320px; margin: 0 30px;
+        }
+        .xp-label {
+            font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold);
+            white-space: nowrap; letter-spacing: 1px;
+        }
+        .xp-track {
+            flex: 1; height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px; overflow: hidden;
+        }
+        .xp-fill {
+            height: 100%; background: linear-gradient(90deg, var(--gold), #ff9900);
+            border-radius: 2px;
+            transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 0%;
+            box-shadow: 0 0 8px rgba(255,212,59,0.5);
+        }
+        .rank-badge {
+            font-family: var(--font-mono); font-size: 0.65rem;
+            color: var(--gold); background: var(--gold-dim);
+            border: 1px solid rgba(255,212,59,0.2);
+            padding: 3px 8px; border-radius: 3px; white-space: nowrap;
+            letter-spacing: 1px;
+        }
 
-.grid-cell{
-  position:relative;display:flex;align-items:center;justify-content:center;
-  background:rgba(8,14,28,.85);
-  border:1px solid rgba(0,240,255,.13);
-  border-radius:2px;overflow:visible;
-  transition:background .15s ease,border-color .15s ease;
-}
-.grid-cell:nth-child(even){background:rgba(10,16,30,.85);}
-.grid-cell::after{
-  content:attr(data-coord);
-  position:absolute;bottom:2px;right:3px;
-  font-family:var(--mono);font-size:7px;
-  color:rgba(0,240,255,.12);pointer-events:none;z-index:1;
-  transition:color .2s ease;
-}
-.show-coords .grid-cell::after{color:rgba(0,240,255,.35);}
+        .nav-right { display: flex; gap: 8px; align-items: center; }
+        .nav-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 5px;
+            font-size: 0.8rem; font-weight: 600; font-family: var(--font-ui);
+            text-decoration: none; border: 1px solid transparent;
+            cursor: pointer; transition: all 0.25s ease;
+        }
+        .btn-home { color: #8899aa; border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+        .btn-home:hover { color: white; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); }
+        .btn-exit { color: var(--red); border-color: rgba(255,56,96,0.2); background: var(--red-dim); }
+        .btn-exit:hover { background: var(--red); color: white; box-shadow: 0 0 20px rgba(255,56,96,0.4); }
 
-#player-sprite{
-  position:absolute;left:0;top:0;
-  transform:translate(0,0);
-  transition:transform .2s cubic-bezier(.25,.46,.45,.94);
-  z-index:20;pointer-events:none;
-  display:flex;align-items:center;justify-content:center;
-}
-.player-inner{
-  width:52%;height:52%;
-  background:var(--cyan);
-  clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);
-  box-shadow:0 0 18px var(--cyan),0 0 35px rgba(0,240,255,.3);
-  animation:pulsePl 2s ease-in-out infinite;
-}
-@keyframes pulsePl{0%,100%{box-shadow:0 0 12px var(--cyan),0 0 25px rgba(0,240,255,.2);}50%{box-shadow:0 0 24px var(--cyan),0 0 50px rgba(0,240,255,.5);}}
-#player-sprite.is-moving .player-inner{animation:none;box-shadow:0 0 30px var(--cyan),0 0 60px rgba(0,240,255,.6);}
-#player-sprite.shake{animation:shakeAnim .4s ease;}
-@keyframes shakeAnim{0%,100%{transform:translate(var(--tx),var(--ty)) rotate(0);}25%{transform:translate(calc(var(--tx) - 5px),var(--ty)) rotate(-5deg);}75%{transform:translate(calc(var(--tx) + 5px),var(--ty)) rotate(5deg);}50%{transform:translate(var(--tx),calc(var(--ty) - 4px)) rotate(0);}}
+        /* ─── MAIN LAYOUT ─── */
+        #app {
+            flex: 1; display: flex;
+            position: relative; z-index: 10;
+            overflow: hidden;
+        }
 
-.ent-wall{
-  position:absolute;inset:0;
-  background:rgba(255,56,96,.07);border-radius:1px;
-  display:flex;align-items:center;justify-content:center;
-  border:1px solid rgba(255,56,96,.35);
-}
-.ent-wall::before{content:'';position:absolute;inset:4px;border:1px solid rgba(255,56,96,.15);border-radius:1px;}
-.ent-wall i{color:var(--red);font-size:.8rem;animation:flick 3s ease infinite;}
-@keyframes flick{0%,100%{opacity:.5;}50%{opacity:.9;}}
+        /* ─── LEFT SIDE ─── */
+        .left-panel {
+            display: flex; flex-direction: column;
+            width: 50%; border-right: 1px solid var(--border);
+            position: relative;
+        }
 
-.ent-goal{
-  width:56%;height:56%;background:var(--gold);border-radius:3px;
-  box-shadow:0 0 15px var(--gold),0 0 30px rgba(255,212,59,.3);
-  animation:spinGoal 3s linear infinite;position:relative;
-}
-.ent-goal::after{content:'';position:absolute;inset:-5px;border:1px solid rgba(255,212,59,.25);border-radius:4px;animation:goalAura 2s ease infinite;}
-@keyframes spinGoal{to{transform:rotate(45deg);}}
-@keyframes goalAura{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.4);opacity:0;}}
+        /* ─── LEVEL HEADER ─── */
+        .level-header {
+            padding: 10px 20px;
+            background: rgba(8,12,20,0.9);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .level-info { display: flex; align-items: center; gap: 12px; }
+        .level-num {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--cyan); background: var(--cyan-dim);
+            border: 1px solid rgba(0,240,255,0.2);
+            padding: 3px 8px; border-radius: 3px; letter-spacing: 1px;
+        }
+        .level-name { font-weight: 700; font-size: 0.95rem; color: white; }
+        .level-story { font-size: 0.75rem; color: #5a6880; max-width: 300px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
 
-.ent-key{width:62%;height:62%;display:flex;align-items:center;justify-content:center;color:var(--cyan);font-size:1.1rem;filter:drop-shadow(0 0 8px var(--cyan));animation:keyFloat 2s ease infinite;}
-@keyframes keyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+        .stars-display { display: flex; gap: 4px; }
+        .star { font-size: 1rem; color: #2a3040; transition: all 0.3s ease; }
+        .star.earned { color: var(--gold); text-shadow: 0 0 10px rgba(255,212,59,0.7); }
 
-.ent-door{position:absolute;inset:2px;background:rgba(255,140,66,.08);border:1px solid rgba(255,140,66,.5);border-radius:2px;display:flex;align-items:center;justify-content:center;}
-.ent-door i{color:var(--orange);font-size:.95rem;}
+         /* ─── GRID WRAPPER ─── */
+        .grid-wrapper {
+            flex: 1; display: flex;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden; padding: 10px;
+        }
 
-.ent-portal{width:64%;height:64%;border-radius:50%;border:2px solid var(--purple);background:var(--purpled);display:flex;align-items:center;justify-content:center;animation:portalSpin 4s linear infinite;box-shadow:0 0 12px var(--purple),inset 0 0 10px rgba(155,93,229,.2);}
-@keyframes portalSpin{to{transform:rotate(360deg);}}
-.ent-portal::before{content:'';width:40%;height:40%;background:var(--purple);border-radius:50%;opacity:.7;}
+        #game-grid {
+            display: grid; gap: 2px;
+            position: relative; z-index: 5;
+        }
 
-.ent-frag{width:12px;height:12px;background:var(--green);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);box-shadow:0 0 10px var(--green);animation:fragPulse 1.5s ease infinite;}
-@keyframes fragPulse{0%,100%{box-shadow:0 0 6px var(--green);}50%{box-shadow:0 0 18px var(--green);}}
+        .grid-cell {
+            /* Width and height are now set dynamically by JavaScript */
+            background: rgba(8,12,20,0.8);
+            border: 1px solid rgba(0,240,255,0.25); /* INCREASED OPACITY FOR VISIBLE GRID LINES */
+            border-radius: 3px;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            transition: background 0.2s ease;
+            overflow: visible;
+        }
 
-.grid-cell.trail-cell{background:rgba(0,240,255,.06)!important;border-color:rgba(0,240,255,.2)!important;}
-.grid-cell.wall-hit{animation:wallHit .45s ease!important;}
-@keyframes wallHit{0%,100%{background:rgba(8,14,28,.85);}40%{background:rgba(255,56,96,.3);border-color:rgba(255,56,96,.8);}}
-.grid-cell.key-pick{animation:keyPick .4s ease!important;}
-@keyframes keyPick{0%{background:rgba(8,14,28,.85);}50%{background:rgba(0,240,255,.25);}100%{background:rgba(8,14,28,.85);}}
-.grid-cell.door-open{animation:doorOpen .5s ease!important;}
-@keyframes doorOpen{0%{background:rgba(255,140,66,.15);}50%{background:rgba(0,210,106,.25);}100%{background:rgba(8,14,28,.85);}}
-.grid-cell.frag-pick{animation:fragPick .4s ease!important;}
-@keyframes fragPick{50%{background:rgba(0,210,106,.25);}}
-.grid-cell.warp-cell{animation:warpCell .5s ease!important;}
-@keyframes warpCell{0%,100%{background:rgba(8,14,28,.85);}50%{background:rgba(155,93,229,.3);border-color:rgba(155,93,229,.8);}}
+        /* ─── ENTITIES (Now using % to scale with cells) ─── */
+        .player {
+            width: 60%; height: 60%; 
+            background: var(--cyan);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,240,255,0.3);
+            z-index: 10; position: relative;
+            animation: playerPulse 2s ease-in-out infinite;
+        }
+        @keyframes playerPulse {
+            0%,100% { box-shadow: 0 0 10px var(--cyan), 0 0 20px rgba(0,240,255,0.2); }
+            50% { box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,240,255,0.4); }
+        }
 
-.trail-dot{position:absolute;z-index:8;border-radius:2px;pointer-events:none;background:rgba(0,240,255,.15);border:1px solid rgba(0,240,255,.1);animation:trailFade 1.2s ease forwards;}
-@keyframes trailFade{0%{opacity:.8;}100%{opacity:0;}}
+        .player.moving {
+            animation: none;
+            box-shadow: 0 0 25px var(--cyan), 0 0 50px rgba(0,240,255,0.5);
+        }
 
-.win-particle{position:absolute;z-index:30;border-radius:50%;width:6px;height:6px;pointer-events:none;animation:particleBurst .9s ease-out forwards;}
-@keyframes particleBurst{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--pdx),var(--pdy)) scale(.2);}}
+        .firewall {
+            width: 85%; height: 85%;
+            background: rgba(255,56,96,0.08);
+            border: 1px solid rgba(255,56,96,0.4);
+            border-radius: 3px;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .firewall::before {
+            content: '';
+            position: absolute; inset: 2px;
+            border: 1px solid rgba(255,56,96,0.2);
+            border-radius: 2px;
+        }
+        .firewall-icon {
+            color: var(--red); font-size: 0.8rem;
+            animation: firewallFlicker 3s ease-in-out infinite;
+        }
+        @keyframes firewallFlicker {
+            0%,100% { opacity: 0.6; } 50% { opacity: 1; }
+        }
 
-.hud-bar{height:40px;flex-shrink:0;background:rgba(4,5,10,.95);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:18px;overflow-x:auto;}
-.hud-stat{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.hud-icon{font-size:.7rem;}
-.hud-lbl{font-family:var(--mono);font-size:.6rem;color:#2a3a50;letter-spacing:1px;}
-.hud-val{font-family:var(--mono);font-size:.72rem;font-weight:700;}
-.hud-val.c{color:var(--cyan);}
-.hud-val.g{color:var(--gold);}
-.hud-val.gr{color:var(--green);}
-.hud-val.o{color:var(--orange);}
-.hud-val.p{color:var(--purple);}
-.hud-val.r{color:var(--red);}
-.hud-sep{width:1px;height:20px;background:rgba(255,255,255,.05);flex-shrink:0;}
-#limit-bar{margin-left:auto;display:flex;align-items:center;gap:8px;}
-.limit-track{width:100px;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
-.limit-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s ease,background .3s ease;}
+        .core {
+            width: 55%; height: 55%;
+            background: var(--gold);
+            border-radius: 3px;
+            box-shadow: 0 0 15px var(--gold), 0 0 30px rgba(255,212,59,0.3);
+            animation: coreRotate 3s linear infinite;
+            position: relative;
+        }
+        .core::after {
+            content: '';
+            position: absolute; inset: -3px;
+            border: 1px solid rgba(255,212,59,0.3);
+            border-radius: 4px;
+            animation: coreAura 2s ease-in-out infinite;
+        }
+        @keyframes coreRotate { to { transform: rotate(45deg); } }
+        @keyframes coreAura {
+            0%,100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 0; }
+        }
 
-.mission-bar{height:38px;flex-shrink:0;background:rgba(4,5,10,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 14px;}
-.m-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:mBlink 2s ease infinite;}
-@keyframes mBlink{0%,100%{opacity:1;}50%{opacity:.3;}}
-.m-text{font-family:var(--mono);font-size:.65rem;color:#3a4a60;letter-spacing:1px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.m-req{font-family:var(--mono);font-size:.65rem;color:var(--gold);background:var(--goldd);border:1px solid rgba(255,212,59,.15);padding:2px 8px;border-radius:3px;white-space:nowrap;letter-spacing:.5px;flex-shrink:0;}
-#monaco-editor{flex:1;min-height:0;}
-.ctrl-bar{height:50px;flex-shrink:0;background:rgba(4,5,10,.95);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;gap:10px;}
-.cs-stats{display:flex;gap:12px;}
-.cs-stat{font-family:var(--mono);font-size:.62rem;display:flex;align-items:center;gap:4px;}
-.cs-ico{color:#2a3a50;}
-.cs-val{color:var(--cyan);font-weight:700;}
-.ctrl-btns{display:flex;gap:8px;align-items:center;}
-.btn-reset{width:34px;height:34px;border-radius:50%;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.18);color:var(--cyan);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s ease;font-size:.78rem;}
-.btn-reset:hover{background:var(--cyan);color:#000;transform:rotate(180deg);box-shadow:0 0 18px rgba(0,240,255,.4);}
-.btn-run{display:flex;align-items:center;gap:7px;padding:8px 18px;border-radius:5px;background:var(--green);color:#000;font-family:var(--mono);font-weight:700;font-size:.75rem;letter-spacing:1px;border:none;cursor:pointer;transition:all .22s ease;}
-.btn-run:hover{box-shadow:0 0 22px rgba(0,210,106,.5);transform:translateY(-1px);}
-.btn-run:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+        /* ─── LAYER STATUS ─── */
+        .layer-status {
+            padding: 8px 20px;
+            background: rgba(4,5,10,0.95);
+            border-top: 1px solid var(--border);
+            display: flex; gap: 20px; align-items: center;
+            flex-shrink: 0;
+        }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-icon { font-size: 0.75rem; }
+        .stat-label { font-family: var(--font-mono); font-size: 0.68rem; color: #4a5568; letter-spacing: 1px; }
+        .stat-value { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text); font-weight: 700; }
+        .stat-value.cyan { color: var(--cyan); }
+        .stat-value.gold { color: var(--gold); }
+        .stat-value.green { color: var(--green); }
 
-#terminal{height:110px;flex-shrink:0;background:#030508;border-top:1px solid var(--border);padding:10px 14px;font-family:var(--mono);font-size:.72rem;overflow-y:auto;line-height:1.7;}
-#terminal::-webkit-scrollbar{width:3px;}
-#terminal::-webkit-scrollbar-thumb{background:rgba(0,240,255,.15);border-radius:2px;}
-.tl{display:flex;gap:7px;align-items:flex-start;}
-.tp{color:var(--cyan);opacity:.4;flex-shrink:0;}
-.tm{color:#3a4a60;}
-.tm.s{color:var(--green);}
-.tm.e{color:var(--red);}
-.tm.w{color:var(--gold);}
-.tm.i{color:var(--cyan);}
-.tm.p{color:var(--purple);}
+        /* ─── RIGHT PANEL ─── */
+        .right-panel {
+            width: 50%; display: flex; flex-direction: column;
+            background: rgba(8,12,20,0.95);
+        }
 
-.modal{position:fixed;inset:0;z-index:2000;background:rgba(4,5,10,.97);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-card{background:var(--s1);border-radius:12px;width:100%;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6);}
+        /* ─── MISSION HEADER ─── */
+        .mission-bar {
+            padding: 8px 16px;
+            background: rgba(4,5,10,0.9);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+            flex-shrink: 0;
+        }
+        .mission-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 2s ease-in-out infinite; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .mission-text { font-family: var(--font-mono); font-size: 0.7rem; color: #5a6880; letter-spacing: 1px; flex: 1; }
+        .mission-req {
+            font-family: var(--font-mono); font-size: 0.7rem;
+            color: var(--gold); background: var(--gold-dim);
+            border: 1px solid rgba(255,212,59,0.15);
+            padding: 2px 8px; border-radius: 3px; letter-spacing: 0.5px;
+        }
 
-#modal-loader .modal-card{max-width:360px;padding:48px 40px;text-align:center;border:1px solid var(--border);}
-.loader-ring{width:52px;height:52px;margin:0 auto 20px;border:2px solid rgba(0,240,255,.1);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loader-t{font-family:var(--mono);font-size:.85rem;color:var(--cyan);letter-spacing:2px;}
-.loader-s{font-family:var(--mono);font-size:.68rem;color:#2a3a50;margin-top:6px;letter-spacing:1px;}
-.loader-progress{margin-top:16px;height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;}
-.loader-progress-fill{height:100%;background:var(--cyan);border-radius:2px;transition:width .4s ease;box-shadow:0 0 8px var(--cyan);}
+        /* ─── EDITOR ─── */
+        #monaco-editor { flex: 1; min-height: 0; }
 
-#modal-diff .modal-card{max-width:620px;border:1px solid rgba(0,240,255,.12);}
-.diff-head{padding:28px 28px 20px;border-bottom:1px solid var(--border);}
-.diff-head h1{font-family:var(--mono);font-size:1.1rem;color:#fff;letter-spacing:2px;}
-.diff-head p{color:#3a4a60;font-size:.78rem;margin-top:5px;}
-.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:20px 28px 28px;}
-.diff-btn{padding:18px 16px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s ease;text-align:center;}
-.diff-btn:hover{transform:translateY(-2px);}
-.diff-icon{font-size:1.8rem;}
-.diff-name{font-family:var(--mono);font-size:.8rem;font-weight:700;letter-spacing:1px;}
-.diff-sub{font-size:.7rem;color:#3a4a60;letter-spacing:.5px;}
-.diff-btn.easy{border-color:rgba(0,210,106,.25);}.diff-btn.easy:hover{background:rgba(0,210,106,.08);border-color:var(--green);}.diff-btn.easy .diff-icon,.diff-btn.easy .diff-name{color:var(--green);}
-.diff-btn.medium{border-color:rgba(0,240,255,.25);}.diff-btn.medium:hover{background:var(--cyand);border-color:var(--cyan);}.diff-btn.medium .diff-icon,.diff-btn.medium .diff-name{color:var(--cyan);}
-.diff-btn.hard{border-color:rgba(255,212,59,.25);}.diff-btn.hard:hover{background:var(--goldd);border-color:var(--gold);}.diff-btn.hard .diff-icon,.diff-btn.hard .diff-name{color:var(--gold);}
-.diff-btn.expert{border-color:rgba(255,56,96,.25);}.diff-btn.expert:hover{background:var(--redd);border-color:var(--red);}.diff-btn.expert .diff-icon,.diff-btn.expert .diff-name{color:var(--red);}
+        /* ─── CONTROL BAR ─── */
+        .control-bar {
+            height: 52px;
+            background: rgba(4,5,10,0.9);
+            border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; flex-shrink: 0; gap: 10px;
+        }
 
-#modal-tut .modal-card{max-width:540px;border:1px solid rgba(0,240,255,.15);}
-.tut-head{padding:24px 28px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(0,240,255,.03),transparent);}
-.tut-head h1{font-family:var(--mono);font-size:1.05rem;color:#fff;letter-spacing:2px;}
-.tut-head p{color:#3a4a60;font-size:.78rem;margin-top:5px;line-height:1.6;}
-.tut-body{padding:20px 28px;}
-.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.leg-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:7px;}
-.leg-ico{width:32px;height:32px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;}
-.leg-txt strong{display:block;color:#fff;font-size:.78rem;font-weight:700;}
-.leg-txt span{color:#3a4a60;font-size:.68rem;}
-.tut-foot{padding:16px 28px 24px;border-top:1px solid var(--border);display:flex;justify-content:center;}
-.btn-start{display:flex;align-items:center;gap:8px;padding:10px 28px;border-radius:5px;background:var(--cyand);border:1px solid var(--cyanb);color:var(--cyan);font-family:var(--mono);font-weight:700;font-size:.78rem;letter-spacing:1px;cursor:pointer;transition:all .25s ease;}
-.btn-start:hover{background:var(--cyan);color:#000;box-shadow:0 0 35px rgba(0,240,255,.4);}
+        .ctrl-left { display: flex; align-items: center; gap: 12px; }
+        .ctrl-right { display: flex; align-items: center; gap: 8px; }
 
-#modal-win .modal-card{max-width:420px;border:1px solid rgba(0,210,106,.2);text-align:center;}
-.win-head{padding:28px 28px 16px;background:linear-gradient(135deg,rgba(0,210,106,.04),transparent);}
-.win-icon-big{font-size:2.5rem;color:var(--green);margin-bottom:8px;}
-.win-title{font-family:var(--mono);font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:2px;background:linear-gradient(to bottom,#fff,var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.win-sub{color:#2a3a50;font-size:.7rem;letter-spacing:3px;margin-top:5px;font-family:var(--mono);}
-.win-stars-row{display:flex;justify-content:center;gap:10px;padding:16px;}
-.ws{font-size:1.6rem;color:#111825;transition:all .4s ease;}
-.ws.on{color:var(--gold);text-shadow:0 0 18px rgba(255,212,59,.7);}
-.win-stats{display:flex;justify-content:center;gap:24px;padding:14px 28px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.wst{text-align:center;}
-.wst-v{font-family:var(--mono);font-size:1.2rem;font-weight:900;color:var(--gold);}
-.wst-l{font-size:.6rem;color:#2a3a50;letter-spacing:2px;margin-top:2px;}
-.win-foot{padding:16px 28px 24px;display:flex;justify-content:center;}
-.btn-next{display:inline-flex;align-items:center;gap:8px;padding:10px 28px;border-radius:5px;background:rgba(0,210,106,.08);border:1px solid rgba(0,210,106,.3);color:var(--green);font-family:var(--mono);font-weight:700;font-size:.78rem;letter-spacing:1px;cursor:pointer;transition:all .25s ease;}
-.btn-next:hover{background:var(--green);color:#000;box-shadow:0 0 35px rgba(0,210,106,.4);}
+        .code-stats {
+            display: flex; gap: 12px;
+        }
+        .code-stat {
+            font-family: var(--font-mono); font-size: 0.65rem;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .code-stat-icon { color: var(--text-dim); }
+        .code-stat-val { color: var(--cyan); font-weight: 700; }
 
-#modal-crash .modal-card{max-width:360px;border:1px solid rgba(255,56,96,.2);text-align:center;padding:36px 28px;}
-.crash-icon{font-size:2.5rem;color:var(--red);margin-bottom:12px;}
-.crash-title{font-family:var(--mono);font-size:1.1rem;font-weight:900;color:var(--red);letter-spacing:2px;}
-.crash-msg{color:#3a4a60;font-size:.78rem;margin-top:8px;line-height:1.6;}
-.crash-btns{display:flex;gap:10px;justify-content:center;margin-top:20px;}
-.btn-retry{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:5px;background:var(--redd);border:1px solid rgba(255,56,96,.3);color:var(--red);font-family:var(--mono);font-weight:700;font-size:.75rem;letter-spacing:1px;cursor:pointer;transition:all .25s ease;}
-.btn-retry:hover{background:var(--red);color:#fff;}
+        .btn-reset {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2);
+            color: var(--cyan); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease; font-size: 0.85rem;
+        }
+        .btn-reset:hover { background: var(--cyan); color: #000; transform: rotate(180deg); box-shadow: 0 0 20px rgba(0,240,255,0.4); }
 
-.xp-popup{position:fixed;top:62px;right:16px;z-index:5000;font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--gold);padding:6px 14px;border-radius:4px;background:rgba(255,212,59,.1);border:1px solid rgba(255,212,59,.3);letter-spacing:1px;pointer-events:none;animation:xpFloat 2.5s ease forwards;}
-@keyframes xpFloat{0%{opacity:0;transform:translateY(0);}20%{opacity:1;}80%{opacity:1;transform:translateY(-28px);}100%{opacity:0;transform:translateY(-45px);}}
+        .btn-run {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 22px; border-radius: 5px;
+            background: var(--green); color: #000;
+            font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem;
+            letter-spacing: 1px; border: none; cursor: pointer;
+            transition: all 0.25s ease; text-transform: uppercase;
+        }
+        .btn-run:hover { box-shadow: 0 0 25px rgba(0,210,106,0.5); transform: translateY(-1px); }
+        .btn-run:active { transform: translateY(0); }
+        .btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-#mobile-tabs{display:none;height:var(--tab);background:rgba(4,5,10,.98);border-top:1px solid var(--border);z-index:300;flex-shrink:0;}
-.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;border:none;background:transparent;color:#3a4a60;font-family:var(--mono);font-size:.55rem;letter-spacing:1px;transition:all .2s ease;padding:8px;}
-.mob-tab i{font-size:1rem;}
-.mob-tab.active{color:var(--cyan);}
-.mob-tab.active i{text-shadow:0 0 10px var(--cyan);}
-.mob-run-wrap{flex:1;display:flex;align-items:center;justify-content:center;}
-.mob-run{width:46px;height:46px;border-radius:50%;background:var(--green);border:none;color:#000;font-size:1.1rem;cursor:pointer;box-shadow:0 0 20px rgba(0,210,106,.4);display:flex;align-items:center;justify-content:center;transition:all .2s ease;}
-.mob-run:active{transform:scale(.92);}
+        /* ─── TERMINAL ─── */
+        #terminal {
+            height: 120px; flex-shrink: 0;
+            background: #030408;
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            font-family: var(--font-mono); font-size: 0.75rem;
+            overflow-y: auto; line-height: 1.7;
+        }
+        #terminal::-webkit-scrollbar { width: 4px; }
+        #terminal::-webkit-scrollbar-track { background: transparent; }
+        #terminal::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 2px; }
 
-@media(max-width:768px){
-  :root{--nav:50px;}
-  nav{padding:0 12px;}
-  .n-xp,.n-title,.nb span{display:none;}
-  .n-tag{display:none;}
-  #app{position:absolute;top:var(--nav);left:0;right:0;bottom:var(--tab);}
-  .panel{position:absolute;inset:0;display:none;}
-  .panel.active{display:flex;}
-  #panel-grid.active,#panel-code.active{width:100%;}
-  #mobile-tabs{display:flex;}
-  .lv-story{display:none;}
-  .hud-bar{gap:12px;}
-  .hud-lbl{display:none;}
-  .diff-grid{grid-template-columns:1fr 1fr;}
-  .leg-grid{grid-template-columns:1fr;}
-  #terminal{height:90px;}
-  .ctrl-bar{padding:0 10px;}
-}
-@media(max-width:480px){
-  .diff-grid{grid-template-columns:1fr;}
-  .n-logo img{height:28px;}
-}
-</style>
+        .term-line { display: flex; gap: 8px; align-items: flex-start; }
+        .term-prompt { color: var(--cyan); opacity: 0.5; flex-shrink: 0; }
+        .term-msg { color: #6b7280; }
+        .term-msg.success { color: var(--green); }
+        .term-msg.error { color: var(--red); }
+        .term-msg.warn { color: var(--gold); }
+        .term-msg.info { color: var(--cyan); }
+        .term-msg.system { color: #8b9eb8; }
+
+        /* ─── OVERLAYS ─── */
+        .fullscreen-overlay {
+            position: absolute; inset: 0;
+            background: rgba(4,5,10,0.97);
+            backdrop-filter: blur(20px);
+            z-index: 500;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ─── TUTORIAL ─── */
+        .tutorial-card {
+            max-width: 560px; width: 90%;
+            background: var(--surface);
+            border: 1px solid rgba(0,240,255,0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(0,240,255,0.08), 0 30px 60px rgba(0,0,0,0.5);
+        }
+        .tutorial-header {
+            padding: 28px 32px 20px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(0,240,255,0.03), transparent);
+        }
+        .tutorial-header h1 {
+            font-family: var(--font-mono); font-size: 1.2rem; color: white;
+            letter-spacing: 2px; font-weight: 700;
+        }
+        .tutorial-header p { color: #5a6880; font-size: 0.85rem; margin-top: 6px; line-height: 1.6; }
+        .tutorial-body { padding: 24px 32px; }
+        .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .legend-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        .legend-icon {
+            width: 36px; height: 36px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 1.1rem;
+        }
+        .legend-text strong { display: block; color: white; font-size: 0.85rem; font-weight: 700; }
+        .legend-text span { color: #5a6880; font-size: 0.75rem; }
+        .tutorial-footer {
+            padding: 20px 32px;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: center;
+        }
+        .btn-start {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 32px; border-radius: 6px;
+            background: rgba(0,240,255,0.06);
+            border: 1px solid rgba(0,240,255,0.3);
+            color: var(--cyan); font-family: var(--font-mono);
+            font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+        }
+        .btn-start:hover { background: var(--cyan); color: #000; box-shadow: 0 0 40px rgba(0,240,255,0.4); }
+
+        /* ─── LEVEL WIN OVERLAY ─── */
+        .win-card {
+            max-width: 480px; width: 90%;
+            background: var(--surface);
+            border: 1px solid rgba(0,210,106,0.2);
+            border-radius: 12px; overflow: hidden;
+            box-shadow: 0 0 80px rgba(0,210,106,0.1), 0 30px 60px rgba(0,0,0,0.6);
+            text-align: center;
+        }
+        .win-header {
+            padding: 32px 32px 20px;
+            background: linear-gradient(135deg, rgba(0,210,106,0.05), transparent);
+        }
+        .win-icon { font-size: 3rem; color: var(--green); margin-bottom: 12px; display: block; }
+        .win-title {
+            font-family: var(--font-mono); font-size: 1.5rem; font-weight: 900;
+            color: white; letter-spacing: 2px;
+            background: linear-gradient(to bottom, #fff, var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .win-subtitle { color: #4a5568; font-size: 0.8rem; letter-spacing: 3px; margin-top: 8px; font-family: var(--font-mono); }
+        .win-stats {
+            display: flex; justify-content: center; gap: 30px;
+            padding: 20px 32px;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+        }
+        .win-stat { text-align: center; }
+        .win-stat-val { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 900; color: var(--gold); }
+        .win-stat-lbl { font-size: 0.65rem; color: #4a5568; letter-spacing: 2px; margin-top: 2px; }
+        .win-stars { display: flex; justify-content: center; gap: 10px; padding: 16px; }
+        .win-star { font-size: 1.8rem; color: #1a2030; transition: all 0.4s ease; }
+        .win-star.lit { color: var(--gold); text-shadow: 0 0 20px rgba(255,212,59,0.6); }
+        .win-footer { padding: 20px 32px 28px; }
+        .btn-next {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 32px; border-radius: 6px;
+            background: rgba(0,210,106,0.08);
+            border: 1px solid rgba(0,210,106,0.3);
+            color: var(--green); font-family: var(--font-mono);
+            font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.3s ease; text-transform: uppercase;
+        }
+        .btn-next:hover { background: var(--green); color: #000; box-shadow: 0 0 40px rgba(0,210,106,0.4); }
+
+        /* ─── LOADER ─── */
+        .loader-card { text-align: center; }
+        .loader-ring {
+            width: 60px; height: 60px; margin: 0 auto 20px;
+            border: 2px solid rgba(0,240,255,0.1);
+            border-top-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text { font-family: var(--font-mono); font-size: 0.85rem; color: var(--cyan); letter-spacing: 2px; }
+        .loader-sub { font-family: var(--font-mono); font-size: 0.7rem; color: #3a4558; margin-top: 8px; letter-spacing: 1px; }
+
+        /* ─── XP POPUP ─── */
+        .xp-popup {
+            position: fixed; top: 70px; right: 20px; z-index: 9999;
+            font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;
+            color: var(--gold); padding: 8px 16px; border-radius: 4px;
+            background: rgba(255,212,59,0.1); border: 1px solid rgba(255,212,59,0.3);
+            letter-spacing: 1px;
+            animation: xpFloat 2.5s ease forwards;
+            pointer-events: none;
+        }
+        @keyframes xpFloat {
+            0% { opacity: 0; transform: translateY(0); }
+            20% { opacity: 1; }
+            80% { opacity: 1; transform: translateY(-30px); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        /* ─── CELL STATES ─── */
+        .grid-cell.trail {
+            background: rgba(0,240,255,0.04);
+            border-color: rgba(0,240,255,0.08);
+        }
+        .grid-cell.win-flash {
+            animation: winFlash 0.5s ease;
+        }
+        @keyframes winFlash {
+            0% { background: rgba(0,210,106,0); }
+            50% { background: rgba(0,210,106,0.3); }
+            100% { background: rgba(0,210,106,0); }
+        }
+
+        /* ─── MOBILE ─── */
+        @media (max-width: 900px) {
+            nav { height: 52px; padding: 0 12px; }
+            .xp-area { display: none; }
+            .nav-title { display: none; }
+            #app { flex-direction: column; }
+            .left-panel, .right-panel { width: 100%; }
+            .left-panel { flex: 1; min-height: 0; }
+            .right-panel { height: 50%; }
+            .grid-cell { width: 38px; height: 38px; }
+            .legend-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* ─── GRID COORDINATES & UI ─── */
+        .coord-btn {
+            font-family: var(--font-mono); font-size: 0.65rem; color: #5a6880;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            padding: 4px 8px; border-radius: 3px; cursor: pointer; transition: all 0.2s ease; letter-spacing: 1px;
+        }
+        .coord-btn:hover, .coord-btn.on { color: var(--cyan); border-color: rgba(0,240,255,0.3); background: rgba(0,240,255,0.1); }
+        .col-lbl, .row-lbl { font-family: var(--font-mono); font-size: 10px; color: #4a5568; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .grid-cell::after {
+            content: attr(data-coord); position: absolute; bottom: 2px; right: 3px;
+            font-family: var(--font-mono); font-size: 8px; color: rgba(0,240,255,0.4);
+            pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1;
+        }
+        .show-coords .grid-cell::after { opacity: 1; }
+
+        /* ─── DIFFICULTY MODAL ─── */
+        .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px 32px 32px; }
+        .diff-btn {
+            padding: 18px 16px; border-radius: 8px; background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06); cursor: pointer; display: flex;
+            flex-direction: column; align-items: center; gap: 8px; transition: all 0.25s ease; text-align: center;
+        }
+        .diff-btn:hover { transform: translateY(-2px); }
+        .diff-icon { font-size: 1.8rem; }
+        .diff-name { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; }
+        .diff-sub { font-size: 0.7rem; color: #5a6880; letter-spacing: 0.5px; }
+        .diff-btn.easy { border-color: rgba(0,210,106,0.25); } .diff-btn.easy:hover { background: rgba(0,210,106,0.08); border-color: var(--green); } .diff-btn.easy * { color: var(--green); }
+        .diff-btn.medium { border-color: rgba(0,240,255,0.25); } .diff-btn.medium:hover { background: rgba(0,240,255,0.12); border-color: var(--cyan); } .diff-btn.medium * { color: var(--cyan); }
+        .diff-btn.hard { border-color: rgba(255,212,59,0.25); } .diff-btn.hard:hover { background: rgba(255,212,59,0.12); border-color: var(--gold); } .diff-btn.hard * { color: var(--gold); }
+        .diff-btn.expert { border-color: rgba(255,56,96,0.25); } .diff-btn.expert:hover { background: rgba(255,56,96,0.12); border-color: var(--red); } .diff-btn.expert * { color: var(--red); }
+		.btn-python {
+            padding: 15px 40px; background: transparent; color: var(--python);
+            border: 1px solid var(--python); border-radius: 50px; font-weight: 700; text-decoration: none;
+            box-shadow: 0 0 20px rgba(255, 212, 59, 0.1); transition: 0.3s; display: inline-block;
+        }
+        .btn-python:hover { background: var(--python); color: #000; box-shadow: 0 0 50px rgba(255, 212, 59, 0.4); }
+		.nav-btn {
+            text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
+            border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center;
+            gap: 8px; border: 1px solid transparent;
+        }
+        /* 1. EXIT BUTTON (Red) */
+        .exit-btn { color: #ff5e57; background: rgba(255, 94, 87, 0.1); border: 1px solid rgba(255, 94, 87, 0.2); }
+        .exit-btn:hover { background: #ff5e57;transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(255, 94, 87, 0.4); }
+    </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
+    <canvas id="bg-canvas"></canvas>
 
-<nav>
-  <div class="n-left">
-    <a href="index.html" class="n-logo">
-      <img src="codestitcher.png" alt="CS" onerror="this.style.display='none'">
-      <span class="n-title">CodeStitcher</span>
-    </a>
-    <span class="n-tag">// NEURAL SIM</span>
-  </div>
-  <div class="n-xp">
-    <span class="n-xp-lbl" id="xp-lbl">XP: 0</span>
-    <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
-    <span class="rank-badge" id="rank-badge">NOVICE</span>
-  </div>
-  <div class="n-right">
-    <a href="index.html" class="nb nb-home"><i class="fa-solid fa-house"></i> <span>Home</span></a>
-    <a href="python-lab.html" class="nb nb-exit"><i class="fa-solid fa-power-off"></i> <span>Exit</span></a>
-  </div>
-</nav>
-
-<div id="app">
-  <div class="panel" id="panel-grid">
-    <div class="lv-header">
-      <div class="lv-info">
-        <span class="lv-num" id="lv-num">LAYER E1</span>
-        <div>
-          <div class="lv-name" id="lv-name">Motor Control</div>
-          <div class="lv-story" id="lv-story">Navigate the neural lattice</div>
+    <!-- NAV -->
+    <nav>
+        <div class="nav-left">
+            <a href="index.html" class="nav-logo">
+                <img src="codestitcher.png" alt="CodeStitcher" onerror="this.style.display='none'">
+                <span class="nav-title">CodeStitcher</span>
+            </a>
+            <span class="nav-tag">// NEURAL SIM</span>
         </div>
-      </div>
-      <div class="lv-right">
-        <div class="stars-row" id="stars-row">
-          <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        <div class="xp-area">
+            <span class="xp-label" id="xp-label">XP: 0</span>
+            <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+            <span class="rank-badge" id="rank-badge">NOVICE</span>
         </div>
-        <button class="coord-btn" id="coord-btn" onclick="toggleCoords()">⊞ COORDS</button>
-      </div>
-    </div>
-    <div class="grid-area" id="grid-area">
-      <div class="col-labels" id="col-labels"></div>
-      <div class="grid-row-area">
-        <div class="row-labels" id="row-labels"></div>
-        <div class="grid-wrapper" id="grid-wrapper">
-          <div id="game-grid"></div>
-          <div id="player-sprite"><div class="player-inner"></div></div>
+        <div class="nav-right">
+            <a href="index.html" class="nav-btn exit-btn">
+                <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+            <a href="learn-python.html" class="nav-btn btn-exit">
+                <i class="fa-solid fa-power-off"></i> <span>Exit</span>
+            </a>
         </div>
-      </div>
-    </div>
-    <div class="hud-bar">
-      <div class="hud-stat"><span class="hud-icon" style="color:var(--cyan)">◈</span><span class="hud-lbl">MOVES</span><span class="hud-val c" id="h-moves">0</span></div>
-      <div class="hud-sep"></div>
-      <div class="hud-stat"><span class="hud-icon" style="color:var(--gold)">⊛</span><span class="hud-lbl">BEST</span><span class="hud-val g" id="h-best">—</span></div>
-      <div class="hud-sep"></div>
-      <div class="hud-stat"><span class="hud-icon" style="color:var(--green)">◉</span><span class="hud-lbl">LAYER</span><span class="hud-val gr" id="h-layer">1/5</span></div>
-      <div class="hud-sep"></div>
-      <div class="hud-stat"><span class="hud-icon" style="color:var(--cyan)">⬟</span><span class="hud-lbl">KEYS</span><span class="hud-val c" id="h-keys">0</span></div>
-      <div class="hud-sep"></div>
-      <div class="hud-stat"><span class="hud-icon" style="color:var(--green)">★</span><span class="hud-lbl">FRAGS</span><span class="hud-val gr" id="h-frags">0</span></div>
-      <div id="limit-bar">
-        <span class="hud-lbl">LIMIT</span>
-        <span class="hud-val" id="h-limit" style="color:var(--green)">∞</span>
-        <div class="limit-track" id="limit-track" style="display:none">
-          <div class="limit-fill" id="limit-fill"></div>
+    </nav>
+
+    <!-- APP -->
+    <div id="app">
+
+        <!-- LEFT: GAME -->
+        <div class="left-panel" id="left-panel">
+
+            <div class="level-header">
+                <div class="level-info">
+                    <span class="level-num" id="level-num">LAYER 01</span>
+                    <div>
+                        <div class="level-name" id="level-name">Motor Control</div>
+                        <div class="level-story" id="level-story">Navigate the neural lattice</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="stars-display" id="stars-display">
+                        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+                    </div>
+                    <button class="coord-btn" id="coord-btn" onclick="toggleCoords()">⊞ COORDS</button>
+                </div>
+            </div>
+
+            
+            <!-- Centered, automatically scaling grid wrapper -->
+            <div class="grid-wrapper" id="grid-wrapper">
+                <div style="display: flex; flex-direction: column;">
+                    <div class="col-labels" id="col-labels" style="display: flex; margin-bottom: 2px; gap: 2px;"></div>
+                    <div style="display: flex; gap: 2px;">
+                        <div class="row-labels" id="row-labels" style="display: flex; flex-direction: column; gap: 2px;"></div>
+                        <div id="game-grid-container">
+                            <div id="game-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layer-status">
+                <div class="stat-item">
+                    <span class="stat-icon" style="color:var(--cyan)">◈</span>
+                    <span class="stat-label">MOVES</span>
+                    <span class="stat-value cyan" id="stat-moves">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon" style="color:var(--gold)">⊛</span>
+                    <span class="stat-label">BEST</span>
+                    <span class="stat-value gold" id="stat-best">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon" style="color:var(--green)">◉</span>
+                    <span class="stat-label">LAYER</span>
+                    <span class="stat-value green" id="stat-layer">1 / 10</span>
+                </div>
+                <div class="stat-item" style="margin-left: auto;">
+                    <span class="stat-icon" style="color:var(--red)">⬡</span>
+                    <span class="stat-label">CONCEPT</span>
+                    <span class="stat-value" id="stat-concept" style="color:#8899aa">—</span>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- RIGHT: CODE -->
+        <div class="right-panel">
+
+            <div class="mission-bar">
+                <div class="mission-dot"></div>
+                <span class="mission-text" id="mission-text">AGENT UPLINK ACTIVE</span>
+                <span class="mission-req" id="mission-req">—</span>
+            </div>
+
+            <div id="monaco-editor"></div>
+
+            <div class="control-bar">
+                <div class="ctrl-left">
+                    <div class="code-stats">
+                        <div class="code-stat">
+                            <span class="code-stat-icon"><i class="fa-solid fa-code"></i></span>
+                            <span style="color:#4a5568; font-size:0.65rem;">LINES</span>
+                            <span class="code-stat-val" id="cs-lines">—</span>
+                        </div>
+                        <div class="code-stat">
+                            <span class="code-stat-icon"><i class="fa-solid fa-bolt"></i></span>
+                            <span style="color:#4a5568; font-size:0.65rem;">CONCEPTS</span>
+                            <span class="code-stat-val" id="cs-concepts">—</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ctrl-right">
+                    <button class="btn-reset" onclick="resetLevel()" title="Reset Level">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button class="btn-run" id="run-btn" onclick="runCode()">
+                        <i class="fa-solid fa-play"></i> EXECUTE
+                    </button>
+                </div>
+            </div>
+
+            <div id="terminal">
+                <div class="term-line">
+                    <span class="term-prompt">$</span>
+                    <span class="term-msg system">Neural simulation v2.0 — Awaiting agent initialization...</span>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-  </div>
 
-  <div class="panel" id="panel-code">
-    <div class="mission-bar">
-      <div class="m-dot"></div>
-      <span class="m-text" id="m-text">AGENT UPLINK ACTIVE</span>
-      <span class="m-req" id="m-req">—</span>
+    <!-- LOADER OVERLAY -->
+    <div class="fullscreen-overlay" id="overlay-loader" style="z-index: 9000;">
+        <div class="loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-text" id="loader-text">LOADING KERNEL</div>
+            <div class="loader-sub" id="loader-sub">Please wait...</div>
+        </div>
     </div>
-    <div id="monaco-editor"></div>
-    <div class="ctrl-bar">
-      <div class="cs-stats">
-        <div class="cs-stat"><span class="cs-ico"><i class="fa-solid fa-code"></i></span><span style="color:#2a3a50;font-size:.6rem">LINES</span><span class="cs-val" id="cs-lines">—</span></div>
-        <div class="cs-stat"><span class="cs-ico"><i class="fa-solid fa-bolt"></i></span><span style="color:#2a3a50;font-size:.6rem">CONCEPTS</span><span class="cs-val" id="cs-conc">—</span></div>
-      </div>
-      <div class="ctrl-btns">
-        <button class="btn-reset" onclick="resetLevel()" title="Reset"><i class="fa-solid fa-arrows-rotate"></i></button>
-        <button class="btn-run" id="run-btn" onclick="runCode()"><i class="fa-solid fa-play"></i> EXECUTE</button>
-      </div>
+    
+	<!-- DIFFICULTY OVERLAY -->
+    <div class="fullscreen-overlay" id="overlay-diff" style="display:none; z-index: 8500;">
+        <div class="tutorial-card">
+            <div class="tutorial-header">
+                <h1>SELECT PROTOCOL</h1>
+                <p>Choose your breach difficulty. Each level teaches a new Python concept.</p>
+            </div>
+            <div class="diff-grid">
+                <button class="diff-btn easy" onclick="selectDiff('easy')">
+                    <span class="diff-icon">◈</span><span class="diff-name">EASY</span><span class="diff-sub">6×6 · No limit · Basic</span>
+                </button>
+                <button class="diff-btn medium" onclick="selectDiff('medium')">
+                    <span class="diff-icon">⬡</span><span class="diff-name">MEDIUM</span><span class="diff-sub">8×8 · Standard · Loops</span>
+                </button>
+                <button class="diff-btn hard" onclick="selectDiff('hard')">
+                    <span class="diff-icon">⊛</span><span class="diff-name">HARD</span><span class="diff-sub">12×12 · Keys · Portals</span>
+                </button>
+                <button class="diff-btn expert" onclick="selectDiff('expert')">
+                    <span class="diff-icon">∞</span><span class="diff-name">EXPERT</span><span class="diff-sub">Procedural · Endless</span>
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="terminal">
-      <div class="tl"><span class="tp">$</span><span class="tm i">Neural Simulation v3.0 — Loading Python engine...</span></div>
+    
+    <!-- TUTORIAL OVERLAY -->
+    <div class="fullscreen-overlay" id="overlay-tutorial" style="display:none; z-index: 8000;">
+        <div class="tutorial-card">
+            <div class="tutorial-header">
+                <h1>MISSION BRIEFING</h1>
+                <p>You are <strong style="color:var(--cyan)">A1-Agent</strong> — an autonomous intelligence escaping a corrupted system. Write Python code to navigate through security layers and reach the Quantum Energy Node.</p>
+            </div>
+            <div class="tutorial-body">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background:rgba(0,240,255,0.1); color:var(--cyan);">◈</div>
+                        <div class="legend-text">
+                            <strong>A1-Agent</strong>
+                            <span>Your avatar. Move it with code.</span>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background:rgba(255,212,59,0.1); color:var(--gold);">⊛</div>
+                        <div class="legend-text">
+                            <strong>Quantum Node</strong>
+                            <span>The goal. Reach it to escape.</span>
+                        </div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon" style="background:rgba(255,56,96,0.1); color:var(--red);">⬡</div>
+                        <div class="legend-text">
+                            <strong>Firewall</strong>
+                            <span>Fatal. Triggers system crash.</span>
+                        </div>
+                    </div>
+                    <div class="legend-item" style="background: rgba(0,210,106,0.04); border-color: rgba(0,210,106,0.15);">
+                        <div class="legend-icon" style="background:rgba(0,210,106,0.1); color:var(--green);">{ }</div>
+                        <div class="legend-text">
+                            <strong>Commands</strong>
+                            <span style="font-family:var(--font-mono); color:var(--cyan); font-size:0.7rem;">agent.move("right", 3)</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; padding: 12px 14px; background: rgba(0,210,106,0.04); border: 1px solid rgba(0,210,106,0.1); border-radius: 6px;">
+                    <p style="font-size: 0.75rem; color: #5a6880; line-height: 1.6;">
+                        <span style="color:var(--gold); font-family:var(--font-mono); font-size:0.7rem;">★★★ SCORING:</span><br>
+                        Complete level (1★) · Use required concept (2★) · Optimal path (3★)
+                    </p>
+                </div>
+            </div>
+            <div class="tutorial-footer">
+                <button class="btn-start" onclick="closeTutorial()">
+                    INITIALIZE UPLINK <i class="fa-solid fa-bolt"></i>
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<div id="mobile-tabs">
-  <button class="mob-tab active" id="tab-grid" onclick="switchTab('grid')">
-    <i class="fa-solid fa-table-cells-large"></i> GRID
-  </button>
-  <div class="mob-run-wrap">
-    <button class="mob-run" onclick="runCode()"><i class="fa-solid fa-play"></i></button>
-  </div>
-  <button class="mob-tab" id="tab-code" onclick="switchTab('code')">
-    <i class="fa-solid fa-code"></i> CODE
-  </button>
-</div>
-
-<!-- MODAL: DIFFICULTY -->
-<div class="modal" id="modal-diff" style="display:none">
-  <div class="modal-card">
-    <div class="diff-head">
-      <h1>SELECT PROTOCOL</h1>
-      <p>Choose your breach difficulty. Each level teaches a new Python concept.</p>
+    <!-- WIN OVERLAY -->
+    <div class="fullscreen-overlay" id="overlay-win" style="display:none; z-index: 8000;">
+        <div class="win-card">
+            <div class="win-header">
+                <i class="fa-solid fa-shield-halved win-icon"></i>
+                <div class="win-title">LAYER BREACHED</div>
+                <div class="win-subtitle">SECURITY PROTOCOL DEFEATED</div>
+            </div>
+            <div class="win-stars" id="win-stars">
+                <span class="win-star">★</span>
+                <span class="win-star">★</span>
+                <span class="win-star">★</span>
+            </div>
+            <div class="win-stats">
+                <div class="win-stat">
+                    <div class="win-stat-val" id="ws-moves">—</div>
+                    <div class="win-stat-lbl">MOVES</div>
+                </div>
+                <div class="win-stat">
+                    <div class="win-stat-val" id="ws-xp">—</div>
+                    <div class="win-stat-lbl">XP GAINED</div>
+                </div>
+                <div class="win-stat">
+                    <div class="win-stat-val" id="ws-stars">—</div>
+                    <div class="win-stat-lbl">STARS</div>
+                </div>
+            </div>
+            <div class="win-footer">
+                <button class="btn-next" onclick="nextLevel()">
+                    NEXT LAYER <i class="fa-solid fa-forward"></i>
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="diff-grid">
-      <button class="diff-btn easy" onclick="selectDiff('easy')">
-        <span class="diff-icon">◈</span>
-        <span class="diff-name">EASY</span>
-        <span class="diff-sub">6×6 · No limit · Basic</span>
-      </button>
-      <button class="diff-btn medium" onclick="selectDiff('medium')">
-        <span class="diff-icon">⬡</span>
-        <span class="diff-name">MEDIUM</span>
-        <span class="diff-sub">8×8 · Standard · Loops</span>
-      </button>
-      <button class="diff-btn hard" onclick="selectDiff('hard')">
-        <span class="diff-icon">⊛</span>
-        <span class="diff-name">HARD</span>
-        <span class="diff-sub">12×12 · Keys · Portals · Limits</span>
-      </button>
-      <button class="diff-btn expert" onclick="selectDiff('expert')">
-        <span class="diff-icon">∞</span>
-        <span class="diff-name">EXPERT</span>
-        <span class="diff-sub">Procedural · Endless · Master</span>
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- MODAL: TUTORIAL -->
-<div class="modal" id="modal-tut" style="display:none">
-  <div class="modal-card">
-    <div class="tut-head">
-      <h1>MISSION BRIEFING</h1>
-      <p>You are <strong style="color:var(--cyan)">A1-Agent</strong> — an AI escaping a corrupted system. Write Python to navigate security layers and reach the Quantum Node.</p>
-    </div>
-    <div class="tut-body">
-      <div class="leg-grid">
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(0,240,255,.1)">◈</div><div class="leg-txt"><strong>A1-Agent</strong><span>Your avatar. Move with code.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(255,212,59,.1)">⊛</div><div class="leg-txt"><strong>Quantum Node</strong><span>The goal. Reach it.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(255,56,96,.1)">✕</div><div class="leg-txt"><strong>Firewall</strong><span>Fatal. Triggers crash.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(0,240,255,.1)">🔑</div><div class="leg-txt"><strong>Key</strong><span>Collect to unlock doors.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(255,140,66,.1)">🚪</div><div class="leg-txt"><strong>Locked Door</strong><span>Needs a key to pass.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(155,93,229,.1)">⊚</div><div class="leg-txt"><strong>Portal</strong><span>Teleports you to pair.</span></div></div>
-        <div class="leg-item"><div class="leg-ico" style="background:rgba(0,210,106,.1)">★</div><div class="leg-txt"><strong>Data Fragment</strong><span>Collect for bonus XP.</span></div></div>
-        <div class="leg-item" style="border-color:rgba(0,210,106,.15);background:rgba(0,210,106,.04)"><div class="leg-ico" style="background:rgba(0,210,106,.1);color:var(--green);font-size:.8rem">{ }</div><div class="leg-txt"><strong>Command</strong><span style="font-family:var(--mono);color:var(--cyan);font-size:.65rem">agent.move("right",3)</span></div></div>
-      </div>
-    </div>
-    <div class="tut-foot">
-      <button class="btn-start" onclick="closeTut()">INITIALIZE UPLINK <i class="fa-solid fa-bolt"></i></button>
-    </div>
-  </div>
-</div>
+    <!-- SCRIPTS -->
+    <script>
+    // ─── BACKGROUND PARTICLES ───
+    (function() {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H, nodes = [];
 
-<!-- MODAL: WIN -->
-<div class="modal" id="modal-win" style="display:none">
-  <div class="modal-card">
-    <div class="win-head">
-      <div class="win-icon-big"><i class="fa-solid fa-shield-halved"></i></div>
-      <div class="win-title">LAYER BREACHED</div>
-      <div class="win-sub">SECURITY PROTOCOL DEFEATED</div>
-    </div>
-    <div class="win-stars-row" id="win-stars">
-      <span class="ws">★</span><span class="ws">★</span><span class="ws">★</span>
-    </div>
-    <div class="win-stats">
-      <div class="wst"><div class="wst-v" id="ws-moves">—</div><div class="wst-l">MOVES</div></div>
-      <div class="wst"><div class="wst-v" id="ws-xp">—</div><div class="wst-l">XP GAINED</div></div>
-      <div class="wst"><div class="wst-v" id="ws-frags">—</div><div class="wst-l">FRAGMENTS</div></div>
-    </div>
-    <div class="win-foot">
-      <button class="btn-next" onclick="nextLevel()">NEXT LAYER <i class="fa-solid fa-forward"></i></button>
-    </div>
-  </div>
-</div>
+        function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
 
-<!-- MODAL: CRASH -->
-<div class="modal" id="modal-crash" style="display:none">
-  <div class="modal-card">
-    <div class="crash-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-    <div class="crash-title">SYSTEM CRASH</div>
-    <div class="crash-msg" id="crash-msg">Agent hit a firewall. Connection severed.</div>
-    <div class="crash-btns">
-      <button class="btn-retry" onclick="dismissCrash()"><i class="fa-solid fa-arrows-rotate"></i> RETRY</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: LOADER -->
-<div class="modal" id="modal-loader">
-  <div class="modal-card">
-    <div class="loader-ring"></div>
-    <div class="loader-t" id="loader-t">INITIALIZING</div>
-    <div class="loader-s" id="loader-s">Loading Python engine...</div>
-    <div class="loader-progress"><div class="loader-progress-fill" id="loader-progress-fill" style="width:0%"></div></div>
-  </div>
-</div>
-
-<!-- Load Pyodide from CDN -->
-<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-
-<script>
-// ════════════════════════════════════════════
-//  BACKGROUND CANVAS
-// ════════════════════════════════════════════
-(()=>{
-  const C=document.getElementById('bg-canvas');
-  const X=C.getContext('2d');
-  let W,H,pts=[];
-  const resize=()=>{W=C.width=window.innerWidth;H=C.height=window.innerHeight;};
-  class P{constructor(){this.reset();}reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.25;this.vy=(Math.random()-.5)*.25;this.r=Math.random()*.9+.3;}}
-  const init=()=>{resize();pts=Array.from({length:70},()=>new P());};
-  const draw=()=>{
-    X.clearRect(0,0,W,H);
-    for(let i=0;i<pts.length;i++){
-      const a=pts[i];a.x+=a.vx;a.y+=a.vy;
-      if(a.x<0||a.x>W)a.vx*=-1;if(a.y<0||a.y>H)a.vy*=-1;
-      for(let j=i+1;j<pts.length;j++){
-        const b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
-        if(d<120){X.beginPath();X.moveTo(a.x,a.y);X.lineTo(b.x,b.y);X.strokeStyle=`rgba(0,240,255,${.03*(1-d/120)})`;X.lineWidth=.4;X.stroke();}
-      }
-      X.beginPath();X.arc(a.x,a.y,a.r,0,Math.PI*2);X.fillStyle='rgba(93,95,239,.55)';X.fill();
-    }
-    requestAnimationFrame(draw);
-  };
-  window.addEventListener('resize',init);init();draw();
-})();
-
-// ════════════════════════════════════════════
-//  AUDIO
-// ════════════════════════════════════════════
-const AX=new(window.AudioContext||window.webkitAudioContext)();
-const resume=()=>{if(AX.state==='suspended')AX.resume();};
-function beep(f,t,d,v=.07,type='sine'){
-  resume();
-  const o=AX.createOscillator(),g=AX.createGain();
-  o.connect(g);g.connect(AX.destination);
-  o.type=type;o.frequency.value=f;
-  g.gain.setValueAtTime(v,AX.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,AX.currentTime+d);
-  o.start(AX.currentTime+t);o.stop(AX.currentTime+t+d);
-}
-const snd={
-  click:()=>beep(900,'sine',.08,.04),
-  move:()=>beep(660,'sine',.09,.03),
-  collect:()=>{beep(880,.0,.15,.06);beep(1100,.12,.15,.05);},
-  teleport:()=>{beep(400,'square',.05,.07);beep(900,'sine',.2,.06);},
-  unlock:()=>{beep(550,.0,.2,.07);beep(770,.15,.2,.06);},
-  error:()=>beep(180,'sawtooth',.3,.06),
-  win:()=>{[500,700,900,1200].forEach((f,i)=>setTimeout(()=>beep(f,'sine',.4,.08),i*100));},
-  start:()=>beep(440,'triangle',.3,.05),
-  crash:()=>{beep(200,'sawtooth',.1,.08);beep(150,'sawtooth',.3,.06);}
-};
-
-// ════════════════════════════════════════════
-//  RANKS & XP
-// ════════════════════════════════════════════
-const RANKS=[
-  {name:'NOVICE',xp:0},{name:'INITIATE',xp:80},{name:'DEVELOPER',xp:200},
-  {name:'ARCHITECT',xp:400},{name:'HACKER',xp:700},{name:'GRANDMASTER',xp:1000}
-];
-let totalXP=0;
-function getRank(xp){
-  for(let i=RANKS.length-1;i>=0;i--)if(xp>=RANKS[i].xp)return{cur:RANKS[i],next:RANKS[i+1]||null};
-  return{cur:RANKS[0],next:RANKS[1]};
-}
-function updateXPBar(gained=0){
-  const{cur,next}=getRank(totalXP);
-  const pct=next?((totalXP-cur.xp)/(next.xp-cur.xp))*100:100;
-  document.getElementById('xp-fill').style.width=pct+'%';
-  document.getElementById('xp-lbl').textContent='XP: '+totalXP;
-  document.getElementById('rank-badge').textContent=cur.name;
-  if(gained>0){
-    const p=document.createElement('div');p.className='xp-popup';
-    p.textContent='+'+gained+' XP';document.body.appendChild(p);
-    setTimeout(()=>p.remove(),2600);
-  }
-}
-
-// ════════════════════════════════════════════
-//  LEVEL DATA
-// ════════════════════════════════════════════
-const LEVELS={
-  easy:[
-    {
-      layer:'E1',name:'Motor Control',story:'Basic navigation. Move down to the Quantum Node.',
-      concept:'agent.move()',reqText:'Call agent.move()',reqRegex:/move/,
-      optMoves:5,moveLimit:-1,xpBase:30,w:6,h:6,
-      map:[[2,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer E1: Motor Control\n# Move to the yellow Quantum Node!\n# Use: agent.move(direction, steps)\n\nagent.move("down", 5)\nagent.move("right", 5)\n`
-    },
-    {
-      layer:'E2',name:'Memory Allocation',story:'Store step counts in variables.',
-      concept:'Variables',reqText:'Define a variable (x = ...)',reqRegex:/[a-zA-Z_]\w*\s*=\s*\d/,
-      optMoves:9,moveLimit:-1,xpBase:40,w:6,h:6,
-      map:[[2,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,0,0],[0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer E2: Memory Allocation\n# Use variables to navigate the corridor.\n\nsteps_right = 5\nsteps_down = 2\n\nagent.move("right", steps_right)\nagent.move("down", steps_down)\nagent.move("left", steps_right)\nagent.move("down", steps_down)\nagent.move("right", steps_right)\n`
-    },
-    {
-      layer:'E3',name:'Iteration Protocol',story:'Loops defeat diagonal obstacles.',
-      concept:'for loops',reqText:'Use a for loop',reqRegex:/for\s+\w+\s+in/,
-      optMoves:10,moveLimit:-1,xpBase:50,w:6,h:6,
-      map:[[2,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0],[0,0,0,1,0,0],[0,0,0,0,1,0],[0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer E3: Iteration Protocol\n# Use a loop to navigate the diagonal.\n\nfor i in range(5):\n    agent.move("right", 1)\n    agent.move("down", 1)\n`
-    },
-    {
-      layer:'E4',name:'Functional Abstraction',story:'Define reusable move routines.',
-      concept:'def functions',reqText:'Define a function (def)',reqRegex:/def\s+\w+\(/,
-      optMoves:12,moveLimit:-1,xpBase:60,w:6,h:6,
-      map:[[2,0,0,0,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer E4: Functional Abstraction\n# Define a function to clean your code.\n\ndef go(d, n):\n    agent.move(d, n)\n\ngo("down", 4)\ngo("right", 5)\n`
-    },
-    {
-      layer:'E5',name:'Data Structures',story:'Lists carry your path data.',
-      concept:'Lists []',reqText:'Use a list [ ]',reqRegex:/\[.*\]/,
-      optMoves:10,moveLimit:-1,xpBase:70,w:6,h:6,
-      map:[[2,0,0,3,0,0],[0,1,1,0,1,1],[0,0,0,0,0,0],[1,1,0,1,1,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
-      code:`import agent\n\n# Layer E5: Data Structures\n# Use a list to store your path.\n\npath = ["right", "right", "right"]\n\nfor d in path:\n    agent.move(d, 1)\n`
-    }
-  ],
-  medium:[
-    {
-      layer:'M1',name:'Variable Routes',story:'Allocate memory for route data.',
-      concept:'Variables',reqText:'Use at least one variable',reqRegex:/[a-zA-Z_]\w*\s*=\s*\d/,
-      optMoves:14,moveLimit:-1,xpBase:60,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer M1: Navigate using variables\n\nside = 7\n\nagent.move("right", side)\nagent.move("down", side)\n`
-    },
-    {
-      layer:'M2',name:'Loop Descent',story:'Diagonal firewall. Use loops.',
-      concept:'for loops',reqText:'Use a for loop',reqRegex:/for\s+\w+\s+in/,
-      optMoves:14,moveLimit:-1,xpBase:80,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer M2: Use a loop to dodge the diagonal\n\nfor _ in range(7):\n    agent.move("right", 1)\n    agent.move("down", 1)\n`
-    },
-    {
-      layer:'M3',name:'Function Protocols',story:'Define agent subroutines.',
-      concept:'def functions',reqText:'Define a function (def)',reqRegex:/def\s+\w+\(/,
-      optMoves:14,moveLimit:-1,xpBase:90,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[0,1,0,1,0,0,0,0],[0,1,0,1,0,0,0,0],[0,1,0,1,0,0,0,0],[0,1,0,1,0,0,0,0],[0,1,0,1,0,0,0,0],[0,1,0,1,0,0,0,0],[0,0,0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer M3: Use a function to navigate the corridors\n\ndef navigate(d, n):\n    agent.move(d, n)\n\nnavigate("down", 7)\nnavigate("right", 5)\n`
-    },
-    {
-      layer:'M4',name:'List Pathfinder',story:'Store route instructions in a list.',
-      concept:'Lists []',reqText:'Use a list [ ]',reqRegex:/\[.*\]/,
-      optMoves:10,moveLimit:-1,xpBase:100,w:8,h:8,
-      map:[[2,0,0,0,3,0,0,0],[0,1,1,1,0,1,1,1],[0,0,0,0,0,0,0,0],[1,1,1,0,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],
-      code:`import agent\n\n# Layer M4: Use a list for your path\n\npath = ["right", "right", "right", "right"]\n\nfor d in path:\n    agent.move(d, 1)\n`
-    },
-    {
-      layer:'M5',name:'While Protocol',story:'Loop until the condition triggers.',
-      concept:'while loops',reqText:'Use a while loop',reqRegex:/while\s+/,
-      optMoves:7,moveLimit:-1,xpBase:110,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,1],[0,1,0,1,0,1,0,1],[0,1,0,1,0,1,0,1],[0,1,0,1,0,1,0,1],[0,1,0,1,0,1,0,1],[0,1,0,1,0,1,0,1],[3,1,0,1,0,1,0,1]],
-      code:`import agent\n\n# Layer M5: Use a while loop to move\n\nsteps = 7\nwhile steps > 0:\n    agent.move("down", 1)\n    steps -= 1\n`
-    },
-    {
-      layer:'M6',name:'Snake Descent',story:'Navigate the serpentine corridor.',
-      concept:'Loops',reqText:'Use a loop',reqRegex:/for|while/,
-      optMoves:20,moveLimit:-1,xpBase:120,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer M6: Navigate the snake corridor\n\nmoves = [\n    ("right", 7), ("down", 2),\n    ("left", 7), ("down", 2),\n    ("right", 7), ("down", 2),\n]\n\nfor d, n in moves:\n    agent.move(d, n)\n`
-    },
-    {
-      layer:'M7',name:'The Corridor',story:'Navigate the tight spiral tunnel.',
-      concept:'Pathfinding',reqText:'Any valid code',reqRegex:/./,
-      optMoves:14,moveLimit:-1,xpBase:130,w:8,h:8,
-      map:[[1,1,1,1,1,1,1,1],[2,0,0,0,0,0,0,1],[1,1,1,1,1,1,0,1],[1,0,0,0,0,0,0,1],[1,0,1,1,1,1,1,1],[1,0,0,0,0,0,0,3],[1,1,1,1,1,1,1,1],[1,1,1,1,1,1,1,1]],
-      code:`import agent\n\n# Layer M7: Spiral tunnel - plan your route!\n\nagent.move("right", 6)\nagent.move("down", 2)\nagent.move("left", 5)\nagent.move("down", 2)\nagent.move("right", 6)\n`
-    },
-    {
-      layer:'M8',name:'Grand Architect',story:'Combine all concepts for the finale.',
-      concept:'All concepts',reqText:'Use loops + functions',reqRegex:/def|for|while/,
-      optMoves:20,moveLimit:-1,xpBase:160,w:8,h:8,
-      map:[[2,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,1],[0,0,0,0,0,0,0,0],[1,0,1,0,1,0,1,0],[0,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,1],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]],
-      code:`import agent\n\n# Layer M8: Grand Architect — use all concepts!\n\ndef sweep(d, n):\n    for _ in range(n):\n        agent.move(d, 1)\n\nsweep("right", 7)\nsweep("down", 2)\nsweep("left", 7)\nsweep("down", 2)\nsweep("right", 7)\nsweep("down", 2)\n`
-    }
-  ],
-  hard:[
-    {
-      layer:'H1',name:'Key Protocol',story:'Collect the KEY before you can pass the LOCKED DOOR.',
-      concept:'for loops',reqText:'Use a for loop',reqRegex:/for\s+\w+\s+in/,
-      optMoves:44,moveLimit:60,xpBase:180,w:12,h:12,
-      map:[
-        [2,0,0,0,0,0,4,0,0,0,0,0],
-        [0,1,1,1,1,1,0,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,5,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,3]
-      ],
-      code:`import agent\n\n# Layer H1: Key Protocol\n# Collect the KEY (cyan diamond) before reaching the LOCKED DOOR (orange).\n\n# Step 1: Get the key\nfor _ in range(6):\n    agent.move("right", 1)\n\n# Step 2: Navigate via gap\nagent.move("down", 2)\nagent.move("right", 5)\nagent.move("down", 2)\nagent.move("left", 6)\n\n# Unlock the door at (5,5)\nagent.move("down", 1)\n\n# Step 3: Navigate to goal\nagent.move("down", 1)\nagent.move("left", 4)\nagent.move("down", 2)\nagent.move("right", 11)\nagent.move("down", 2)\nagent.move("left", 11)\nagent.move("down", 2)\nagent.move("right", 11)\n`
-    },
-    {
-      layer:'H2',name:'Portal Jump',story:'Use teleport portals to cross the security grid.',
-      concept:'def functions',reqText:'Define a function (def)',reqRegex:/def/,
-      optMoves:26,moveLimit:40,xpBase:200,w:12,h:12,
-      map:[
-        [2,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,6,0,0,0,0,0,0],
-        [1,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,7,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,3]
-      ],
-      code:`import agent\n\n# Layer H2: Portal Jump\n# Portals (purple circles) teleport you to the paired portal!\n\ndef go(d, n):\n    agent.move(d, n)\n\n# Navigate to Portal A at (5,2)\ngo("right", 5)\ngo("down", 2)\n\n# TELEPORTED to Portal B at (4,8)!\n\n# Navigate from (4,8) to goal at (11,11)\ngo("right", 7)\ngo("down", 2)\ngo("left", 11)\ngo("down", 1)\ngo("right", 11)\n`
-    },
-    {
-      layer:'H3',name:'Fragment Hunt',story:'Collect data fragments for maximum XP. Watch the move limit!',
-      concept:'while loops',reqText:'Use a while loop',reqRegex:/while\s+/,
-      optMoves:35,moveLimit:50,xpBase:220,w:12,h:12,
-      map:[
-        [2,0,0,8,0,0,0,0,0,0,0,0],
-        [0,1,1,1,0,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,8,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,8,0,0,0,0,0,0,0,0],
-        [0,1,1,1,0,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,3]
-      ],
-      code:`import agent\n\n# Layer H3: Fragment Hunt\n# Collect all 3 data fragments (★) for max stars!\n# MOVE LIMIT: 50 — be efficient!\n\n# Fragment 1 at (3,0)\ncount = 3\nwhile count > 0:\n    agent.move("right", 1)\n    count -= 1\n\n# Navigate down\nagent.move("down", 2)\nagent.move("right", 8)\nagent.move("down", 2)\nagent.move("left", 11)\n\n# Fragment 2 at (7,5)\nagent.move("down", 1)\nagent.move("right", 7)\nagent.move("down", 1)\n\n# Continue down\nagent.move("left", 7)\nagent.move("down", 2)\nagent.move("right", 3)\n\n# Fragment 3 at (3,8)\nagent.move("down", 1)\n\n# Go to goal\nagent.move("down", 2)\nagent.move("right", 8)\n`
-    },
-    {
-      layer:'H4',name:'Master Protocol',story:'All mechanics active. Keys, Portals, Fragments, Limit.',
-      concept:'All concepts',reqText:'Use functions + loops',reqRegex:/def|for|while/,
-      optMoves:42,moveLimit:60,xpBase:260,w:12,h:12,
-      map:[
-        [2,0,0,0,0,4,0,0,8,0,0,0],
-        [0,1,1,1,1,1,0,1,1,0,1,0],
-        [0,0,0,0,0,0,0,0,0,0,1,0],
-        [1,1,1,1,1,1,1,1,1,0,1,0],
-        [0,0,0,0,6,0,0,0,0,0,0,0],
-        [0,1,1,1,1,5,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,1,1,1,7,1,1,8,1,1,1,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,1,1,1,1,1,1,1,1,0],
-        [0,0,0,0,0,0,0,0,8,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,3]
-      ],
-      code:`import agent\n\n# Layer H4: Master Protocol\n\ndef go(d, n):\n    for _ in range(n):\n        agent.move(d, 1)\n\ngo("right", 8)\ngo("left", 3)\ngo("down", 2)\ngo("right", 7)\ngo("down", 1)\ngo("left", 7)\ngo("left", 3)\ngo("down", 1)\ngo("right", 10)\ngo("down", 1)\ngo("left", 11)\ngo("down", 1)\ngo("right", 8)\ngo("right", 3)\ngo("down", 1)\n`
-    }
-  ]
-};
-
-// ════════════════════════════════════════════
-//  PROCEDURAL MAZE GENERATOR
-// ════════════════════════════════════════════
-let expertConceptIdx=0;
-const EXPERT_CONCEPTS=[
-  {concept:'Loops',reqText:'Use a for loop',reqRegex:/for\s+\w+\s+in/,xpBase:200,moveLimit:80,
-   code:`import agent\n\n# EXPERT: Procedurally Generated Maze!\n# Explore with loops.\n\nfor _ in range(5):\n    agent.move("right", 1)\n    agent.move("down", 1)\n`},
-  {concept:'Functions',reqText:'Define a function (def)',reqRegex:/def/,xpBase:200,moveLimit:80,
-   code:`import agent\n\n# EXPERT: New procedural layout!\n\ndef go(d, n):\n    agent.move(d, n)\n\ngo("down", 5)\ngo("right", 5)\n`},
-  {concept:'While loops',reqText:'Use a while loop',reqRegex:/while\s+/,xpBase:200,moveLimit:80,
-   code:`import agent\n\n# EXPERT: Fresh maze generated!\n\nn = 7\nwhile n > 0:\n    agent.move("down", 1)\n    n -= 1\n`}
-];
-
-function genMaze(W,H){
-  const g=Array.from({length:H},()=>Array(W).fill(1));
-  function carve(x,y){
-    const dirs=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);
-    for(const[dx,dy]of dirs){
-      const nx=x+dx,ny=y+dy;
-      if(nx>0&&nx<W-1&&ny>0&&ny<H-1&&g[ny][nx]===1){
-        g[y+dy/2][x+dx/2]=0;g[ny][nx]=0;carve(nx,ny);
-      }
-    }
-  }
-  g[1][1]=0;carve(1,1);
-  g[1][1]=2;g[H-2][W-2]=3;
-  let fragCount=0;
-  for(let y=1;y<H-1&&fragCount<3;y++)for(let x=1;x<W-1&&fragCount<3;x++)
-    if(g[y][x]===0&&Math.random()<.04){g[y][x]=8;fragCount++;}
-  return{w:W,h:H,map:g};
-}
-
-function getExpertLevel(){
-  const c=EXPERT_CONCEPTS[expertConceptIdx%EXPERT_CONCEPTS.length];
-  const{w,h,map}=genMaze(15,15);
-  return{
-    layer:'EX'+(expertConceptIdx+1),name:'Expert Maze #'+(expertConceptIdx+1),
-    story:'Procedurally generated. Navigate the unknown lattice.',
-    ...c,optMoves:999,w,h,map
-  };
-}
-
-// ════════════════════════════════════════════
-//  GAME STATE
-// ════════════════════════════════════════════
-let editor=null;
-let pyodide=null;
-let diff='easy',levelSet=[],gLevelIdx=0;
-let playerPos={x:0,y:0},mapState=[],inventory={keys:0,frags:0};
-let moveQueue=[],isPlaying=false,movesMade=0,movesLimit=-1,movesLimitOrig=-1;
-let bestScores={},showCoords=false;
-let CELL_SIZE=54,GAP=2;
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const MOVE_DUR=210;
-
-function currentLevel(){return levelSet[gLevelIdx];}
-
-// ════════════════════════════════════════════
-//  PYODIDE INIT — Real Python execution
-// ════════════════════════════════════════════
-async function initPyodide() {
-  const setLoad = (t, s, pct) => {
-    document.getElementById('loader-t').textContent = t;
-    document.getElementById('loader-s').textContent = s;
-    if (pct !== undefined) {
-      document.getElementById('loader-progress-fill').style.width = pct + '%';
-    }
-  };
-
-  try {
-    setLoad('LOADING PYTHON ENGINE', 'Fetching Pyodide runtime (~10MB)...', 10);
-    pyodide = await loadPyodide({
-      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/'
-    });
-    setLoad('PYTHON READY', 'Setting up agent module...', 75);
-
-    // Moves are stored in Python list _move_log.
-    // After user code runs, JS reads it via pyodide.globals.get().toJs()
-    // This is the correct, reliable Pyodide pattern — no JS callbacks needed.
-    pyodide.runPython(`
-import sys
-
-_move_log = []
-
-class _AgentModule:
-    def move(self, direction, steps=1):
-        direction = str(direction)
-        steps = int(steps)
-        if direction not in ("up", "down", "left", "right"):
-            raise ValueError("Invalid direction '" + direction + "'. Use: up, down, left, right")
-        if steps < 1:
-            raise ValueError("Steps must be >= 1, got " + str(steps))
-        _move_log.append([direction, steps])
-
-agent = _AgentModule()
-sys.modules['agent'] = agent
-`);
-
-    setLoad('ALL SYSTEMS GO', 'Neural simulation ready!', 100);
-    await sleep(400);
-    await initMonaco();
-
-  } catch(e) {
-    setLoad('BOOT ERROR', 'Check internet connection & reload.', 0);
-    console.error(e);
-    log('Failed to load Pyodide: ' + (e.message || e), 'e');
-  }
-}
-
-async function initMonaco() {
-  return new Promise(resolve => {
-    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' } });
-    require(['vs/editor/editor.main'], () => {
-      monaco.editor.defineTheme('neural', {
-        base: 'vs-dark', inherit: true,
-        rules: [
-          { token: 'keyword', foreground: '00F0FF' },
-          { token: 'string', foreground: 'FFD43B' },
-          { token: 'comment', foreground: '2a3a50', fontStyle: 'italic' },
-          { token: 'number', foreground: '00D26A' },
-          { token: 'identifier', foreground: 'b0c8e0' },
-        ],
-        colors: {
-          'editor.background': '#06080f', 'editor.foreground': '#b0c8e0',
-          'editorLineNumber.foreground': '#1a2535', 'editorLineNumber.activeForeground': '#00F0FF',
-          'editor.selectionBackground': '#00F0FF18', 'editorCursor.foreground': '#00F0FF',
-          'editorIndentGuide.background': '#0d1525', 'editor.lineHighlightBackground': '#0a1020',
+        class Node {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * W; this.y = Math.random() * H;
+                this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3;
+                this.r = Math.random() * 1.2 + 0.3;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > W) this.vx *= -1;
+                if (this.y < 0 || this.y > H) this.vy *= -1;
+            }
         }
-      });
-      editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-        value: '# Select difficulty to begin...',
-        language: 'python', theme: 'neural',
-        fontFamily: 'JetBrains Mono', fontSize: 13, lineHeight: 22,
-        minimap: { enabled: false }, scrollBeyondLastLine: false,
-        padding: { top: 12, bottom: 12 }, automaticLayout: true,
-        renderLineHighlight: 'line', smoothScrolling: true,
-        cursorBlinking: 'smooth', cursorSmoothCaretAnimation: 'on',
-      });
-      editor.onDidChangeModelContent(() => updateCodeStats());
-      resolve();
-    });
-  });
-}
 
-// ════════════════════════════════════════════
-//  STARTUP
-// ════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', async () => {
-  await initPyodide();
-  document.getElementById('modal-loader').style.display = 'none';
-  document.getElementById('modal-diff').style.display = 'flex';
-  log('Python engine loaded. Real Python — no transpiler!', 's');
-});
+        function init() {
+            resize();
+            nodes = Array.from({ length: 80 }, () => new Node());
+        }
 
-// ════════════════════════════════════════════
-//  DIFFICULTY & LEVEL MANAGEMENT
-// ════════════════════════════════════════════
-function selectDiff(d){
-  diff=d;
-  document.getElementById('modal-diff').style.display='none';
-  document.getElementById('modal-tut').style.display='flex';
-  if(d==='expert') levelSet=[getExpertLevel()];
-  else levelSet=LEVELS[d];
-  gLevelIdx=0;
-  initLevel(0);
-  log(`Protocol: ${d.toUpperCase()} selected.`,'i');
-}
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+            // Connections
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(0,240,255,${0.04 * (1 - dist/130)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            // Nodes
+            for (const n of nodes) {
+                n.update();
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+                ctx.fillStyle = 'rgba(93,95,239,0.6)';
+                ctx.fill();
+            }
+            requestAnimationFrame(draw);
+        }
 
-function closeTut(){
-  document.getElementById('modal-tut').style.display='none';
-  snd.click();
-}
+        window.addEventListener('resize', init);
+        init(); draw();
+    })();
 
-function initLevel(idx){
-  if(idx>=levelSet.length){
-    if(diff==='expert'){
-      expertConceptIdx++;
-      levelSet=[getExpertLevel()];
-      idx=0;
-    }else{
-      log('ALL LAYERS CLEARED! You are GRANDMASTER!','s');
-      alert('🏆 ALL LAYERS CLEARED! You are GRANDMASTER!');
-      return;
+    // ─── SOUND ENGINE ───
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function resume() { if (audioCtx.state === 'suspended') audioCtx.resume(); }
+    function playTone(freq, type, dur, vol=0.08) {
+        resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = type; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
     }
-  }
-  gLevelIdx=idx;
-  const lv=currentLevel();
-  movesMade=0;movesLimit=lv.moveLimit;movesLimitOrig=lv.moveLimit;
-  inventory={keys:0,frags:0};
-  mapState=lv.map.map(r=>[...r]);
-
-  document.getElementById('lv-num').textContent=`LAYER ${lv.layer}`;
-  document.getElementById('lv-name').textContent=lv.name;
-  document.getElementById('lv-story').textContent=lv.story;
-  document.getElementById('h-layer').textContent=`${idx+1}/${levelSet.length}`;
-  document.getElementById('m-text').textContent=lv.story;
-  document.getElementById('m-req').textContent=lv.reqText;
-  document.getElementById('h-best').textContent=bestScores[diff+'_'+idx]||'—';
-  document.getElementById('h-keys').textContent='0';
-  document.getElementById('h-frags').textContent='0';
-  updateMoveCounter();
-  if(editor)editor.setValue(lv.code);
-  updateCodeStats();
-  updateStarsDisplay(0);
-  renderGrid();
-  log(`Layer ${lv.layer} initialized. Concept: ${lv.concept}`,'i');
-  if(lv.moveLimit>0)log(`Move limit: ${lv.moveLimit}. Plan efficiently!`,'w');
-}
-
-function updateMoveCounter(){
-  document.getElementById('h-moves').textContent=movesMade;
-  const limitEl=document.getElementById('h-limit');
-  const track=document.getElementById('limit-track');
-  const fill=document.getElementById('limit-fill');
-  if(movesLimit>0){
-    limitEl.textContent=movesLimit;
-    track.style.display='block';
-    const pct=(movesLimit/movesLimitOrig)*100;
-    fill.style.width=pct+'%';
-    fill.style.background=pct>50?'var(--green)':pct>25?'var(--gold)':'var(--red)';
-    limitEl.style.color=pct>50?'var(--green)':pct>25?'var(--gold)':'var(--red)';
-  }else{
-    limitEl.textContent='∞';limitEl.style.color='var(--green)';
-    track.style.display='none';
-  }
-}
-
-// ════════════════════════════════════════════
-//  GRID RENDERING
-// ════════════════════════════════════════════
-function calcCellSize(){
-  const area=document.getElementById('grid-area');
-  const lv=currentLevel();
-  const aw=area.clientWidth-50,ah=area.clientHeight-50;
-  const cs=Math.min(
-    Math.floor((aw-GAP*(lv.w-1))/lv.w),
-    Math.floor((ah-GAP*(lv.h-1))/lv.h),
-    60
-  );
-  return Math.max(cs,24);
-}
-
-function renderGrid(){
-  if(!currentLevel())return;
-  const lv=currentLevel();
-  CELL_SIZE=calcCellSize();
-
-  const colEl=document.getElementById('col-labels');
-  colEl.innerHTML='';colEl.style.gap=GAP+'px';
-  for(let x=0;x<lv.w;x++){
-    const d=document.createElement('div');d.className='col-lbl';d.textContent=x;
-    d.style.width=CELL_SIZE+'px';d.style.height='14px';colEl.appendChild(d);
-  }
-
-  const rowEl=document.getElementById('row-labels');
-  rowEl.innerHTML='';rowEl.style.gap=GAP+'px';
-  for(let y=0;y<lv.h;y++){
-    const d=document.createElement('div');d.className='row-lbl';d.textContent=y;
-    d.style.width='18px';d.style.height=CELL_SIZE+'px';rowEl.appendChild(d);
-  }
-
-  const grid=document.getElementById('game-grid');
-  grid.innerHTML='';
-  grid.style.gridTemplateColumns=`repeat(${lv.w},${CELL_SIZE}px)`;
-  grid.style.gap=GAP+'px';
-
-  const wrapper=document.getElementById('grid-wrapper');
-  wrapper.style.width=(lv.w*(CELL_SIZE+GAP)-GAP)+'px';
-  wrapper.style.height=(lv.h*(CELL_SIZE+GAP)-GAP)+'px';
-  wrapper.className='grid-wrapper'+(showCoords?' show-coords':'');
-
-  for(let y=0;y<lv.h;y++){
-    for(let x=0;x<lv.w;x++){
-      const cell=document.createElement('div');
-      cell.className='grid-cell';cell.id=`c-${x}-${y}`;
-      cell.dataset.coord=`${x},${y}`;
-      cell.style.width=CELL_SIZE+'px';cell.style.height=CELL_SIZE+'px';
-      renderCell(cell,mapState[y][x]);
-      grid.appendChild(cell);
+    function playClick() { playTone(900, 'sine', 0.08, 0.05); }
+    function playMove()  { playTone(660, 'sine', 0.1, 0.04); }
+    function playError() { playTone(180, 'sawtooth', 0.3, 0.06); }
+    function playWin()   {
+        [500, 700, 900].forEach((f,i) => setTimeout(() => playTone(f, 'sine', 0.4, 0.08), i*120));
     }
-  }
+    function playStart() { playTone(440, 'triangle', 0.3, 0.05); }
 
-  for(let y=0;y<lv.h;y++)for(let x=0;x<lv.w;x++)
-    if(lv.map[y][x]===2){playerPos={x,y};break;}
+    // ─── PROGRESSION ───
+    const RANKS = [
+        { name: 'NOVICE', xpNeeded: 0 },
+        { name: 'INITIATE', xpNeeded: 100 },
+        { name: 'DEVELOPER', xpNeeded: 250 },
+        { name: 'ARCHITECT', xpNeeded: 500 },
+        { name: 'GRANDMASTER', xpNeeded: 800 },
+    ];
+    let totalXP = 0;
 
-  initPlayerSprite();
-}
-
-function renderCell(cell,type){
-  cell.innerHTML='';
-  if(type===1)cell.innerHTML='<div class="ent-wall"><i class="fa-solid fa-xmark"></i></div>';
-  else if(type===3)cell.innerHTML='<div class="ent-goal"></div>';
-  else if(type===4)cell.innerHTML='<div class="ent-key"><i class="fa-solid fa-key"></i></div>';
-  else if(type===5)cell.innerHTML='<div class="ent-door"><i class="fa-solid fa-lock"></i></div>';
-  else if(type===6||type===7)cell.innerHTML='<div class="ent-portal"></div>';
-  else if(type===8)cell.innerHTML='<div class="ent-frag"></div>';
-}
-
-function refreshCell(x,y){
-  const cell=document.getElementById(`c-${x}-${y}`);
-  if(cell)renderCell(cell,mapState[y][x]);
-}
-
-// ════════════════════════════════════════════
-//  PLAYER SPRITE
-// ════════════════════════════════════════════
-function getPx(x){return x*(CELL_SIZE+GAP);}
-function getPy(y){return y*(CELL_SIZE+GAP);}
-
-function initPlayerSprite(){
-  const sp=document.getElementById('player-sprite');
-  sp.style.width=CELL_SIZE+'px';sp.style.height=CELL_SIZE+'px';
-  sp.style.transition='none';
-  sp.style.transform=`translate(${getPx(playerPos.x)}px,${getPy(playerPos.y)}px)`;
-  sp.getBoundingClientRect();
-  sp.style.transition=`transform ${MOVE_DUR}ms cubic-bezier(.25,.46,.45,.94)`;
-  sp.classList.remove('shake');
-}
-
-function moveSpriteTo(x,y){
-  const sp=document.getElementById('player-sprite');
-  sp.classList.add('is-moving');
-  sp.style.transform=`translate(${getPx(x)}px,${getPy(y)}px)`;
-}
-
-function spawnTrail(x,y){
-  const wrapper=document.getElementById('grid-wrapper');
-  const dot=document.createElement('div');dot.className='trail-dot';
-  dot.style.left=getPx(x)+'px';dot.style.top=getPy(y)+'px';
-  dot.style.width=CELL_SIZE+'px';dot.style.height=CELL_SIZE+'px';
-  dot.style.borderRadius='2px';
-  wrapper.appendChild(dot);
-  setTimeout(()=>dot.remove(),1300);
-}
-
-function shakePlayer(){
-  const sp=document.getElementById('player-sprite');
-  const tx=getPx(playerPos.x),ty=getPy(playerPos.y);
-  sp.style.setProperty('--tx',tx+'px');sp.style.setProperty('--ty',ty+'px');
-  sp.classList.remove('shake');sp.getBoundingClientRect();
-  sp.classList.add('shake');
-  setTimeout(()=>sp.classList.remove('shake'),400);
-}
-
-function flashCell(x,y,cls){
-  const cell=document.getElementById(`c-${x}-${y}`);
-  if(!cell)return;
-  cell.classList.remove(cls);cell.getBoundingClientRect();
-  cell.classList.add(cls);setTimeout(()=>cell.classList.remove(cls),500);
-}
-
-function spawnWinParticles(x,y){
-  const wrapper=document.getElementById('grid-wrapper');
-  const cx=getPx(x)+CELL_SIZE/2,cy=getPy(y)+CELL_SIZE/2;
-  const colors=['#FFD43B','#00F0FF','#00D26A','#fff','#FF8C42'];
-  for(let i=0;i<18;i++){
-    const p=document.createElement('div');p.className='win-particle';
-    const angle=(i/18)*Math.PI*2;const dist=35+Math.random()*45;
-    const color=colors[i%colors.length];
-    p.style.cssText=`left:${cx}px;top:${cy}px;background:${color};--pdx:${Math.cos(angle)*dist}px;--pdy:${Math.sin(angle)*dist}px;box-shadow:0 0 6px ${color};`;
-    wrapper.appendChild(p);setTimeout(()=>p.remove(),950);
-  }
-}
-
-// ════════════════════════════════════════════
-//  CODE EXECUTION — Real Python via Pyodide
-// ════════════════════════════════════════════
-async function runCode(){
-  if(isPlaying)return;
-  if(!editor){log('Editor not ready.','e');return;}
-  if(!currentLevel()){log('Select a difficulty first.','e');return;}
-  if(!pyodide){log('Python engine not loaded yet. Please wait.','e');return;}
-
-  // Reset state
-  moveQueue=[];movesMade=0;
-  mapState=currentLevel().map.map(r=>[...r]);
-  inventory={keys:0,frags:0};
-  movesLimit=movesLimitOrig;
-  document.getElementById('h-keys').textContent='0';
-  document.getElementById('h-frags').textContent='0';
-  updateMoveCounter();
-  renderGrid();
-
-  const code=editor.getValue();
-  const lv=currentLevel();
-
-  if(!lv.reqRegex.test(code)){
-    log('REJECTED: '+lv.reqText,'e');snd.error();return;
-  }
-
-  document.getElementById('run-btn').disabled=true;
-  log('Running Python...','p');snd.start();
-
-  if(window.innerWidth<=768)switchTab('grid');
-
-  try {
-    // Clear _move_log before running user code
-    pyodide.runPython('_move_log.clear()');
-
-    // Run the user's Python code
-    await pyodide.runPythonAsync(code);
-
-    // Read moves back from Python using .toJs() — the correct Pyodide API
-    // _move_log is a list of [direction, steps] lists
-    const pyList = pyodide.globals.get('_move_log');
-    const jsArray = pyList.toJs();   // converts Python list -> JS Array of JS Arrays
-    pyList.destroy();
-
-    moveQueue = jsArray.map(item => ({ d: item[0], s: item[1] }));
-
-    if(moveQueue.length > 0) {
-      await playQueue();
-    } else {
-      log('No agent.move() calls detected. Add: agent.move("right", 3)','w');
+    function getRank(xp) {
+        for (let i = RANKS.length - 1; i >= 0; i--) {
+            if (xp >= RANKS[i].xpNeeded) return { rank: RANKS[i], next: RANKS[i+1] || null, idx: i };
+        }
+        return { rank: RANKS[0], next: RANKS[1], idx: 0 };
     }
-  } catch(err) {
-    // Show a clean Python error — strip Pyodide stack noise
-    let msg = err.message || String(err);
-    const lines = msg.split('\n').map(l => l.trim()).filter(l => l);
-    // Find the actual error line (last non-empty line)
-    const lastLine = lines[lines.length - 1] || msg;
-    log('Python error: ' + lastLine, 'e');
-    snd.error();
-  }
 
-  document.getElementById('run-btn').disabled=false;
-}
+    function updateXPBar(xpGained=0) {
+        const { rank, next } = getRank(totalXP);
+        const pct = next ? ((totalXP - rank.xpNeeded) / (next.xpNeeded - rank.xpNeeded)) * 100 : 100;
+        document.getElementById('xp-fill').style.width = pct + '%';
+        document.getElementById('xp-label').textContent = `XP: ${totalXP}`;
+        document.getElementById('rank-badge').textContent = rank.name;
+        if (xpGained > 0) {
+            const popup = document.createElement('div');
+            popup.className = 'xp-popup';
+            popup.textContent = `+${xpGained} XP`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2600);
+        }
+    }
 
-async function playQueue(){
-  isPlaying=true;
+    // ─── LEVELS ───
+    const LEVELS = { 
+  easy: [
+    // ========================
+    // EASY MODE (E1–E10)
+    // ========================
+    { 
+      layer:'E1', name:'Basic Movement', story:'Initialize motor system and reach the node.', 
+      concept:'agent.move()', reqText:'Call agent.move()', reqRegex:/move/, optMoves:6, moveLimit:-1, xpBase:30, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
 
-  for(const mv of moveQueue){
-    for(let i=0;i<mv.s;i++){
-      if(movesLimit===0){
-        log('MOVE LIMIT REACHED! Out of energy.','e');
-        snd.crash();isPlaying=false;
-        showCrash('Move limit reached! You ran out of energy. Optimize your route.');
-        return;
+# LAYER E1: Basic Movement
+# Welcome, A1-Agent. Your avatar is the cyan triangle.
+# The goal is to reach the Quantum Node (gold spinning square).
+# 
+# Use the agent.move() command. 
+# It takes a direction ("up", "down", "left", "right") and a number of steps.
+# Example: agent.move("down", 5)
+
+` 
+    }, 
+    { 
+      layer:'E2', name:'Multiple Directions', story:'Combine horizontal and vertical movement.', 
+      concept:'agent.move()', reqText:'Use agent.move() multiple times', reqRegex:/move/, optMoves:8, moveLimit:-1, xpBase:35, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,1,0,1,0],[0,0,0,0,0,0],[0,1,1,0,1,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E2: Multiple Directions
+# Firewalls (red boxes with X's) will instantly crash your system!
+# You must combine different directional moves to navigate around them.
+# 
+# Chain multiple agent.move() commands together to zigzag to the core.
+
+` 
+    }, 
+    { 
+      layer:'E3', name:'Variables', story:'Store step counts inside memory.', 
+      concept:'Variables', reqText:'Define a variable', reqRegex:/[a-zA-Z_]\w*\s*=/, optMoves:8, moveLimit:-1, xpBase:40, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E3: Memory Allocation (Variables)
+# Storing data in variables makes your code cleaner and reusable.
+# Define a variable (e.g., steps = 2) and pass it into your move command.
+# 
+# Example:
+# my_steps = 3
+# agent.move("right", my_steps)
+
+` 
+    }, 
+    { 
+      layer:'E4', name:'Arithmetic Logic', story:'Calculate movement dynamically.', 
+      concept:'Arithmetic', reqText:'Use + - * or /', reqRegex:/[\+\-\*\/]/, optMoves:10, moveLimit:-1, xpBase:45, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,1,1,0,0],[0,0,0,0,0,0],[0,1,1,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E4: Arithmetic Logic
+# You can do math inside your code to calculate exactly how far to move.
+# You must use an arithmetic operator (+, -, *, or /) to pass this layer.
+# 
+# Example:
+# agent.move("down", 1 + 1)
+# agent.move("right", 2 * 2)
+
+` 
+    }, 
+    { 
+      layer:'E5', name:'Conditional Check', story:'Movement depends on condition.', 
+      concept:'if', reqText:'Use an if statement', reqRegex:/if\s+/, optMoves:10, moveLimit:-1, xpBase:50, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E5: Conditional Check
+# Introduce decision-making into your protocol using 'if' statements.
+# The code inside the 'if' block only runs if the condition is True.
+# 
+# Example:
+# execute_protocol = True
+# if execute_protocol:
+#     agent.move("down", 2)
+
+` 
+    }, 
+    { 
+      layer:'E6', name:'Branching Logic', story:'Choose between two paths.', 
+      concept:'if-else', reqText:'Use if-else', reqRegex:/else/, optMoves:12, moveLimit:-1, xpBase:55, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,1,0,1,0,0],[3,0,0,0,0,0],[0,0,0,0,0,0]], 
+      code:`import agent
+
+# LAYER E6: Branching Logic
+# Expand your decision-making with 'else'. 
+# If the first condition is False, it will execute the fallback code.
+#
+# Example:
+# path_clear = False
+# if path_clear:
+#     agent.move("right", 5)
+# else:
+#     agent.move("down", 2)
+
+` 
+    }, 
+    { 
+      layer:'E7', name:'For Loop', story:'Remove repetition using iteration.', 
+      concept:'for loop', reqText:'Use a for loop', reqRegex:/for\s+\w+\s+in/, optMoves:10, moveLimit:-1, xpBase:60, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,0,0],[0,1,1,1,1,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E7: Iteration Protocol (For Loops)
+# Don't write the same commands over and over!
+# Use a 'for' loop to repeat actions efficiently to navigate the zigzag.
+#
+# Example:
+# for i in range(3):
+#     agent.move("right", 1)
+#     agent.move("down", 1)
+
+` 
+    }, 
+    { 
+      layer:'E8', name:'While Loop', story:'Loop until condition is false.', 
+      concept:'while loop', reqText:'Use a while loop', reqRegex:/while\s+/, optMoves:10, moveLimit:-1, xpBase:65, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,0,1,0,1],[0,1,0,1,0,1],[0,1,0,1,0,1],[0,1,0,1,0,1],[3,1,0,1,0,1]], 
+      code:`import agent
+
+# LAYER E8: While Loop
+# 'while' loops continue running as long as a condition remains True.
+# Great for continuous movement until a variable reaches zero.
+#
+# Example:
+# steps = 4
+# while steps > 0:
+#     agent.move("down", 1)
+#     steps -= 1
+
+` 
+    }, 
+    { 
+      layer:'E9', name:'Functions', story:'Encapsulate repeated behavior.', 
+      concept:'def', reqText:'Define a function', reqRegex:/def\s+\w+\(/, optMoves:12, moveLimit:-1, xpBase:70, w:6, h:6, 
+      map:[[2,0,0,0,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,1,0,1,0,0],[0,0,0,0,0,0],[0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER E9: Functional Abstraction
+# You can define your own custom commands using 'def'.
+# Build a function that handles your movement logic, then call it!
+#
+# Example:
+# def go_around():
+#     agent.move("right", 2)
+#     agent.move("down", 4)
+#
+# go_around()
+
+` 
+    }, 
+    { 
+      layer:'E10', name:'List Iteration', story:'Store route instructions inside a list.', 
+      concept:'Lists', reqText:'Use a list', reqRegex:/\[.*\]/, optMoves:14, moveLimit:-1, xpBase:80, w:6, h:6, 
+      map:[[2,0,0,3,0,0],[0,1,1,0,1,1],[0,0,0,0,0,0],[1,1,0,1,1,0],[0,0,0,0,0,0],[0,0,0,0,0,0]], 
+      code:`import agent
+
+# LAYER E10: Data Structures (Lists)
+# Lists allow you to store a sequence of data, like route directions.
+# You can loop through a list to execute an entire path systematically.
+#
+# Example:
+# route = ["right", "right", "down", "down"]
+# for direction in route:
+#     agent.move(direction, 1)
+
+` 
+    } 
+  ], 
+  medium: [
+    // ========================
+    // MEDIUM MODE (M1–M10)
+    // ========================
+    { 
+      layer:'M1', name:'Nested Loops', story:'Traverse patterned structures.', 
+      concept:'Nested loops', reqText:'Use nested loops', reqRegex:/for[\s\S]*for/, optMoves:18, moveLimit:-1, xpBase:100, w:8, h:8, 
+      map:[[2,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M1: Nested Loops
+# The maze features repeating corridor structures.
+# Use a loop INSIDE another loop to conquer complex repetitive geometry.
+#
+# Example:
+# for _ in range(3):
+#     for _ in range(2):
+#         agent.move("right", 1)
+#     agent.move("down", 1)
+
+` 
+    }, 
+    { 
+      layer:'M2', name:'Dynamic Patterns', story:'Generate movement dynamically.', 
+      concept:'Pattern logic', reqText:'Use arithmetic inside loop', reqRegex:/for[\s\S]*[\+\-\*\/]/, optMoves:20, moveLimit:-1, xpBase:110, w:8, h:8, 
+      map:[[2,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M2: Dynamic Patterns
+# Instead of hardcoding steps, use loop variables mathematically!
+# You must use an arithmetic operator (+, -, *, /) INSIDE a for loop.
+#
+# Example:
+# for i in range(1, 4):
+#     agent.move("down", i * 2)
+
+` 
+    }, 
+    { 
+      layer:'M3', name:'Parameterized Functions', story:'Create flexible reusable logic.', 
+      concept:'Function parameters', reqText:'Define function with parameter', reqRegex:/def\s+\w+\(\w+/, optMoves:20, moveLimit:-1, xpBase:120, w:8, h:8, 
+      map:[[2,0,0,0,0,0,0,0],[0,1,1,1,0,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,0,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,0,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M3: Parameterized Functions
+# Make your functions adaptable by passing variables into them.
+# Create a function that accepts 'direction' and 'distance' arguments.
+#
+# Example:
+# def travel(d, n):
+#     agent.move(d, n)
+#
+# travel("right", 5)
+
+` 
+    }, 
+    { 
+      layer:'M4', name:'Condition Inside Loop', story:'Combine iteration and branching.', 
+      concept:'Loop + if', reqText:'Use if inside loop', reqRegex:/for[\s\S]*if/, optMoves:22, moveLimit:-1, xpBase:130, w:8, h:8, 
+      map:[[2,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,0,1,0,0],[0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0]], 
+      code:`import agent
+
+# LAYER M4: Condition Inside Loop
+# By placing an 'if' inside a 'for' loop, you can make the agent change
+# its behavior on specific cycles (like odd or even steps).
+#
+# Example:
+# for i in range(4):
+#     if i % 2 == 0:
+#         agent.move("right", 2)
+#     else:
+#         agent.move("left", 2)
+
+` 
+    }, 
+    { 
+      layer:'M5', name:'2D Grid Traversal', story:'Navigate full grid space.', 
+      concept:'2D traversal', reqText:'Use nested iteration', reqRegex:/for[\s\S]*for/, optMoves:24, moveLimit:-1, xpBase:140, w:9, h:9, 
+      map:Array(9).fill().map((_,i)=>Array(9).fill(i===0?2:(i===8?3:0))), 
+      code:`import agent
+
+# LAYER M5: 2D Grid Traversal
+# The space is entirely open. Traverse from the top-left to the bottom-right.
+# Write a nested loop (a loop inside a loop) to sweep across the grid.
+
+` 
+    }, 
+    { 
+      layer:'M6', name:'Path as Tuples', story:'Store coordinates as data.', 
+      concept:'Tuples', reqText:'Use tuple', reqRegex:/\(/, optMoves:22, moveLimit:-1, xpBase:150, w:8, h:8, 
+      map:[[2,0,0,0,0,0,0,0],[0,1,1,0,1,1,0,0],[0,0,0,0,0,0,0,0],[0,1,1,0,1,1,0,0],[0,0,0,0,0,0,0,0],[0,1,1,0,1,1,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M6: Path Stored as Tuples
+# Tuples are immutable lists. You can use them to store complex pairs of data.
+# Build a list of tuples containing (direction, steps) and iterate through it!
+#
+# Example:
+# route_data = [("right", 3), ("down", 2), ("left", 3)]
+# for d, n in route_data:
+#     agent.move(d, n)
+
+` 
+    }, 
+    { 
+      layer:'M7', name:'State Tracking', story:'Track logical state during run.', 
+      concept:'Boolean state', reqText:'Use boolean variable', reqRegex:/True|False/, optMoves:24, moveLimit:-1, xpBase:160, w:8, h:8, 
+      map:[[2,0,4,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M7: State Tracking
+# Create a boolean (True/False) variable to act as a logic switch in your code.
+# (Note: The map contains a Key (cyan 🔑) you can collect along the way!)
+#
+# Example:
+# going_right = True
+# if going_right:
+#     agent.move("right", 7)
+
+` 
+    }, 
+    { 
+      layer:'M8', name:'Multi Objective', story:'Complete multiple goals.', 
+      concept:'Multiple targets', reqText:'Use loop structure', reqRegex:/for|while/, optMoves:28, moveLimit:-1, xpBase:170, w:9, h:9, 
+      map:[[2,0,4,0,0,4,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M8: Multi-Objective Route
+# There are multiple Keys on the map! While not mandatory for survival yet,
+# practice navigating to specific objects before heading to the Quantum Node.
+# Use loops to efficiently wind your way through the maze.
+
+` 
+    }, 
+    { 
+      layer:'M9', name:'Efficiency Optimization', story:'Operate under strict move limit.', 
+      concept:'Optimization', reqText:'Use loop', reqRegex:/for|while/, optMoves:26, moveLimit:30, xpBase:180, w:9, h:9, 
+      map:[[2,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER M9: Efficiency Optimization
+# WARNING: MOVE LIMIT ACTIVE. 
+# You only have 30 moves available before your agent loses power.
+# Calculate the absolute shortest path to the exit. Do not waste a single step.
+
+` 
+    }, 
+    { 
+      layer:'M10', name:'Branching Maze', story:'Adapt to non-linear maze.', 
+      concept:'Adaptive logic', reqText:'Use condition + loop', reqRegex:/if[\s\S]*for|while/, optMoves:30, moveLimit:-1, xpBase:200, w:10, h:10, 
+      map:Array(10).fill().map((_,i)=>Array(10).fill(i===0?2:(i===9?3:(i%2?1:0)))), 
+      code:`import agent
+
+# LAYER M10: Branching Maze
+# A complex series of walls requires adaptive coding.
+# You must combine 'if' statements with loops ('for' or 'while') to pass
+# the medium mode final test. Plan your execution flawlessly.
+
+` 
+    } 
+  ], 
+  hard: [
+    // ========================
+    // HARD MODE (H1–H10)
+    // ========================
+    { 
+      layer:'H1', name:'Key & Lock Logic', story:'Collect key before unlocking.', 
+      concept:'System logic', reqText:'Use loop', reqRegex:/for|while/, optMoves:40, moveLimit:60, xpBase:220, w:12, h:12, 
+      map:[[2,0,0,0,0,0,4,0,0,0,0,0],[0,1,1,1,1,1,0,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,5,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER H1: Key & Lock Logic
+# NEW MECHANIC: Locked Doors (orange 🚪) block your path!
+# You MUST collect a Key (cyan 🔑) before you can pass through the door.
+# If you hit a door without a key, you will crash. Route accordingly.
+
+` 
+    }, 
+    { 
+      layer:'H2', name:'Portal Teleportation', story:'Adapt to teleport system.', 
+      concept:'Non-linear path', reqText:'Use condition', reqRegex:/if/, optMoves:42, moveLimit:65, xpBase:240, w:12, h:12, 
+      map:[[2,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,6,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,7,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER H2: Portal Teleportation
+# NEW MECHANIC: Quantum Portals (purple circles ⊚).
+# Stepping into a portal will instantly warp your agent to the linked portal.
+# Use this to bypass impassable walls.
+
+` 
+    }, 
+    { 
+      layer:'H3', name:'Fragment Order', story:'Collect fragments efficiently.', 
+      concept:'Ordering logic', reqText:'Use loop', reqRegex:/for|while/, optMoves:45, moveLimit:70, xpBase:260, w:12, h:12, 
+      map:[[2,0,0,8,0,0,0,0,0,0,0,0],[0,1,1,1,0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,8,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,1,1,1,1,1,1,1,1,1,1,0],[0,0,0,8,0,0,0,0,0,0,0,0],[0,1,1,1,0,1,1,1,1,1,1,0],[0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,3]], 
+      code:`import agent
+
+# LAYER H3: Fragment Order
+# NEW MECHANIC: Data Fragments (green stars ★).
+# Collecting fragments gives you bonus XP and unlocks 3-star ratings!
+# Route yourself to collect all 3 fragments before reaching the exit.
+
+` 
+    }, 
+    { 
+      layer:'H4', name:'Resource Constraint', story:'Strict move optimization.', 
+      concept:'Optimization', reqText:'Use loop', reqRegex:/for|while/, optMoves:38, moveLimit:45, xpBase:280, w:12, h:12, 
+      map:Array(12).fill().map((_,i)=>Array(12).fill(i===0?2:(i===11?3:(i%2?1:0)))), 
+      code:`import agent
+
+# LAYER H4: Resource Constraint
+# No gimmicks, just brutal efficiency.
+# The move limit is tight. Write highly optimized loop sequences 
+# to shave off every unnecessary step.
+
+` 
+    }, 
+    { 
+      layer:'H5', name:'Multiple Keys', story:'Handle layered dependencies.', 
+      concept:'State logic', reqText:'Use boolean', reqRegex:/True|False/, optMoves:50, moveLimit:80, xpBase:300, w:13, h:13, 
+      map:Array(13).fill().map((_,i)=>Array(13).fill(i===0?2:(i===12?3:(i%5===0?4:0)))), 
+      code:`import agent
+
+# LAYER H5: Multiple Keys
+# A heavily fortified corridor. You will need multiple keys to open 
+# successive locked doors. Collect them as you go.
+
+` 
+    }, 
+    { 
+      layer:'H6', name:'Dynamic Obstacles', story:'React to environmental changes.', 
+      concept:'Adaptive logic', reqText:'Use condition', reqRegex:/if/, optMoves:55, moveLimit:85, xpBase:320, w:13, h:13, 
+      map:Array(13).fill().map((_,i)=>Array(13).fill(i===0?2:(i===12?3:(i%2?1:0)))), 
+      code:`import agent
+
+# LAYER H6: Dynamic Obstacles
+# Thick firewalls force you into a massive zigzag.
+# Build an adaptive pathfinder utilizing conditions ('if').
+
+` 
+    }, 
+    { 
+      layer:'H7', name:'XP vs Shortest Path', story:'Balance efficiency and reward.', 
+      concept:'Strategic logic', reqText:'Use loop', reqRegex:/for|while/, optMoves:48, moveLimit:75, xpBase:340, w:13, h:13, 
+      map:Array(13).fill().map((_,i)=>Array(13).fill(i===0?2:(i===12?3:(i%4===0?4:0)))), 
+      code:`import agent
+
+# LAYER H7: Strategic Choice
+# Do you have enough moves to grab the data fragments?
+# The move limit forces you to decide between max XP and safe survival.
+
+` 
+    }, 
+    { 
+      layer:'H8', name:'Risk-Reward Route', story:'Choose safer or faster route.', 
+      concept:'Decision logic', reqText:'Use if-else', reqRegex:/else/, optMoves:60, moveLimit:90, xpBase:360, w:14, h:14, 
+      map:Array(14).fill().map((_,i)=>Array(14).fill(i===0?2:(i===13?3:(i%2?1:0)))), 
+      code:`import agent
+
+# LAYER H8: Risk-Reward Route
+# Code an 'if-else' branching logic to manage your pathway.
+# Map out your coordinates carefully!
+
+` 
+    }, 
+    { 
+      layer:'H9', name:'Forced Reusability', story:'Must define multiple functions.', 
+      concept:'Abstraction', reqText:'Define at least two functions', reqRegex:/def[\s\S]*def/, optMoves:55, moveLimit:85, xpBase:380, w:14, h:14, 
+      map:Array(14).fill().map((_,i)=>Array(14).fill(i===0?2:(i===13?3:0))), 
+      code:`import agent
+
+# LAYER H9: Forced Reusability
+# Architecture challenge: You MUST define at least TWO 'def' functions
+# in your script to proceed. Structure your logic cleanly.
+
+` 
+    }, 
+    { 
+      layer:'H10', name:'Final Protocol', story:'All mechanics active. Full system mastery.', 
+      concept:'Full integration', reqText:'Use functions + loops', reqRegex:/def[\s\S]*for|while/, optMoves:70, moveLimit:100, xpBase:500, w:15, h:15, 
+      map:[
+        [2,0,0,0,0,4,0,0,8,0,0,0,0,0,0],
+        [0,1,1,1,1,1,0,1,1,0,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+        [1,1,1,1,1,1,1,1,1,0,1,0,1,1,1],
+        [0,0,0,0,6,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,5,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,7,1,1,8,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,8,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3]
+      ], 
+      code:`import agent
+
+# LAYER H10: Final Protocol (GRANDMASTER)
+# This is it. Keys, Doors, Portals, Fragments, Limits.
+# Prove your mastery of the neural lattice.
+# You must use custom functions and loops together. Good luck, Agent.
+
+` 
+    } 
+  ] 
+};
+    let expertConceptIdx = 0;
+    const EXPERT_CONCEPTS = [
+      {concept:'Loops', reqText:'Use a for loop', reqRegex:/for\s+\w+\s+in/, xpBase:200, code:`import agent\n# EXPERT: Procedural Maze\nfor _ in range(5):\n    agent.move("right", 1)\n`},
+      {concept:'Functions', reqText:'Define a function', reqRegex:/def/, xpBase:200, code:`import agent\n# EXPERT: New procedural layout\ndef go(d, n):\n    agent.move(d, n)\n`}
+    ];
+
+    function genMaze(W,H){
+      const g=Array.from({length:H},()=>Array(W).fill(1));
+      function carve(x,y){
+        const dirs=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);
+        for(const[dx,dy]of dirs){
+          const nx=x+dx, ny=y+dy;
+          if(nx>0&&nx<W-1&&ny>0&&ny<H-1&&g[ny][nx]===1){ g[y+dy/2][x+dx/2]=0; g[ny][nx]=0; carve(nx,ny); }
+        }
       }
-
-      await sleep(MOVE_DUR+20);
-      const res=await processMove(mv.d);
-
-      if(res==='crash'){isPlaying=false;document.getElementById('run-btn').disabled=false;return;}
-      if(res==='win'){isPlaying=false;document.getElementById('run-btn').disabled=false;handleWin();return;}
+      g[1][1]=0; carve(1,1); g[1][1]=2; g[H-2][W-2]=3;
+      return{w:W, h:H, map:g};
     }
-  }
 
-  isPlaying=false;
-  document.getElementById('player-sprite').classList.remove('is-moving');
-  log('Protocol complete. Quantum Node not reached.','w');
-}
-
-async function processMove(dir){
-  const dx=dir==='right'?1:dir==='left'?-1:0;
-  const dy=dir==='down'?1:dir==='up'?-1:0;
-  const nx=playerPos.x+dx,ny=playerPos.y+dy;
-  const lv=currentLevel();
-
-  if(nx<0||nx>=lv.w||ny<0||ny>=lv.h){
-    flashCell(playerPos.x,playerPos.y,'wall-hit');
-    shakePlayer();snd.error();
-    showCrash('Agent hit the boundary wall. Out of bounds!');
-    return'crash';
-  }
-
-  const tile=mapState[ny][nx];
-
-  if(tile===1){
-    flashCell(nx,ny,'wall-hit');shakePlayer();snd.crash();
-    showCrash('Firewall collision! Agent systems critically damaged.');
-    return'crash';
-  }
-
-  if(tile===5){
-    if(inventory.keys>0){
-      inventory.keys--;
-      mapState[ny][nx]=0;
-      document.getElementById('h-keys').textContent=inventory.keys;
-      flashCell(nx,ny,'door-open');refreshCell(nx,ny);snd.unlock();
-      log(`Door unlocked! Keys remaining: ${inventory.keys}`,'s');
-    }else{
-      flashCell(nx,ny,'wall-hit');shakePlayer();snd.crash();
-      showCrash('Locked Door! You need a KEY to pass this barrier.');
-      return'crash';
+    function getExpertLevel(){
+      const c = EXPERT_CONCEPTS[expertConceptIdx % EXPERT_CONCEPTS.length];
+      const {w,h,map} = genMaze(15,15);
+      return { layer:'EX'+(expertConceptIdx+1), name:'Expert Maze', story:'Procedurally generated. Navigate the unknown.', ...c, optMoves:999, w, h, map };
     }
-  }
 
-  spawnTrail(playerPos.x,playerPos.y);
-  movesMade++;
-  if(movesLimit>0)movesLimit--;
-  updateMoveCounter();
+    // ─── STATE ───
+    let pyodide = null, editor = null;
+    let gLevel = 0, playerPos = {x:0,y:0};
+    let moveQueue = [], isPlaying = false;
+    let moveCount = 0, bestScores = {};
+    let lastUsedConcept = false, lastMoveCount = 0;
 
-  if(tile===6||tile===7){
-    const targetType=tile===6?7:6;
-    let tp=null;
-    for(let y=0;y<lv.h&&!tp;y++)for(let x=0;x<lv.w&&!tp;x++)
-      if(mapState[y][x]===targetType)tp={x,y};
-    if(tp){
-      flashCell(nx,ny,'warp-cell');snd.teleport();
-      log(`Portal jump! Teleported to (${tp.x},${tp.y})`,'p');
-      moveSpriteTo(nx,ny);playerPos={x:nx,y:ny};
-      await sleep(MOVE_DUR+50);
-      spawnTrail(nx,ny);
-      moveSpriteTo(tp.x,tp.y);playerPos={x:tp.x,y:tp.y};
-      return'ok';
+    let levels = [];
+    let diff = 'easy';
+    let showCoords = false;
+    let mapState = [];
+    let inventory = {keys: 0, frags: 0};
+    
+    // ─── INIT ───
+    window.addEventListener('DOMContentLoaded', async () => {
+        const setText = (msg, sub='') => {
+            document.getElementById('loader-text').textContent = msg;
+            document.getElementById('loader-sub').textContent = sub;
+        };
+
+        try {
+            // Monaco
+            setText('INITIALIZING EDITOR', 'Loading code environment...');
+            await new Promise(resolve => {
+                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
+                require(['vs/editor/editor.main'], () => {
+                    monaco.editor.defineTheme('neural', {
+                        base: 'vs-dark',
+                        inherit: true,
+                        rules: [
+                            { token: 'keyword', foreground: '00F0FF' },
+                            { token: 'string', foreground: 'FFD43B' },
+                            { token: 'comment', foreground: '3a4558', fontStyle: 'italic' },
+                            { token: 'number', foreground: '00D26A' },
+                            { token: 'identifier', foreground: 'c0cfe0' },
+                        ],
+                        colors: {
+                            'editor.background': '#08080f',
+                            'editor.foreground': '#c0cfe0',
+                            'editorLineNumber.foreground': '#1e2840',
+                            'editorLineNumber.activeForeground': '#00F0FF',
+                            'editor.selectionBackground': '#00F0FF20',
+                            'editorCursor.foreground': '#00F0FF',
+                            'editorIndentGuide.background': '#0d1220',
+                        }
+                    });
+                    editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                        value: '# Select difficulty to begin...',
+                        language: 'python',
+                        theme: 'neural',
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: 13,
+                        lineHeight: 22,
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        padding: { top: 14, bottom: 14 },
+                        renderLineHighlight: 'line',
+                        lineNumbers: 'on',
+                        overviewRulerBorder: false,
+                        smoothScrolling: true,
+                        cursorBlinking: 'smooth',
+                        cursorSmoothCaretAnimation: 'on',
+                    });
+                    // Update code stats on change
+                    editor.onDidChangeModelContent(() => updateCodeStats());
+                    resolve();
+                });
+            });
+
+            // Pyodide
+            setText('LOADING PYTHON KERNEL', 'This takes ~10 seconds on first load...');
+            pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/' });
+
+            pyodide.FS.writeFile('agent.py', `
+import js
+def move(d, s=1):
+    try:
+        js.addToQueue(str(d), int(s))
+    except: pass
+`);
+            window.addToQueue = (d, s) => moveQueue.push({d: String(d), s: parseInt(s)});
+
+            setText('SYSTEM READY', 'Launching neural simulation...');
+            await new Promise(r => setTimeout(r, 600));
+
+            document.getElementById('overlay-loader').style.display = 'none';
+            document.getElementById('overlay-diff').style.display = 'flex'; // Show difficulty select first
+
+        } catch(e) {
+            setText('KERNEL ERROR', e.message || 'Unknown error');
+            console.error(e);
+        }
+    });
+
+    // ─── LEVEL MANAGEMENT ───
+    function initLevel(idx) {
+        gLevel = idx;
+        const lv = levels[idx];
+        moveCount = 0;
+        mapState = lv.map.map(row => [...row]);
+        inventory = {keys: 0, frags: 0};
+
+        document.getElementById('level-num').textContent = `LAYER ${lv.layer}`;
+        document.getElementById('level-name').textContent = lv.name;
+        document.getElementById('level-story').textContent = lv.story;
+        document.getElementById('stat-layer').textContent = `${idx+1} / ${levels.length}`;
+        document.getElementById('stat-moves').textContent = '0';
+        document.getElementById('stat-concept').textContent = lv.concept;
+        document.getElementById('mission-text').textContent = lv.story;
+        document.getElementById('mission-req').textContent = lv.reqText;
+
+        const best = bestScores[idx];
+        document.getElementById('stat-best').textContent = best ? String(best) : '—';
+
+        // Stars
+        const starsEl = document.getElementById('stars-display');
+        starsEl.querySelectorAll('.star').forEach(s => s.classList.remove('earned'));
+
+        if (editor) editor.setValue(lv.code);
+        updateCodeStats();
+        renderGrid();
+        log(`Layer ${lv.layer} initialized. Concept: ${lv.concept}`, 'info');
+        log(lv.reqText, 'warn');
     }
-  }
+    
+	function selectDiff(d) {
+        diff = d;
+        document.getElementById('overlay-diff').style.display = 'none';
+        document.getElementById('overlay-tutorial').style.display = 'flex';
+        if (d === 'expert') {
+            levels = [getExpertLevel()];
+        } else {
+            levels = LEVELS[d];
+        }
+        gLevel = 0;
+        initLevel(0);
+        log(`Protocol: ${d.toUpperCase()} selected.`, 'info');
+    }
 
-  if(tile===4){
-    inventory.keys++;mapState[ny][nx]=0;
-    document.getElementById('h-keys').textContent=inventory.keys;
-    flashCell(nx,ny,'key-pick');refreshCell(nx,ny);snd.collect();
-    log(`KEY collected! Total keys: ${inventory.keys}`,'s');
-  }
+    function toggleCoords() {
+        showCoords = !showCoords;
+        document.getElementById('game-grid-container').classList.toggle('show-coords', showCoords);
+        document.getElementById('coord-btn').classList.toggle('on', showCoords);
+    }
 
-  if(tile===8){
-    inventory.frags++;mapState[ny][nx]=0;
-    document.getElementById('h-frags').textContent=inventory.frags;
-    flashCell(nx,ny,'frag-pick');refreshCell(nx,ny);snd.collect();
-    log(`Data fragment acquired! (${inventory.frags} total)`,'s');
-  }
+    function renderGrid() {
+        const lv = levels[gLevel];
+        const grid = document.getElementById('game-grid');
+        const wrapper = document.getElementById('grid-wrapper');
+        
+        // Calculate dynamic cell size to fit screen
+        const availW = wrapper.clientWidth - 40; 
+        const availH = wrapper.clientHeight - 40;
+        
+        const cols = lv.w + 1; // +1 for the label column
+        const rows = lv.h + 1; // +1 for the label row
+        
+        const maxCellW = Math.floor(availW / cols) - 2; 
+        const maxCellH = Math.floor(availH / rows) - 2; 
+        
+        let cellSize = Math.min(maxCellW, maxCellH);
+        if (cellSize > 54) cellSize = 54; // Don't let it get too huge
+        if (cellSize < 15) cellSize = 15; // Don't let it vanish
 
-  moveSpriteTo(nx,ny);playerPos={x:nx,y:ny};
-  if(tile===3)return'win';
-  snd.move();
-  return'ok';
-}
+        grid.innerHTML = '';
+        grid.style.gridTemplateColumns = `repeat(${lv.w}, ${cellSize}px)`;
 
-// ════════════════════════════════════════════
-//  WIN / CRASH
-// ════════════════════════════════════════════
-function handleWin(){
-  const lv=currentLevel();
-  spawnWinParticles(playerPos.x,playerPos.y);snd.win();
-  let totalFrags=0;
-  for(let y=0;y<lv.h;y++)for(let x=0;x<lv.w;x++)if(lv.map[y][x]===8)totalFrags++;
-  const stars=calcStars(movesMade,lv.optMoves,lv.reqRegex,editor.getValue(),inventory.frags,totalFrags);
-  const xpGained=lv.xpBase+(stars*25)+(inventory.frags*15);
-  totalXP+=xpGained;updateXPBar(xpGained);
-  const key=diff+'_'+gLevelIdx;
-  if(!bestScores[key]||movesMade<bestScores[key])bestScores[key]=movesMade;
-  document.getElementById('h-best').textContent=bestScores[key];
-  updateStarsDisplay(stars);
-  const winStars=document.getElementById('win-stars').querySelectorAll('.ws');
-  winStars.forEach((s,i)=>{s.classList.remove('on');if(i<stars)setTimeout(()=>s.classList.add('on'),i*200);});
-  document.getElementById('ws-moves').textContent=movesMade;
-  document.getElementById('ws-xp').textContent='+'+xpGained;
-  document.getElementById('ws-frags').textContent=inventory.frags+'/'+totalFrags;
-  log(`Layer cleared! ${xpGained} XP gained. Stars: ${'★'.repeat(stars)}`,'s');
-  setTimeout(()=>document.getElementById('modal-win').style.display='flex',700);
-}
+        // Setup Labels
+        const colEl = document.getElementById('col-labels'); colEl.innerHTML = '';
+        const corner = document.createElement('div');
+        corner.style.width = `${cellSize}px`; // Empty corner space
+        colEl.appendChild(corner);
 
-function calcStars(moves,optimal,regex,code,frags,totalFrags){
-  let s=1;
-  if(regex.test(code))s=2;
-  if(moves<=Math.ceil(optimal*1.25)&&frags>=totalFrags)s=3;
-  else if(moves<=Math.ceil(optimal*1.25))s=Math.max(s,2);
-  return s;
-}
+        for(let x=0; x<lv.w; x++) {
+            const d = document.createElement('div'); d.className = 'col-lbl'; d.textContent = x; 
+            d.style.width = `${cellSize}px`;
+            colEl.appendChild(d);
+        }
+        
+        const rowEl = document.getElementById('row-labels'); rowEl.innerHTML = '';
+        for(let y=0; y<lv.h; y++) {
+            const d = document.createElement('div'); d.className = 'row-lbl'; d.textContent = y; 
+            d.style.height = `${cellSize}px`; d.style.width = `${cellSize}px`;
+            rowEl.appendChild(d);
+        }
 
-function updateStarsDisplay(n){
-  document.getElementById('stars-row').querySelectorAll('.star')
-    .forEach((s,i)=>s.classList.toggle('on',i<n));
-}
+        for (let y = 0; y < lv.h; y++) {
+            for (let x = 0; x < lv.w; x++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.id = `c-${x}-${y}`;
+                cell.dataset.coord = `${x},${y}`;
+                
+                // Apply dynamic size
+                cell.style.width = `${cellSize}px`;
+                cell.style.height = `${cellSize}px`;
 
-function nextLevel(){
-  document.getElementById('modal-win').style.display='none';
-  if(diff==='expert'){expertConceptIdx++;levelSet=[getExpertLevel()];}
-  initLevel(gLevelIdx+1);snd.start();
-}
+                const t = mapState[y][x]; 
+                if (t === 2) {
+                    if (!isPlaying) playerPos = {x, y};
+                    if (x === playerPos.x && y === playerPos.y) cell.innerHTML = '<div class="player"></div>';
+                }
+                if (t === 1) cell.innerHTML = '<div class="firewall"><i class="fa-solid fa-xmark firewall-icon"></i></div>';
+                if (t === 3) cell.innerHTML = '<div class="core"></div>';
+                if (t === 4) cell.innerHTML = '<div style="color:var(--cyan); font-size:80%;"><i class="fa-solid fa-key"></i></div>';
+                if (t === 5) cell.innerHTML = '<div style="color:#FF8C42; font-size:80%;"><i class="fa-solid fa-lock"></i></div>';
+                if (t === 6 || t === 7) cell.innerHTML = '<div style="width:70%;height:70%;border-radius:50%;background:rgba(155,93,229,0.3);border:2px solid #9B5DE5;"></div>';
+                if (t === 8) cell.innerHTML = '<div style="color:var(--green); font-size:80%;">★</div>';
+                
+                grid.appendChild(cell);
+            }
+        }
+    }
 
-function showCrash(msg){
-  document.getElementById('crash-msg').textContent=msg;
-  document.getElementById('modal-crash').style.display='flex';
-}
+    // ─── CODE ANALYTICS ───
+    function updateCodeStats() {
+        if (!editor) return;
+        const code = editor.getValue();
+        const lines = code.split('\n').filter(l => l.trim() && !l.trim().startsWith('#')).length;
+        const concepts = detectConcepts(code);
+        document.getElementById('cs-lines').textContent = lines || '—';
+        document.getElementById('cs-concepts').textContent = concepts.length ? concepts.join(', ') : '—';
+    }
 
-function dismissCrash(){
-  document.getElementById('modal-crash').style.display='none';
-  resetLevel();
-}
+    function detectConcepts(code) {
+        const c = [];
+        if (/def\s+\w+\(/.test(code)) c.push('def');
+        if (/for\s+\w+\s+in/.test(code)) c.push('for');
+        if (/while\s+/.test(code)) c.push('while');
+        if (/\[.*\]/.test(code)) c.push('list');
+        if (/[a-zA-Z_]\w*\s*=\s*\d/.test(code)) c.push('var');
+        return c;
+    }
 
-function resetLevel(){
-  if(isPlaying)return;
-  initLevel(gLevelIdx);snd.click();
-}
+    // ─── RUN CODE ───
+    async function runCode() {
+        if (isPlaying) return;
+        if (!pyodide) { log('Kernel not ready.', 'error'); return; }
 
-// ════════════════════════════════════════════
-//  UI UTILITIES
-// ════════════════════════════════════════════
-function toggleCoords(){
-  showCoords=!showCoords;
-  document.getElementById('grid-wrapper').classList.toggle('show-coords',showCoords);
-  document.getElementById('coord-btn').classList.toggle('on',showCoords);
-}
+        const lv = levels[gLevel];
+        mapState = lv.map.map(row => [...row]);
+        inventory = {keys: 0, frags: 0};
 
-function updateCodeStats(){
-  if(!editor)return;
-  const code=editor.getValue();
-  const lines=code.split('\n').filter(l=>l.trim()&&!l.trim().startsWith('#')).length;
-  const concepts=[];
-  if(/def\s+\w+\(/.test(code))concepts.push('def');
-  if(/for\s+\w+\s+in/.test(code))concepts.push('for');
-  if(/while\s+/.test(code))concepts.push('while');
-  if(/\[.*\]/.test(code))concepts.push('list');
-  if(/[a-zA-Z_]\w*\s*=\s*\d/.test(code))concepts.push('var');
-  document.getElementById('cs-lines').textContent=lines||'—';
-  document.getElementById('cs-conc').textContent=concepts.length?concepts.join(', '):'—';
-}
+        moveQueue = [];
+        renderGrid();
+        moveCount = 0;
+        document.getElementById('stat-moves').textContent = '0';
 
-function log(msg,type=''){
-  const term=document.getElementById('terminal');
-  const div=document.createElement('div');div.className='tl';
-  div.innerHTML=`<span class="tp">$</span><span class="tm ${type}">${msg}</span>`;
-  term.appendChild(div);term.scrollTop=term.scrollHeight;
-  while(term.children.length>35)term.removeChild(term.firstChild);
-}
+        const code = editor.getValue();
 
-function switchTab(tab){
-  document.getElementById('panel-grid').classList.toggle('active',tab==='grid');
-  document.getElementById('panel-code').classList.toggle('active',tab==='code');
-  document.getElementById('tab-grid').classList.toggle('active',tab==='grid');
-  document.getElementById('tab-code').classList.toggle('active',tab==='code');
-}
+        // Requirement check
+        if (!lv.reqRegex.test(code)) {
+            log('PROTOCOL REJECTED: Missing concept — ' + lv.reqText, 'error');
+            playError();
+            return;
+        }
 
-if(window.innerWidth<=768){
-  document.getElementById('panel-grid').classList.add('active');
-  document.getElementById('panel-code').classList.remove('active');
-  document.getElementById('tab-grid').classList.add('active');
-}else{
-  document.getElementById('panel-grid').classList.add('active');
-  document.getElementById('panel-code').classList.add('active');
-}
+        lastUsedConcept = detectConcepts(code).length > 0;
+        log('Compiling agent protocol...', 'system');
+        playStart();
 
-window.addEventListener('resize',()=>{if(currentLevel&&currentLevel())renderGrid();});
-</script>
+        const btn = document.getElementById('run-btn');
+        btn.disabled = true;
+
+        try {
+            await pyodide.runPythonAsync(code);
+            if (moveQueue.length > 0) {
+                await playQueue();
+            } else {
+                log('No movement commands detected.', 'warn');
+            }
+        } catch (err) {
+            log('Syntax error: ' + (err.message || err), 'error');
+            playError();
+        }
+
+        btn.disabled = false;
+    }
+
+    async function playQueue() {
+        isPlaying = true;
+        const trail = new Set();
+
+        for (const mv of moveQueue) {
+            for (let i = 0; i < mv.s; i++) {
+                await new Promise(r => setTimeout(r, 280));
+                playMove();
+
+                const res = movePlayer(mv.d, trail);
+                moveCount++;
+                document.getElementById('stat-moves').textContent = moveCount;
+
+                if (res === 'crash') {
+                    log('CRASH: Agent hit a firewall. Connection severed.', 'error');
+                    playError();
+                    isPlaying = false;
+                    return;
+                }
+                if (res === 'win') {
+                    lastMoveCount = moveCount;
+                    handleWin();
+                    return;
+                }
+            }
+        }
+
+        isPlaying = false;
+        log('Protocol complete. Quantum Node not reached.', 'warn');
+    }
+
+    function movePlayer(dir, trail) {
+        const dx = dir === 'right' ? 1 : dir === 'left' ? -1 : 0;
+        const dy = dir === 'down' ? 1 : dir === 'up' ? -1 : 0;
+        const nx = playerPos.x + dx, ny = playerPos.y + dy;
+        const lv = levels[gLevel];
+
+        if (nx < 0 || nx >= lv.w || ny < 0 || ny >= lv.h) return 'crash';
+        
+        let t = mapState[ny][nx];
+        if (t === 1) return 'crash';
+
+        // Doors
+        if (t === 5) {
+            if (inventory.keys > 0) {
+                inventory.keys--;
+                mapState[ny][nx] = 0;
+                log(`Door unlocked! Keys remaining: ${inventory.keys}`, 'success');
+            } else {
+                log('CRASH: Locked Door! You need a KEY.', 'error');
+                return 'crash';
+            }
+        }
+
+        // Clear trail
+        const oldCell = document.getElementById(`c-${playerPos.x}-${playerPos.y}`);
+        if (oldCell) {
+            oldCell.innerHTML = '';
+            let oldT = mapState[playerPos.y][playerPos.x];
+            // Redraw portals if we step off them
+            if (oldT === 6 || oldT === 7) {
+                oldCell.innerHTML = '<div style="width:70%;height:70%;border-radius:50%;background:rgba(155,93,229,0.3);border:2px solid #9B5DE5;"></div>';
+            } else {
+                if (!trail.has(`${playerPos.x},${playerPos.y}`)) {
+                    oldCell.classList.add('trail');
+                    trail.add(`${playerPos.x},${playerPos.y}`);
+                }
+            }
+        }
+
+        // Portals
+        if (t === 6 || t === 7) {
+            const targetType = t === 6 ? 7 : 6;
+            let tp = null;
+            for (let r = 0; r < lv.h; r++) {
+                for (let c = 0; c < lv.w; c++) {
+                    if (mapState[r][c] === targetType) tp = {x: c, y: r};
+                }
+            }
+            if (tp) {
+                log(`Portal jump!`, 'info');
+                playerPos = {x: tp.x, y: tp.y};
+                const warpCell = document.getElementById(`c-${tp.x}-${tp.y}`);
+                warpCell.innerHTML = '<div class="player"></div>';
+                return 'ok';
+            }
+        }
+
+        // Items
+        if (t === 4) {
+            inventory.keys++;
+            mapState[ny][nx] = 0;
+            log(`KEY collected! Total: ${inventory.keys}`, 'success');
+        }
+        if (t === 8) {
+            inventory.frags++;
+            mapState[ny][nx] = 0;
+            log(`Data fragment acquired!`, 'success');
+        }
+
+        playerPos = {x: nx, y: ny};
+        const nextCell = document.getElementById(`c-${nx}-${ny}`);
+        
+        if (t === 3) {
+            nextCell.innerHTML = '<div class="player moving"></div>';
+            nextCell.classList.add('win-flash');
+            return 'win';
+        }
+
+        nextCell.innerHTML = '<div class="player"></div>';
+        return 'ok';
+    }
+
+    // ─── WIN LOGIC ───
+    function handleWin() {
+        isPlaying = false;
+        const lv = levels[gLevel];
+
+        // Star calculation
+        const stars = calcStars(lastMoveCount, lv.optimalMoves, lv.reqRegex, editor.getValue());
+
+        // XP
+        const xpGained = lv.xpBase + (stars * 20) + (inventory.frags * 15);
+        totalXP += xpGained;
+        updateXPBar(xpGained);
+
+        // Best score
+        if (!bestScores[gLevel] || lastMoveCount < bestScores[gLevel]) {
+            bestScores[gLevel] = lastMoveCount;
+            document.getElementById('stat-best').textContent = String(lastMoveCount);
+        }
+
+        // Update stars in header
+        const starsEl = document.getElementById('stars-display');
+        starsEl.querySelectorAll('.star').forEach((s, i) => {
+            if (i < stars) s.classList.add('earned');
+        });
+
+        // Show win overlay
+        const winStarsEl = document.getElementById('win-stars');
+        winStarsEl.querySelectorAll('.win-star').forEach((s, i) => {
+            s.classList.remove('lit');
+            if (i < stars) setTimeout(() => s.classList.add('lit'), i * 200);
+        });
+        document.getElementById('ws-moves').textContent = lastMoveCount;
+        document.getElementById('ws-xp').textContent = '+' + xpGained;
+        document.getElementById('ws-stars').textContent = '★'.repeat(stars);
+
+        log(`Layer ${lv.layer} breached! ${xpGained} XP gained. Stars: ${'★'.repeat(stars)}`, 'success');
+        playWin();
+
+        setTimeout(() => {
+            document.getElementById('overlay-win').style.display = 'flex';
+        }, 600);
+    }
+
+    function calcStars(moves, optimal, regex, code) {
+        let s = 1;
+        if (regex.test(code)) s = 2;
+        if (moves <= optimal * 1.2) s = 3;
+        return s;
+    }
+
+    function nextLevel() {
+        document.getElementById('overlay-win').style.display = 'none';
+        if (diff === 'expert') {
+            expertConceptIdx++;
+            levels = [getExpertLevel()];
+            initLevel(0);
+            playStart();
+        } else if (gLevel + 1 < levels.length) {
+            initLevel(gLevel + 1);
+            playStart();
+        } else {
+            log('ALL LAYERS BREACHED.', 'success');
+            alert('🏆 ALL LAYERS IN THIS DIFFICULTY CLEARED!');
+            document.getElementById('overlay-diff').style.display = 'flex';
+        }
+    }
+
+    function resetLevel() {
+        if (isPlaying) return;
+        initLevel(gLevel);
+        playClick();
+    }
+
+    function closeTutorial() {
+        document.getElementById('overlay-tutorial').style.display = 'none';
+        playClick();
+    }
+
+    // ─── TERMINAL ───
+    function log(msg, type='system') {
+        const term = document.getElementById('terminal');
+        const line = document.createElement('div');
+        line.className = 'term-line';
+        line.innerHTML = `<span class="term-prompt">$</span><span class="term-msg ${type}">${msg}</span>`;
+        term.appendChild(line);
+        term.scrollTop = term.scrollHeight;
+        // Keep terminal clean
+        while (term.children.length > 30) term.removeChild(term.firstChild);
+    }
+	 window.addEventListener('resize', () => {
+        if (levels.length > 0) renderGrid();
+    });
+    </script>
+
 </body>
 </html>
