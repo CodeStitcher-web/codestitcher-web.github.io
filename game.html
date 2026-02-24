@@ -7,8 +7,16 @@
     <link rel="icon" type="image/png" href="codestitcher.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 1. LIBRARIES (MOVED TO HEAD FOR STABILITY) -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+    
+    <!-- 2. FIREBASE LIBRARIES (MOVED TO HEAD TO FIX "UNDEFINED" ERROR) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg: #04050a;
@@ -63,7 +71,7 @@
 
         .nav-left { display: flex; align-items: center; gap: 16px; }
         .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 45px; width: auto; }
+        .nav-logo img { height: 36px; width: auto; }
         .nav-title { font-weight: 800; font-size: 1.1rem; color: white; letter-spacing: -0.3px; }
         .nav-tag {
             font-family: var(--font-mono); font-size: 0.7rem;
@@ -114,6 +122,16 @@
         .btn-exit { color: var(--red); border-color: rgba(255,56,96,0.2); background: var(--red-dim); }
         .btn-exit:hover { background: var(--red); color: white; box-shadow: 0 0 20px rgba(255,56,96,0.4); }
 
+        /* User Profile Area in Nav */
+        .user-profile { display: none; align-items: center; gap: 10px; margin-right: 15px; }
+        .user-email { font-size: 0.75rem; color: var(--cyan); font-family: var(--font-mono); }
+        .btn-auth {
+            background: rgba(0,240,255,0.1); border: 1px solid var(--cyan); color: var(--cyan);
+            padding: 6px 14px; border-radius: 4px; cursor: pointer; font-family: var(--font-mono); font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        .btn-auth:hover { background: var(--cyan); color: #000; box-shadow: 0 0 10px var(--cyan); }
+
         /* ─── MAIN LAYOUT ─── */
         #app {
             flex: 1; display: flex;
@@ -150,7 +168,7 @@
         .star { font-size: 1rem; color: #2a3040; transition: all 0.3s ease; }
         .star.earned { color: var(--gold); text-shadow: 0 0 10px rgba(255,212,59,0.7); }
 
-         /* ─── GRID WRAPPER ─── */
+        /* ─── GRID WRAPPER ─── */
         .grid-wrapper {
             flex: 1; display: flex;
             align-items: center; justify-content: center;
@@ -163,9 +181,8 @@
         }
 
         .grid-cell {
-            /* Width and height are now set dynamically by JavaScript */
             background: rgba(8,12,20,0.8);
-            border: 1px solid rgba(0,240,255,0.25); /* INCREASED OPACITY FOR VISIBLE GRID LINES */
+            border: 1px solid rgba(0,240,255,0.25);
             border-radius: 3px;
             position: relative; display: flex;
             align-items: center; justify-content: center;
@@ -173,7 +190,7 @@
             overflow: visible;
         }
 
-        /* ─── ENTITIES (Now using % to scale with cells) ─── */
+        /* ─── ENTITIES ─── */
         .player {
             width: 60%; height: 60%; 
             background: var(--cyan);
@@ -186,11 +203,7 @@
             0%,100% { box-shadow: 0 0 10px var(--cyan), 0 0 20px rgba(0,240,255,0.2); }
             50% { box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,240,255,0.4); }
         }
-
-        .player.moving {
-            animation: none;
-            box-shadow: 0 0 25px var(--cyan), 0 0 50px rgba(0,240,255,0.5);
-        }
+        .player.moving { animation: none; box-shadow: 0 0 25px var(--cyan), 0 0 50px rgba(0,240,255,0.5); }
 
         .firewall {
             width: 85%; height: 85%;
@@ -200,19 +213,9 @@
             display: flex; align-items: center; justify-content: center;
             position: relative;
         }
-        .firewall::before {
-            content: '';
-            position: absolute; inset: 2px;
-            border: 1px solid rgba(255,56,96,0.2);
-            border-radius: 2px;
-        }
-        .firewall-icon {
-            color: var(--red); font-size: 0.8rem;
-            animation: firewallFlicker 3s ease-in-out infinite;
-        }
-        @keyframes firewallFlicker {
-            0%,100% { opacity: 0.6; } 50% { opacity: 1; }
-        }
+        .firewall::before { content: ''; position: absolute; inset: 2px; border: 1px solid rgba(255,56,96,0.2); border-radius: 2px; }
+        .firewall-icon { color: var(--red); font-size: 0.8rem; animation: firewallFlicker 3s ease-in-out infinite; }
+        @keyframes firewallFlicker { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
 
         .core {
             width: 55%; height: 55%;
@@ -222,18 +225,9 @@
             animation: coreRotate 3s linear infinite;
             position: relative;
         }
-        .core::after {
-            content: '';
-            position: absolute; inset: -3px;
-            border: 1px solid rgba(255,212,59,0.3);
-            border-radius: 4px;
-            animation: coreAura 2s ease-in-out infinite;
-        }
+        .core::after { content: ''; position: absolute; inset: -3px; border: 1px solid rgba(255,212,59,0.3); border-radius: 4px; animation: coreAura 2s ease-in-out infinite; }
         @keyframes coreRotate { to { transform: rotate(45deg); } }
-        @keyframes coreAura {
-            0%,100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.3); opacity: 0; }
-        }
+        @keyframes coreAura { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.3); opacity: 0; } }
 
         /* ─── LAYER STATUS ─── */
         .layer-status {
@@ -290,13 +284,8 @@
         .ctrl-left { display: flex; align-items: center; gap: 12px; }
         .ctrl-right { display: flex; align-items: center; gap: 8px; }
 
-        .code-stats {
-            display: flex; gap: 12px;
-        }
-        .code-stat {
-            font-family: var(--font-mono); font-size: 0.65rem;
-            display: flex; align-items: center; gap: 5px;
-        }
+        .code-stats { display: flex; gap: 12px; }
+        .code-stat { font-family: var(--font-mono); font-size: 0.65rem; display: flex; align-items: center; gap: 5px; }
         .code-stat-icon { color: var(--text-dim); }
         .code-stat-val { color: var(--cyan); font-weight: 700; }
 
@@ -351,7 +340,20 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* ─── TUTORIAL ─── */
+        /* ─── AUTH STYLES ─── */
+        .auth-input {
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-family: var(--font-mono);
+        }
+        .auth-input:focus { border-color: var(--cyan); outline: none; }
+        .auth-error { color: var(--red); font-size: 0.7rem; margin-bottom: 10px; display: none; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .auth-tab {
+            padding: 8px 16px; cursor: pointer; color: #5a6880; font-family: var(--font-mono); font-size: 0.8rem;
+        }
+        .auth-tab.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); }
+
+        /* ─── TUTORIAL & CARDS ─── */
         .tutorial-card {
             max-width: 560px; width: 90%;
             background: var(--surface);
@@ -533,20 +535,6 @@
         .diff-btn.medium { border-color: rgba(0,240,255,0.25); } .diff-btn.medium:hover { background: rgba(0,240,255,0.12); border-color: var(--cyan); } .diff-btn.medium * { color: var(--cyan); }
         .diff-btn.hard { border-color: rgba(255,212,59,0.25); } .diff-btn.hard:hover { background: rgba(255,212,59,0.12); border-color: var(--gold); } .diff-btn.hard * { color: var(--gold); }
         .diff-btn.expert { border-color: rgba(255,56,96,0.25); } .diff-btn.expert:hover { background: rgba(255,56,96,0.12); border-color: var(--red); } .diff-btn.expert * { color: var(--red); }
-		.btn-python {
-            padding: 15px 40px; background: transparent; color: var(--python);
-            border: 1px solid var(--python); border-radius: 50px; font-weight: 700; text-decoration: none;
-            box-shadow: 0 0 20px rgba(255, 212, 59, 0.1); transition: 0.3s; display: inline-block;
-        }
-        .btn-python:hover { background: var(--python); color: #000; box-shadow: 0 0 50px rgba(255, 212, 59, 0.4); }
-		.nav-btn {
-            text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
-            border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center;
-            gap: 8px; border: 1px solid transparent;
-        }
-        /* 1. EXIT BUTTON (Red) */
-        .exit-btn { color: #ff5e57; background: rgba(255, 94, 87, 0.1); border: 1px solid rgba(255, 94, 87, 0.2); }
-        .exit-btn:hover { background: #ff5e57;transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(255, 94, 87, 0.4); }
     </style>
 </head>
 <body>
@@ -568,7 +556,7 @@
             <span class="rank-badge" id="rank-badge">NOVICE</span>
         </div>
         <div class="nav-right">
-            <a href="index.html" class="nav-btn exit-btn">
+            <a href="index.html" class="nav-btn btn-home">
                 <i class="fa-solid fa-house"></i> <span>Home</span>
             </a>
             <a href="learn-python.html" class="nav-btn btn-exit">
@@ -599,8 +587,6 @@
                 </div>
             </div>
 
-            
-            <!-- Centered, automatically scaling grid wrapper -->
             <div class="grid-wrapper" id="grid-wrapper">
                 <div style="display: flex; flex-direction: column;">
                     <div class="col-labels" id="col-labels" style="display: flex; margin-bottom: 2px; gap: 2px;"></div>
@@ -690,10 +676,46 @@
             <div class="loader-ring"></div>
             <div class="loader-text" id="loader-text">LOADING KERNEL</div>
             <div class="loader-sub" id="loader-sub">Please wait...</div>
+            <div class="loader-progress" style="margin: 15px auto 0; height:3px; background:rgba(255,255,255,0.1); width:150px; border-radius:2px; overflow:hidden;">
+                <div id="loader-progress-fill" style="width:0%; height:100%; background:var(--cyan); transition:width 0.3s;"></div>
+            </div>
         </div>
     </div>
     
-	<!-- DIFFICULTY OVERLAY -->
+    <!-- AUTH OVERLAY -->
+    <div class="fullscreen-overlay" id="overlay-auth" style="display:none; z-index: 9999;">
+        <div class="tutorial-card" style="max-width: 420px; text-align:center;">
+            <div class="tutorial-header">
+                <h1 id="auth-title">IDENTIFY YOURSELF</h1>
+                <p>Connect to Neural Cloud to save progress, or proceed anonymously.</p>
+            </div>
+            <div class="tutorial-body">
+                <div class="auth-tabs" style="justify-content: center;">
+                    <div class="auth-tab active" onclick="switchAuthMode('login')" id="tab-login">LOGIN</div>
+                    <div class="auth-tab" onclick="switchAuthMode('signup')" id="tab-signup">REGISTER</div>
+                </div>
+                
+                <div id="auth-forms">
+                    <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
+                    <input type="password" id="auth-pass" class="auth-input" placeholder="Password (6+ chars)">
+                    <div class="auth-error" id="auth-error">Error message here</div>
+
+                    <button class="btn-start" onclick="submitAuth()" style="width:100%; justify-content:center; margin-top:10px; margin-bottom: 20px;">
+                        <span id="auth-btn-text">AUTHENTICATE</span>
+                    </button>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                    <p style="font-size: 0.7rem; color: #5a6880; margin-bottom: 10px;">NO ACCOUNT?</p>
+                    <button onclick="proceedAsGuest()" class="btn-next" style="width:100%; justify-content:center; background:transparent; border-color:#5a6880; color:#8899aa;">
+                        <i class="fa-solid fa-user-secret"></i> PLAY AS GUEST
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIFFICULTY OVERLAY -->
     <div class="fullscreen-overlay" id="overlay-diff" style="display:none; z-index: 8500;">
         <div class="tutorial-card">
             <div class="tutorial-header">
@@ -807,6 +829,179 @@
 
     <!-- SCRIPTS -->
     <script>
+    // ─── FIREBASE SETUP ───
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_dO_9rtBfWDe-MNaO1iwl6ucdg3JOM7k",
+      authDomain: "codestitcher-ffd29.firebaseapp.com",
+      projectId: "codestitcher-ffd29",
+      storageBucket: "codestitcher-ffd29.firebasestorage.app",
+      messagingSenderId: "823538388373",
+      appId: "1:823538388373:web:84018df0271211f14c7a9c"
+    };
+    
+    // Initialize Firebase
+    let app, auth, db;
+    try {
+        app = firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        console.log("Firebase initialized.");
+    } catch(e) {
+        console.error("Firebase init failed:", e);
+    }
+
+    let currentUser = null;
+    let authMode = 'login';
+
+    // ─── AUTH FUNCTIONS ───
+    function openAuth() {
+        document.getElementById('overlay-auth').style.display = 'flex';
+        document.getElementById('auth-error').style.display = 'none';
+    }
+
+    function closeAuth() {
+        document.getElementById('overlay-auth').style.display = 'none';
+    }
+
+    function switchAuthMode(mode) {
+        authMode = mode;
+        document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+        document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+        document.getElementById('auth-btn-text').textContent = mode === 'login' ? 'LOGIN' : 'REGISTER AGENT';
+        document.getElementById('auth-title').textContent = mode === 'login' ? 'IDENTIFY YOURSELF' : 'NEW AGENT UPLINK';
+    }
+
+    async function submitAuth() {
+        // Check if Firebase auth is ready
+        if (!auth) {
+            const errEl = document.getElementById('auth-error');
+            errEl.textContent = "System Error: Neural Uplink Offline. (Firebase not loaded)";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        const errEl = document.getElementById('auth-error');
+        
+        if(!email || !pass) {
+            errEl.textContent = "Please enter email and password";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        try {
+            if(authMode === 'signup') {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).set({
+                    email: email, xp: 0, level: 0, difficulty: 'easy', joined: new Date()
+                });
+            } else {
+                await auth.signInWithEmailAndPassword(email, pass);
+            }
+            // Success logic handled by onAuthStateChanged
+            document.getElementById('overlay-auth').style.display = 'none';
+            document.getElementById('overlay-diff').style.display = 'flex';
+        } catch (error) {
+            errEl.textContent = error.message;
+            errEl.style.display = 'block';
+        }
+    }
+
+    function proceedAsGuest() {
+        console.log("Proceeding as Guest...");
+        document.getElementById('overlay-auth').style.display = 'none';
+        document.getElementById('overlay-diff').style.display = 'flex';
+    }
+
+    function signOut() {
+        if(auth) auth.signOut();
+        location.reload();
+    }
+
+    // Monitor Auth State
+    if(auth) {
+        auth.onAuthStateChanged(async (user) => {
+            const navRight = document.querySelector('.nav-right');
+            if (user) {
+                currentUser = user;
+                navRight.innerHTML = `
+                    <div class="user-profile" style="display:flex">
+                        <i class="fa-solid fa-user" style="color:var(--cyan)"></i>
+                        <span class="user-email">${user.email}</span>
+                    </div>
+                    <button class="nav-btn btn-exit" onclick="signOut()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                `;
+                
+                // Load User Data
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
+                    if(doc.exists) {
+                        const data = doc.data();
+                        totalXP = data.xp || 0;
+                        updateXPBar(0);
+                    }
+                } catch(e) { console.error("Error loading user data", e); }
+                
+            } else {
+                currentUser = null;
+                navRight.innerHTML = `
+                    <a href="index.html" class="nav-btn btn-home" style="margin-right:10px;">
+                        <i class="fa-solid fa-house"></i> Home
+                    </a>
+                    <button class="btn-auth" onclick="openAuth()">
+                        <i class="fa-solid fa-key"></i> LOGIN / SAVE
+                    </button>
+                `;
+            }
+        });
+    }
+
+    // ─── CLOUD SAVE ───
+    async function saveProgressToCloud() {
+        if (!currentUser || !db) return; 
+
+        const userRef = db.collection('users').doc(currentUser.uid);
+        const missionText = document.getElementById('mission-text');
+
+        try {
+            if(missionText) {
+                missionText.textContent = "UPLOADING DATA TO CORE...";
+                missionText.style.color = "var(--cyan)";
+            }
+
+            const doc = await userRef.get();
+            let currentCloudLevel = 0;
+            if (doc.exists) {
+                currentCloudLevel = doc.data().level || 0;
+            }
+
+            const nextUnlockedLevel = gLevel + 1;
+
+            await userRef.update({
+                xp: totalXP,
+                level: Math.max(currentCloudLevel, nextUnlockedLevel),
+                difficulty: diff,
+                lastPlayed: new Date()
+            });
+
+            console.log("Cloud Save Complete.");
+            
+            setTimeout(() => { 
+                if(missionText) {
+                    missionText.textContent = "DATA SYNC COMPLETE.";
+                    missionText.style.color = "#5a6880";
+                }
+            }, 1500);
+
+        } catch (e) {
+            console.error("Save Error:", e);
+            if(missionText) missionText.textContent = "SYNC ERROR (OFFLINE?)";
+        }
+    }
+
     // ─── BACKGROUND PARTICLES ───
     (function() {
         const canvas = document.getElementById('bg-canvas');
@@ -1447,9 +1642,54 @@
             document.getElementById('loader-text').textContent = msg;
             document.getElementById('loader-sub').textContent = sub;
         };
+        
+        async function initPyodide() {
+            setText('LOADING PYTHON ENGINE', 'Fetching Pyodide runtime (~10MB)...');
+            document.getElementById('loader-progress-fill').style.width = '30%';
+            
+            pyodide = await loadPyodide({
+                indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/'
+            });
+            
+            document.getElementById('loader-progress-fill').style.width = '70%';
+            setText('PYTHON READY', 'Setting up agent module...');
+
+            // BRIDGE SETUP: Define JS function for Python to call
+            window.addToQueue = (d, s) => {
+                moveQueue.push({d: String(d), s: parseInt(s) || 1});
+            };
+
+            // CREATE VIRTUAL PYTHON FILE
+            pyodide.FS.writeFile('agent_module.py', `
+import js
+import sys
+
+def move(direction, steps=1):
+    direction = str(direction).lower()
+    try:
+        steps = int(steps)
+    except:
+        steps = 1
+        
+    valid_dirs = ["up", "down", "left", "right"]
+    if direction not in valid_dirs:
+        raise ValueError(f"Invalid direction '{direction}'. Use: {', '.join(valid_dirs)}")
+    
+    # Direct call to JavaScript
+    js.addToQueue(direction, steps)
+`);
+
+            // REGISTER MODULE
+            pyodide.runPython(`
+import sys
+import agent_module
+sys.modules['agent'] = agent_module
+`);
+            document.getElementById('loader-progress-fill').style.width = '100%';
+        }
 
         try {
-            // Monaco
+            // Monaco Init
             setText('INITIALIZING EDITOR', 'Loading code environment...');
             await new Promise(resolve => {
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
@@ -1491,36 +1731,33 @@
                         cursorBlinking: 'smooth',
                         cursorSmoothCaretAnimation: 'on',
                     });
-                    // Update code stats on change
                     editor.onDidChangeModelContent(() => updateCodeStats());
                     resolve();
                 });
             });
 
-            // Pyodide
-            setText('LOADING PYTHON KERNEL', 'This takes ~10 seconds on first load...');
-            pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/' });
-
-            pyodide.FS.writeFile('agent.py', `
-import js
-def move(d, s=1):
-    try:
-        js.addToQueue(str(d), int(s))
-    except: pass
-`);
-            window.addToQueue = (d, s) => moveQueue.push({d: String(d), s: parseInt(s)});
+            // Pyodide Init
+            await initPyodide();
 
             setText('SYSTEM READY', 'Launching neural simulation...');
             await new Promise(r => setTimeout(r, 600));
 
             document.getElementById('overlay-loader').style.display = 'none';
-            document.getElementById('overlay-diff').style.display = 'flex'; // Show difficulty select first
+            
+            // AUTH FLOW CHECK
+            if (currentUser) {
+                console.log("User already authenticated.");
+                document.getElementById('overlay-diff').style.display = 'flex';
+            } else {
+                openAuth(); 
+            }
 
         } catch(e) {
             setText('KERNEL ERROR', e.message || 'Unknown error');
             console.error(e);
         }
     });
+
 
     // ─── LEVEL MANAGEMENT ───
     function initLevel(idx) {
@@ -1822,46 +2059,72 @@ def move(d, s=1):
 
     // ─── WIN LOGIC ───
     function handleWin() {
-        isPlaying = false;
-        const lv = levels[gLevel];
+		isPlaying = false;
+		const lv = levels[gLevel];
 
-        // Star calculation
-        const stars = calcStars(lastMoveCount, lv.optimalMoves, lv.reqRegex, editor.getValue());
+		// 1. Calculate Stars
+		const stars = calcStars(lastMoveCount, lv.optimalMoves, lv.reqRegex, editor.getValue());
 
-        // XP
-        const xpGained = lv.xpBase + (stars * 20) + (inventory.frags * 15);
-        totalXP += xpGained;
-        updateXPBar(xpGained);
+		// 2. Calculate XP (Base + Stars + Fragments)
+		// Note: inventory.frags is defined in your game state
+		const xpGained = lv.xpBase + (stars * 20) + (inventory.frags * 15);
+		totalXP += xpGained;
+		
+		// Update the visual XP bar
+		updateXPBar(xpGained);
 
-        // Best score
-        if (!bestScores[gLevel] || lastMoveCount < bestScores[gLevel]) {
-            bestScores[gLevel] = lastMoveCount;
-            document.getElementById('stat-best').textContent = String(lastMoveCount);
-        }
+		// 3. Update Best Score (Local Tracker)
+		// We create a unique key like 'easy_0' or 'hard_2'
+		const key = diff + '_' + gLevel; 
+		if (!bestScores[key] || lastMoveCount < bestScores[key]) {
+			bestScores[key] = lastMoveCount;
+			// Update UI immediately
+			document.getElementById('stat-best').textContent = String(lastMoveCount);
+		}
 
-        // Update stars in header
-        const starsEl = document.getElementById('stars-display');
-        starsEl.querySelectorAll('.star').forEach((s, i) => {
-            if (i < stars) s.classList.add('earned');
-        });
+		// 4. Update Header Stars UI
+		const starsEl = document.getElementById('stars-display');
+		starsEl.querySelectorAll('.star').forEach((s, i) => {
+			if (i < stars) s.classList.add('earned');
+		});
 
-        // Show win overlay
-        const winStarsEl = document.getElementById('win-stars');
-        winStarsEl.querySelectorAll('.win-star').forEach((s, i) => {
-            s.classList.remove('lit');
-            if (i < stars) setTimeout(() => s.classList.add('lit'), i * 200);
-        });
-        document.getElementById('ws-moves').textContent = lastMoveCount;
-        document.getElementById('ws-xp').textContent = '+' + xpGained;
-        document.getElementById('ws-stars').textContent = '★'.repeat(stars);
+		// 5. Prepare the Win Modal UI
+		const winStarsEl = document.getElementById('win-stars');
+		winStarsEl.querySelectorAll('.win-star').forEach((s, i) => {
+			s.classList.remove('lit');
+			// Add animation delay for dramatic effect
+			if (i < stars) setTimeout(() => s.classList.add('lit'), i * 200);
+		});
+		
+		document.getElementById('ws-moves').textContent = lastMoveCount;
+		document.getElementById('ws-xp').textContent = '+' + xpGained;
+		document.getElementById('ws-stars').textContent = '★'.repeat(stars);
+		
+		// If you have fragment UI in the modal, update it here
+		const fragDisplay = document.getElementById('ws-frags');
+		if(fragDisplay) {
+			// Count total possible fragments in this map
+			let totalFrags = 0;
+			for(let r of lv.map) for(let c of r) if(c===8) totalFrags++;
+			fragDisplay.textContent = inventory.frags + '/' + totalFrags;
+		}
 
-        log(`Layer ${lv.layer} breached! ${xpGained} XP gained. Stars: ${'★'.repeat(stars)}`, 'success');
-        playWin();
+		// 6. ★★★ TRIGGER CLOUD SAVE ★★★
+		// This calls the function we wrote above. 
+		// It runs immediately after beating THIS specific level.
+		if(typeof saveProgressToCloud === 'function') {
+			saveProgressToCloud(); 
+		}
 
-        setTimeout(() => {
-            document.getElementById('overlay-win').style.display = 'flex';
-        }, 600);
-    }
+		// 7. Show Success Message & Open Modal
+		log(`Layer ${lv.layer} breached! ${xpGained} XP gained.`, 'success');
+		playWin();
+
+		setTimeout(() => {
+			document.getElementById('overlay-win').style.display = 'flex';
+		}, 600);
+	}
+
 
     function calcStars(moves, optimal, regex, code) {
         let s = 1;
