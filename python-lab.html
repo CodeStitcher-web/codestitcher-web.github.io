@@ -567,6 +567,42 @@
         .theme-cpp    { color: #00599C; } 
         .theme-c      { color: #A8B9CC; } 
         .theme-lambdascript { color: #bd00ff; } /* Neon Purple for LambdaScript */
+		/* --- LEARN DROPDOWN STYLES --- */
+        .learn-wrapper {
+            position: relative;
+            display: flex; align-items: center;
+        }
+
+        .learn-menu {
+            position: absolute; top: 120%; right: 0; /* Aligns to bottom-right of button */
+            width: 180px;
+            background: rgba(10, 10, 15, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 210, 106, 0.3); /* Green border matching Learn btn */
+            border-radius: 12px;
+            padding: 5px;
+            display: none; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            z-index: 5000; overflow: hidden;
+        }
+        
+        .learn-menu.active { display: flex; animation: slideDown 0.2s ease-out; }
+
+        .learn-item {
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #ccc;
+            font-family: 'JetBrains Mono'; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .learn-item:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(5px); }
+        
+        /* Specific Icon Styles */
+        .ls-icon { width: 18px; height: auto; filter: drop-shadow(0 0 5px #bd00ff); }
+        .py-icon { color: #FFD43B; filter: drop-shadow(0 0 5px #FFD43B); }
     </style>
 </head>
 <body>
@@ -584,7 +620,27 @@
         </a>
         <div class="nav-actions">
             <a href="javascript:void(0)" class="nav-btn exit-btn" onclick="delayedNav('index.html')"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="javascript:void(0)" class="nav-btn learn-btn" onclick="delayedNav('learn-python.html')"><i class="fa-brands fa-python"></i> <span>Learn Python</span></a>
+            <!-- REPLACED LEARN BUTTON WITH DROPDOWN -->
+            <div class="learn-wrapper">
+                <button class="nav-btn learn-btn" onclick="toggleLearnMenu(event)">
+                    <i class="fa-solid fa-book-open"></i> 
+                    <span>Docs</span> 
+                    <i class="fa-solid fa-chevron-down" style="font-size: 0.7em; margin-left: 5px; opacity: 0.7;"></i>
+                </button>
+
+                <!-- THE DROPDOWN MENU -->
+                <div class="learn-menu" id="learn-dropdown">
+                    <!-- Option 1: Python -->
+                    <a href="learn-python.html" class="learn-item" onclick="playSound('click-local')">
+                        <i class="fa-brands fa-python py-icon"></i> Python
+                    </a>
+                    
+                    <!-- Option 2: LambdaScript -->
+                    <a href="learn-lambdascript.html" class="learn-item" onclick="playSound('click-local')">
+                        <img src="lambdascript.png" class="ls-icon"> LambdaScript
+                    </a>
+                </div>
+            </div>
             <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click-local')"><i class="fa-solid fa-user-astronaut"></i> <span>Founder</span></a>
         </div>
     </nav>
@@ -1257,6 +1313,31 @@ def run_code(code_string, debug=False):
 	
     <script src="script.js"></script>
     <script>
+		/* --- LEARN DROPDOWN TOGGLE --- */
+        function toggleLearnMenu(e) {
+            e.stopPropagation(); // Prevent immediate closing
+            const menu = document.getElementById('learn-dropdown');
+            menu.classList.toggle('active');
+            playSound('click-local');
+        }
+
+        // Update the Window Click Listener to close this menu too
+        window.addEventListener('click', (e) => {
+            // Close Language Menu (Existing)
+            const langMenu = document.getElementById('lang-menu');
+            const langSel = document.getElementById('lang-selector');
+            if(langMenu && !langSel.contains(e.target)) {
+                langMenu.classList.remove('active');
+                langSel.classList.remove('active');
+            }
+
+            // Close Learn Menu (New)
+            const learnMenu = document.getElementById('learn-dropdown');
+            const learnBtn = document.querySelector('.learn-wrapper');
+            if (learnMenu && learnBtn && !learnBtn.contains(e.target)) {
+                learnMenu.classList.remove('active');
+            }
+        });
 		 /* --- UI: LANGUAGE SWITCHER --- */
         let currentLang = 'python';
 
@@ -1408,25 +1489,41 @@ def run_code(code_string, debug=False):
                         }
                     });
 
-                    // --- 2. DEFINE GLASS THEME ---
-                    monaco.editor.defineTheme('glass', {
-                        base: 'vs-dark', inherit: true,
-                        rules:[
-                            { background: '00000000' },
-                            { token: 'keyword', foreground: 'bd00ff', fontStyle: 'bold' }, // Neon purple keywords
-                            { token: 'string', foreground: '00D26A' },                     // Neon green strings
-                            { token: 'number', foreground: '00F0FF' },                     // Cyan numbers
-                            { token: 'comment', foreground: '888888', fontStyle: 'italic' }// Grey comments
-                        ],
-                        colors: { 'editor.background': '#00000000', 'minimap.background': '#00000000' }
-                    });
+                    // --- NEW LAMBDASCRIPT THEME ---
+monaco.editor.defineTheme('glass', {
+    base: 'vs-dark',
+    inherit: true, // Inherit standard vs-dark logic first
+    rules: [
+        // 1. Keywords (func, int, if, import) -> Neon Purple
+        { token: 'keyword', foreground: 'D500F9', fontStyle: 'bold' },
+        { token: 'keyword.decl', foreground: 'D500F9', fontStyle: 'bold' },
+        { token: 'type', foreground: 'D500F9' }, 
 
-                    monaco.editor.defineTheme('glass', {
-                        base: 'vs-dark', inherit: true,
-                        rules: [{ background: '00000000' }],
-                        colors: { 'editor.background': '#00000000', 'minimap.background': '#00000000' }
-                    });
-        
+        // 2. Strings ("Hello") -> Coral Red
+        { token: 'string', foreground: 'ff5e57' },
+
+        // 3. Numbers (10, 3.14) -> Bright Green
+        { token: 'number', foreground: '00D26A' },
+
+        // 4. Comments (//...) -> Deep Green Italic
+        { token: 'comment', foreground: '21855A', fontStyle: 'italic' },
+
+        // 5. Identifiers/Functions (print, main, variable names) -> Cyan
+        { token: 'identifier', foreground: '00F0FF' },
+        { token: 'function', foreground: '00F0FF' },
+
+        // 6. Operators & Punctuation (+, =, ;, {}) -> White
+        { token: 'delimiter', foreground: 'FFFFFF' },
+        { token: 'operator', foreground: 'FFFFFF' }
+    ],
+    colors: {
+        'editor.background': '#00000000', // Transparent
+        'minimap.background': '#00000000', // Transparent
+        'editorCursor.foreground': '#00F0FF', // Cyan Cursor to match
+        'editor.lineHighlightBackground': '#FFFFFF08', // Subtle highlight
+        'editorLineNumber.foreground': '#666666' // Grey line numbers
+    }
+});
                     setTimeout(() => {
                         document.getElementById('boot-loader').style.display = 'none';
                         document.getElementById('ide-wrapper').style.display = 'grid'; 
