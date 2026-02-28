@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CodeStitcher | LambdaScript Docs</title>
+    <link rel="icon" type="image/png" href="codestitcher.png">
+
+    <!-- FONTS & ICONS -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- PYTHON ENGINE (PYODIDE) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+    <!-- GLOBAL STYLES -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* --- PAGE SPECIFIC OVERRIDES --- */
+        body { overflow-x: hidden; overflow-y: auto; background-color: #050507; }
+        
+        /* --- NAVBAR STYLES (FIXED) --- */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 5%; 
+            background: rgba(10,10,12,0.8); backdrop-filter: blur(10px);
+            z-index: 1000; border-bottom: 1px solid rgba(189, 0, 255, 0.1);
+        }
+
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; }
+        .nav-logo img {
+            height: 45px !important; width: auto; 
+            filter: drop-shadow(0 0 5px rgba(189, 0, 255, 0.2)); transition: 0.3s ease;
+            border-radius: 7px;
+            border: 1px solid rgba(189, 0, 255, 0.2);
+        }
+        .nav-logo:hover img { transform: scale(1.1); filter: drop-shadow(0 0 15px #bd00ff); }
+        .nav-text { font-size: 1.4rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+        
+        .nav-badge {
+            font-family: 'JetBrains Mono', monospace; background: rgba(189, 0, 255, 0.1); color: #bd00ff;
+            padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; border: 1px solid rgba(189, 0, 255, 0.3);
+        }
+
+        .nav-actions { display: flex; align-items: center; gap: 15px; }
+
+        /* BUTTON STYLES */
+        .nav-btn {
+            text-decoration: none; font-weight: 600; font-size: 0.9rem; padding: 8px 16px;
+            border-radius: 6px; transition: all 0.3s ease; display: flex; align-items: center;
+            gap: 8px; border: 1px solid transparent;
+        }
+        .exit-btn { color: #ff5e57; background: rgba(255, 94, 87, 0.1); border: 1px solid rgba(255, 94, 87, 0.2); }
+        .exit-btn:hover { background: #ff5e57; transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(255, 94, 87, 0.4); }
+        
+        .learn-btn { color: #bd00ff; background: rgba(189, 0, 255, 0.1); border: 1px solid rgba(189, 0, 255, 0.2); }
+        .learn-btn:hover { background: #bd00ff; transform: scale(1.05); color: white; box-shadow: 0 0 20px rgba(189, 0, 255, 0.4); }
+        
+        .founder-btn { color: #00F0FF; background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.2); }
+        .founder-btn:hover { background: #00F0FF; transform: scale(1.05); color: black; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+
+        /* --- LAYOUT STYLES --- */
+        .archive-container {
+            display: grid; grid-template-columns: 280px 1fr;
+            max-width: 1400px; margin: 100px auto 0; padding: 20px 5%; gap: 50px;
+            position: relative;
+        }
+
+        .archive-nav {
+            position: sticky; top: 120px; height: fit-content;
+            background: rgba(20, 20, 25, 0.4); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 30px;
+        }
+        .nav-header { font-family: 'JetBrains Mono'; color: #bd00ff; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 20px; }
+        .toc-link {
+            display: block; color: #888; text-decoration: none; padding: 10px 15px;
+            border-left: 2px solid rgba(255,255,255,0.1); margin-bottom: 5px;
+            transition: 0.3s; font-size: 0.95rem; font-weight: 500;
+        }
+        .toc-link:hover { color: white; padding-left: 20px; border-left-color: #bd00ff; background: linear-gradient(90deg, rgba(189, 0, 255, 0.1), transparent); }
+        .toc-link.active { color: #bd00ff; border-left-color: #bd00ff; font-weight: 700; padding-left: 20px; background: linear-gradient(90deg, rgba(189, 0, 255, 0.1), transparent); }
+
+        .content-stream { display: flex; flex-direction: column; gap: 60px; padding-bottom: 100px; }
+        .module-header { font-size: 2.5rem; margin-bottom: 20px; color: white; display: flex; align-items: center; gap: 15px; }
+        .module-header i { color: #bd00ff; font-size: 2rem; }
+        
+        /* CODE BLOCKS */
+        .code-block {
+            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 20px; margin: 20px 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            position: relative; overflow: hidden;
+        }
+        .code-header {
+            position: absolute; top: 0; left: 0; width: 100%; height: 30px;
+            background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; padding: 0 15px; font-size: 0.75rem; color: #666;
+        }
+        .code-content { margin-top: 20px; color: #d4d4d4; line-height: 1.6; white-space: pre; overflow-x: auto;}
+        
+        /* LAMBDASCRIPT SYNTAX HIGHLIGHTING */
+        .c-kw { color: #D500F9; font-weight: bold; } /* Keywords: func, int, if */
+        .c-fn { color: #00F0FF; } /* Functions: print, main */
+        .c-str { color: #ff5e57; } /* Strings */
+        .c-cm { color: #21855A; font-style: italic; } /* Comments */
+        .c-num { color: #00D26A; } /* Numbers */
+        .c-op { color: #fff; } /* Operators */
+
+        /* RUN BUTTON */
+        .btn-exec {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(189, 0, 255, 0.1); border: 1px solid #bd00ff;
+            color: #bd00ff; padding: 10px 25px; border-radius: 50px;
+            font-size: 0.9rem; font-weight: 700; text-decoration: none;
+            margin-top: 5px; transition: 0.3s; cursor: pointer;
+            font-family: 'JetBrains Mono';
+        }
+        .btn-exec:hover { background: #bd00ff; color: white; box-shadow: 0 0 25px rgba(189, 0, 255, 0.5); transform: translateY(-2px); }
+
+        /* OUTPUT TERMINAL */
+        .output-terminal {
+            margin-top: 20px;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid #bd00ff; border-left: 3px solid #bd00ff;
+            border-radius: 8px; padding: 15px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #e0e0e0;
+            display: none; position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .output-terminal::before {
+            content: "Neural Output";
+            position: absolute; top: 0; right: 0;
+            background: #bd00ff; color: white;
+            font-size: 0.7rem; padding: 2px 8px;
+            border-bottom-left-radius: 8px; font-weight: bold;
+        }
+        .term-line { opacity: 0; animation: typeLine 0.3s forwards; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0; }
+        @keyframes typeLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* LOADING ANIMATION */
+        .loading-pulse {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #bd00ff;
+            animation: pulse 1s infinite; margin-right: 8px;
+        }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 900px) {
+            html, body { width: 100vw; overflow-x: hidden; font-size: 14px; }
+            nav { height: 60px; padding: 0 15px; display: flex; flex-direction: row !important; gap: 10px; }
+            .nav-logo img { height: 35px !important; }
+            .nav-text { display: block !important; font-size: 1.1rem; }
+            .nav-badge { display: none; } 
+            
+            .nav-btn { padding: 0; width: 36px; height: 36px; justify-content: center; }
+            .nav-btn span { display: none !important; }
+            .nav-btn i { font-size: 1rem; margin: 0; }
+            .exit-btn, .learn-btn, .founder-btn { display: flex !important; }
+
+            .archive-container { grid-template-columns: 1fr; padding: 80px 15px 20px 15px; gap: 30px; }
+            .archive-nav { display: none; }
+            
+            h1 { font-size: 2.2rem !important; }
+            .glass-card { padding: 20px; width: 100%; }
+            .btn-exec { width: 100%; justify-content: center; }
+        }
+		 /* DOCUMENTATION BUTTON STYLE */
+        .game-btn { 
+            color: #bd00ff; 
+            background: rgba(189, 0, 255, 0.1); 
+            border: 1px solid rgba(189, 0, 255, 0.2); 
+        }
+        .game-btn:hover { 
+            background: #bd00ff; 
+            color: white; 
+            box-shadow: 0 0 25px rgba(189, 0, 255, 0.5); 
+            transform: translateY(-2px); 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-dot"></div> <div class="cursor-outline"></div> 
+    <canvas id="neural-canvas"></canvas>
+    <div class="noise-overlay"></div>
+    <div id="scroll-progress" style="position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg, #bd00ff, #00F0FF); z-index:9999;"></div>
+
+    <!-- NAVBAR -->
+    <nav>
+        <a href="index.html" class="nav-logo">
+            <img src="codestitcher.png" alt="Logo">
+            <span class="nav-text">CodeStitcher</span>
+            <span class="nav-badge">// DOCS</span>
+        </a>
+        
+        <div class="nav-actions">
+            <!-- 1. HOME -->
+            <a href="index.html" class="nav-btn exit-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-house"></i> <span>Home</span>
+            </a>
+            
+            <!-- 2. OPEN IDE -->
+            <a href="python-lab.html" class="nav-btn learn-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-microchip"></i> <span>CodeStitcher IDE</span>
+            </a>
+            
+            <!-- 3. DOCUMENTATION (Replaces Game Button) -->
+            <a href="lambdascript-doc.pdf" download class="nav-btn game-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-file-pdf"></i> <span>Documentation</span>
+            </a>
+            
+            <!-- 4. FOUNDER -->
+            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn founder-btn" onclick="playSound('click')">
+                <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- MAIN GRID -->
+    <div class="archive-container">
+        
+        <!-- SIDEBAR -->
+        <aside class="archive-nav">
+            <div class="nav-header">/// LAMBDA MODULES</div>
+            <a href="#syntax" class="toc-link active" onclick="playSound('click')">01. Syntax & IO</a>
+            <a href="#variables" class="toc-link" onclick="playSound('click')">02. Variables & Types</a>
+            <a href="#flow" class="toc-link" onclick="playSound('click')">03. Control Flow</a>
+            <a href="#functions" class="toc-link" onclick="playSound('click')">04. Functions</a>
+            <a href="#arrays" class="toc-link" onclick="playSound('click')">05. Arrays & Lists</a>
+            <a href="#structs" class="toc-link" onclick="playSound('click')">06. Structures</a>
+        </aside>
+
+        <!-- STREAM -->
+        <main class="content-stream">
+            
+            <div data-aos="fade-up">
+                <h1 style="font-size: 3.5rem; line-height: 1.1; margin-bottom: 10px;">LambdaScript <br><span style="color:#bd00ff">Protocol</span></h1>
+                <p style="color:#aaa; max-width: 600px;">
+                    A statically-typed, high-performance language designed for the CodeStitcher Neural Engine. 
+                    <span style="color:#bd00ff">Execute code</span> directly in the browser.
+                </p>
+            </div>
+
+            <!-- MODULE 1: SYNTAX -->
+            <section id="syntax" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-terminal"></i> Basic Syntax</h2>
+                <ul class="rule-list" style="color:#aaa; line-height:1.8; list-style:none; padding:0;">
+                    <li><i class="fa-solid fa-check" style="color:#00D26A; margin-right:10px;"></i> Statements end with a semicolon <code>;</code></li>
+                    <li><i class="fa-solid fa-check" style="color:#00D26A; margin-right:10px;"></i> Output uses the stream operator <code>&lt;&lt;</code></li>
+                    <li><i class="fa-solid fa-check" style="color:#00D26A; margin-right:10px;"></i> Comments use double slashes <code>//</code></li>
+                </ul>
+
+                <div class="code-block">
+                    <div class="code-header">hello_world.ls</div>
+                    <div class="code-content">
+<span class="c-cm">// This is a LambdaScript comment</span>
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Neural Link Established."</span>;
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-num">2026</span>;
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+            <!-- MODULE 2: VARIABLES -->
+            <section id="variables" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-cube"></i> Variables & Types</h2>
+                <p style="color:#888;">LambdaScript is statically typed. You must declare the type.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">data_types.ls</div>
+                    <div class="code-content">
+<span class="c-kw">int</span> score <span class="c-op">=</span> <span class="c-num">100</span>;
+<span class="c-kw">float</span> pi <span class="c-op">=</span> <span class="c-num">3.14159</span>;
+<span class="c-kw">string</span> status <span class="c-op">=</span> <span class="c-str">"Active"</span>;
+<span class="c-kw">boolean</span> isOnline <span class="c-op">=</span> <span class="c-kw">true</span>;
+
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Status: "</span> <span class="c-op">+</span> status;
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Score: "</span> <span class="c-op">+</span> score;
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+            <!-- MODULE 3: CONTROL FLOW -->
+            <section id="flow" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-code-branch"></i> Control Flow</h2>
+                <p style="color:#888;">Supports <code>if</code>, <code>else</code>, <code>while</code>, and standard logical operators.</p>
+
+                <div class="code-block">
+                    <div class="code-header">logic_gate.ls</div>
+                    <div class="code-content">
+<span class="c-kw">int</span> power <span class="c-op">=</span> <span class="c-num">85</span>;
+
+<span class="c-kw">if</span> (power <span class="c-op">&gt;</span> <span class="c-num">90</span>) {
+    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Critical Mass!"</span>;
+} <span class="c-kw">else</span> {
+    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Systems Nominal."</span>;
+}
+
+<span class="c-kw">int</span> count <span class="c-op">=</span> <span class="c-num">3</span>;
+<span class="c-kw">while</span> (count <span class="c-op">&gt;</span> <span class="c-num">0</span>) {
+    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Countdown: "</span> <span class="c-op">+</span> count;
+    count <span class="c-op">=</span> count <span class="c-op">-</span> <span class="c-num">1</span>;
+}
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+            <!-- MODULE 4: FUNCTIONS -->
+            <section id="functions" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-microchip"></i> Functions</h2>
+                <p style="color:#888;">Functions define logic blocks. Use the arrow <code>-&gt;</code> to specify return types.</p>
+
+                <div class="code-block">
+                    <div class="code-header">recursion.ls</div>
+                    <div class="code-content">
+<span class="c-kw">func</span> factorial(<span class="c-kw">int</span> n) <span class="c-op">-&gt;</span> <span class="c-kw">int</span> {
+    <span class="c-kw">if</span> (n <span class="c-op">==</span> <span class="c-num">1</span>) { <span class="c-kw">return</span> <span class="c-num">1</span>; }
+    <span class="c-kw">return</span> n <span class="c-op">*</span> factorial(n <span class="c-op">-</span> <span class="c-num">1</span>);
+}
+
+<span class="c-kw">int</span> result <span class="c-op">=</span> factorial(<span class="c-num">5</span>);
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Factorial of 5 is: "</span> <span class="c-op">+</span> result;
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+            <!-- MODULE 5: ARRAYS -->
+            <section id="arrays" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-list-ol"></i> Arrays</h2>
+                <p style="color:#888;">Store lists of data using square brackets <code>[]</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">arrays.ls</div>
+                    <div class="code-content">
+<span class="c-kw">int</span>[] data <span class="c-op">=</span> [<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>, <span class="c-num">40</span>];
+
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Original: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];
+
+<span class="c-cm">// Update Value</span>
+data[<span class="c-num">1</span>] <span class="c-op">=</span> <span class="c-num">999</span>;
+
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Updated: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+            <!-- MODULE 6: STRUCTS -->
+            <section id="structs" class="glass-card" data-aos="fade-up">
+                <h2 class="module-header"><i class="fa-solid fa-sitemap"></i> Structures</h2>
+                <p style="color:#888;">Define custom data types using <code>struct</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">structs.ls</div>
+                    <div class="code-content">
+<span class="c-kw">struct</span> Point {
+    <span class="c-kw">int</span> x;
+    <span class="c-kw">int</span> y;
+}
+
+<span class="c-kw">Point</span> p <span class="c-op">=</span> <span class="c-fn">Point</span>(<span class="c-num">10</span>, <span class="c-num">20</span>);
+
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"X Coordinate: "</span> <span class="c-op">+</span> p.x;
+<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Y Coordinate: "</span> <span class="c-op">+</span> p.y;
+</div>
+                </div>
+                <button class="btn-exec" onclick="runLocalCode(this)">
+                    <i class="fa-solid fa-play"></i> RUN CODE
+                </button>
+                <div class="output-terminal"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- GLOBAL JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script> 
+    
+    <script>
+        // 1. PAGE INIT
+        AOS.init({ duration: 800, once: true, offset: 50 });
+
+        // 2. SCROLL SPY
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".toc-link");
+        window.addEventListener("scroll", () => {
+            let current = "";
+            const h = document.documentElement;
+            const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) current = section.getAttribute("id");
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href").includes(current)) link.classList.add("active");
+            });
+        });
+
+        // 3. LAMBDASCRIPT ENGINE (EMBEDDED PYTHON)
+        const LAMBDASCRIPT_CORE = `
+import re
+import sys
+import io
+
+class LSError(Exception): pass
+class BreakLoop(Exception): pass
+class ContinueLoop(Exception): pass
+class ReturnValue(Exception):
+    def __init__(self, value): self.value = value
+
+class BuiltInFunc:
+    def __init__(self, name, py_func):
+        self.name = name; self.py_func = py_func; self.type = 'FUNC'
+
+class ScopeManager:
+    def __init__(self): self.scopes = [{}]
+    def push(self): self.scopes.append({})
+    def pop(self): self.scopes.pop()
+    def declare(self, name, type_str, value, line):
+        if name in self.scopes[-1]: raise LSError(f"Line {line}: '{name}' redeclared.")
+        self.scopes[-1][name] = {'type': type_str, 'value': value}
+    def assign(self, name, value, line):
+        for scope in reversed(self.scopes):
+            if name in scope: scope[name]['value'] = value; return
+        raise LSError(f"Line {line}: Variable '{name}' not declared.")
+    def get(self, name, line):
+        for scope in reversed(self.scopes):
+            if name in scope: return scope[name]
+        raise LSError(f"Line {line}: Variable '{name}' not found.")
+    def set_global(self, name, type_str, value): self.scopes[0][name] = {'type': type_str, 'value': value}
+    def get_global(self, name): return self.scopes[0].get(name)
+
+class Token:
+    def __init__(self, type, value, line): self.type=type; self.value=value; self.line=line
+
+class Lexer:
+    def __init__(self, text): self.text=text; self.pos=0; self.line=1; self.current_char=text[0] if text else None
+    def advance(self):
+        if self.current_char=='\\n': self.line+=1
+        self.pos+=1; self.current_char=self.text[self.pos] if self.pos<len(self.text) else None
+    def get_next_token(self):
+        while self.current_char is not None:
+            if self.current_char.isspace(): self.advance(); continue
+            if self.current_char.isdigit(): return self._num()
+            if self.current_char == '"': return self._str()
+            if re.match(r'[a-zA-Z_]', self.current_char): return self._id()
+            if self.current_char=='/' and self.text[self.pos:self.pos+2]=='//':
+                while self.current_char and self.current_char!='\\n': self.advance()
+                continue
+            
+            line = self.line
+            ops = {'<<':'STREAM','->':'ARROW','==':'EQ','!=':'NEQ','<=':'LTE','>=':'GTE','&&':'AND','||':'OR'}
+            for op,typ in ops.items():
+                if self.text[self.pos:self.pos+2]==op: self.advance(); self.advance(); return Token(typ,op,line)
+            
+            chars = {'+':'PLUS','-':'MINUS','*':'MUL','/':'DIV','(':'LPAREN',')':'RPAREN','{':'LBRACE','}':'RBRACE','[':'LBRACKET',']':'RBRACKET','=':'ASSIGN',';':'SEMI',',':'COMMA','<':'LT','>':'GT','.':'DOT'}
+            if self.current_char in chars: t=Token(chars[self.current_char], self.current_char, line); self.advance(); return t
+            raise LSError(f"Line {line}: Unknown char '{self.current_char}'")
+        return Token('EOF',None,self.line)
+    def _num(self):
+        res=''; line=self.line
+        while self.current_char and self.current_char.isdigit(): res+=self.current_char; self.advance()
+        if self.current_char=='.':
+            res+='.'; self.advance()
+            while self.current_char and self.current_char.isdigit(): res+=self.current_char; self.advance()
+            return Token('FLOAT',float(res),line)
+        return Token('INTEGER',int(res),line)
+    def _str(self):
+        self.advance(); res=''; line=self.line
+        while self.current_char and self.current_char!='"': res+=self.current_char; self.advance()
+        self.advance(); return Token('STRING',res,line)
+    def _id(self):
+        res=''; line=self.line
+        while self.current_char and re.match(r'[a-zA-Z0-9_]', self.current_char): res+=self.current_char; self.advance()
+        kws={'print':'PRINT','if':'IF','else':'ELSE','int':'TYPE','string':'TYPE','float':'TYPE','boolean':'TYPE','while':'WHILE','for':'FOR','func':'FUNC','return':'RETURN','struct':'STRUCT','true':'TRUE','false':'FALSE'}
+        return Token(kws.get(res,'ID'),res,line)
+
+# AST Nodes
+class AST: pass
+class BinOp(AST):
+    def __init__(self, left, op, right, line): self.left=left; self.op=op; self.right=right; self.line=line
+class Num(AST):
+    def __init__(self, t): self.value=t.value; self.line=t.line
+class Str(AST):
+    def __init__(self, t): self.value=t.value; self.line=t.line
+class Bool(AST):
+    def __init__(self, t): self.value=(t.type=='TRUE'); self.line=t.line
+class Var(AST):
+    def __init__(self, t): self.value=t.value; self.line=t.line
+class Print(AST):
+    def __init__(self, exprs, line): self.exprs=exprs; self.line=line
+class Compound(AST):
+    def __init__(self): self.children=[]
+class VarDecl(AST):
+    def __init__(self, var, typ, assign, line): self.var=var; self.type=typ; self.assign=assign; self.line=line
+class Assign(AST):
+    def __init__(self, left, op, right, line): self.left=left; self.op=op; self.right=right; self.line=line
+class If(AST):
+    def __init__(self, cond, body, else_body, line): self.cond=cond; self.body=body; self.else_body=else_body; self.line=line
+class While(AST):
+    def __init__(self, cond, body, line): self.cond=cond; self.body=body; self.line=line
+class FuncDecl(AST):
+    def __init__(self, name, params, ret, body, line): self.name=name; self.params=params; self.ret=ret; self.body=body; self.line=line
+class FuncCall(AST):
+    def __init__(self, name, args, line): self.name=name; self.args=args; self.line=line
+class Return(AST):
+    def __init__(self, expr, line): self.expr=expr; self.line=line
+class ListLit(AST):
+    def __init__(self, elems, line): self.elems=elems; self.line=line
+class ListAccess(AST):
+    def __init__(self, var, idx, line): self.var=var; self.idx=idx; self.line=line
+class ListAssign(AST):
+    def __init__(self, var, idx, val, line): self.var=var; self.idx=idx; self.val=val; self.line=line
+class StructDecl(AST):
+    def __init__(self, name, fields, line): self.name=name; self.fields=fields; self.line=line
+class PropAccess(AST):
+    def __init__(self, obj, prop, line): self.obj=obj; self.prop=prop; self.line=line
+
+class Parser:
+    def __init__(self, lexer): self.lexer=lexer; self.current_token=lexer.get_next_token()
+    def eat(self, t):
+        if self.current_token.type==t: self.current_token=self.lexer.get_next_token()
+        else: raise LSError(f"Line {self.current_token.line}: Expected {t}")
+    def program(self): return self.compound()
+    def compound(self):
+        nodes=[]; 
+        while self.current_token.type not in ('EOF','RBRACE'): nodes.append(self.stmt())
+        root=Compound(); root.children=nodes; return root
+    def stmt(self):
+        if self.current_token.type=='TYPE': return self.decl()
+        if self.current_token.type=='ID': return self.expr_stmt()
+        if self.current_token.type=='PRINT': return self.prt()
+        if self.current_token.type=='IF': return self.if_stmt()
+        if self.current_token.type=='WHILE': return self.while_stmt()
+        if self.current_token.type=='FUNC': return self.func_decl()
+        if self.current_token.type=='RETURN': return self.ret_stmt()
+        if self.current_token.type=='STRUCT': return self.struct_decl()
+        if self.current_token.type=='LBRACE': self.eat('LBRACE'); n=self.compound(); self.eat('RBRACE'); return n
+        raise LSError(f"Line {self.current_token.line}: Unexpected token {self.current_token.value}")
+    def decl(self):
+        line=self.current_token.line; typ=self.current_token; self.eat('TYPE')
+        if self.current_token.type=='LBRACKET': self.eat('LBRACKET'); self.eat('RBRACKET'); typ.value+="[]"
+        var=Var(self.current_token); self.eat('ID'); self.eat('ASSIGN'); expr=self.expr(); self.eat('SEMI')
+        return VarDecl(var,typ,expr,line)
+    def expr_stmt(self): e=self.expr(); self.eat('SEMI'); return e
+    def prt(self):
+        line=self.current_token.line; self.eat('PRINT'); exprs=[]
+        while self.current_token.type=='STREAM': self.eat('STREAM'); exprs.append(self.expr())
+        self.eat('SEMI'); return Print(exprs,line)
+    def if_stmt(self):
+        line=self.current_token.line; self.eat('IF'); self.eat('LPAREN'); c=self.expr(); self.eat('RPAREN'); b=self.stmt(); el=None
+        if self.current_token.type=='ELSE': self.eat('ELSE'); el=self.stmt()
+        return If(c,b,el,line)
+    def while_stmt(self):
+        line=self.current_token.line; self.eat('WHILE'); self.eat('LPAREN'); c=self.expr(); self.eat('RPAREN'); b=self.stmt()
+        return While(c,b,line)
+    def func_decl(self):
+        line=self.current_token.line; self.eat('FUNC'); name=self.current_token.value; self.eat('ID'); self.eat('LPAREN'); p=[]
+        if self.current_token.type!='RPAREN':
+            p.append(self.param())
+            while self.current_token.type=='COMMA': self.eat('COMMA'); p.append(self.param())
+        self.eat('RPAREN'); self.eat('ARROW'); ret=self.current_token; self.eat('TYPE'); self.eat('LBRACE'); b=self.compound(); self.eat('RBRACE')
+        return FuncDecl(name,p,ret,b,line)
+    def param(self): t=self.current_token; self.eat('TYPE'); v=Var(self.current_token); self.eat('ID'); return VarDecl(v,t,None,v.line)
+    def ret_stmt(self): line=self.current_token.line; self.eat('RETURN'); e=self.expr(); self.eat('SEMI'); return Return(e,line)
+    def struct_decl(self):
+        line=self.current_token.line; self.eat('STRUCT'); name=self.current_token.value; self.eat('ID'); self.eat('LBRACE'); f=[]
+        while self.current_token.type!='RBRACE':
+            t=self.current_token.value; self.eat('TYPE'); n=self.current_token.value; self.eat('ID'); self.eat('SEMI'); f.append((t,n))
+        self.eat('RBRACE'); return StructDecl(name,f,line)
+    def expr(self):
+        node=self.term()
+        while self.current_token.type in ('PLUS','MINUS','EQ','NEQ','GT','LT','ASSIGN'):
+            t=self.current_token; self.eat(t.type)
+            if t.type=='ASSIGN':
+                if isinstance(node,Var): return Assign(node,t,self.expr(),t.line)
+                if isinstance(node,ListAccess): return ListAssign(node.var,node.idx,self.expr(),t.line)
+            node=BinOp(node,t,self.term(),t.line)
+        return node
+    def term(self):
+        node=self.factor()
+        while self.current_token.type in ('MUL','DIV'): t=self.current_token; self.eat(t.type); node=BinOp(node,t,self.factor(),t.line)
+        return node
+    def factor(self):
+        t=self.current_token
+        if t.type=='INTEGER': self.eat('INTEGER'); return Num(t)
+        if t.type=='FLOAT': self.eat('FLOAT'); return Num(t)
+        if t.type=='STRING': self.eat('STRING'); return Str(t)
+        if t.type in ('TRUE','FALSE'): self.eat(t.type); return Bool(t)
+        if t.type=='LBRACKET':
+            line=t.line; self.eat('LBRACKET'); e=[]
+            if t.type!='RBRACKET':
+                e.append(self.expr())
+                while self.current_token.type=='COMMA': self.eat('COMMA'); e.append(self.expr())
+            self.eat('RBRACKET'); return ListLit(e,line)
+        if t.type=='ID':
+            self.eat('ID')
+            if self.current_token.type=='LPAREN':
+                self.eat('LPAREN'); a=[]
+                if self.current_token.type!='RPAREN':
+                    a.append(self.expr())
+                    while self.current_token.type=='COMMA': self.eat('COMMA'); a.append(self.expr())
+                self.eat('RPAREN'); return FuncCall(t.value,a,t.line)
+            if self.current_token.type=='LBRACKET':
+                self.eat('LBRACKET'); i=self.expr(); self.eat('RBRACKET'); return ListAccess(Var(t),i,t.line)
+            if self.current_token.type=='DOT':
+                self.eat('DOT'); prop=self.current_token.value; self.eat('ID'); return PropAccess(Var(t),prop,t.line)
+            return Var(t)
+        if t.type=='LPAREN': self.eat('LPAREN'); n=self.expr(); self.eat('RPAREN'); return n
+        raise LSError(f"Line {t.line}: Unexpected {t.value}")
+
+class Interpreter:
+    def __init__(self, parser): self.parser=parser; self.scope=ScopeManager(); self.out=[]
+    def visit(self, node):
+        method='visit_'+type(node).__name__; return getattr(self,method)(node)
+    def visit_Compound(self, node):
+        for c in node.children: self.visit(c)
+    def visit_VarDecl(self, n): self.scope.declare(n.var.value,n.type.value,self.visit(n.assign),n.line)
+    def visit_Assign(self, n): val=self.visit(n.right); self.scope.assign(n.left.value,val,n.line); return val
+    def visit_Var(self, n): return self.scope.get(n.value,n.line)['value']
+    def visit_Print(self, n):
+        res = "".join([str(self.visit(e)).lower() if isinstance(self.visit(e), bool) else str(self.visit(e)) for e in n.exprs])
+        print(res)
+    def visit_BinOp(self, n):
+        l=self.visit(n.left); r=self.visit(n.right)
+        if n.op.type=='PLUS': return str(l)+str(r) if isinstance(l,str) or isinstance(r,str) else l+r
+        if n.op.type=='MINUS': return l-r
+        if n.op.type=='MUL': return l*r
+        if n.op.type=='DIV': return l/r
+        if n.op.type=='GT': return l>r
+        if n.op.type=='LT': return l<r
+        if n.op.type=='EQ': return l==r
+    def visit_Num(self, n): return n.value
+    def visit_Str(self, n): return n.value
+    def visit_Bool(self, n): return n.value
+    def visit_If(self, n):
+        if self.visit(n.cond): self.visit(n.body)
+        elif n.else_body: self.visit(n.else_body)
+    def visit_While(self, n):
+        while self.visit(n.cond): self.visit(n.body)
+    def visit_FuncDecl(self, n): self.scope.set_global(n.name, 'FUNC', n)
+    def visit_FuncCall(self, n):
+        f=self.scope.get_global(n.name)
+        if f['type']=='STRUCT_DEF':
+            struct=f['value']; inst={'__struct__':n.name,'fields':{}}
+            for (t,fn),arg in zip(struct.fields,n.args): inst['fields'][fn]={'type':t,'value':self.visit(arg)}
+            return inst
+        obj=f['value']; self.scope.push()
+        for p,a in zip(obj.params,n.args): self.scope.declare(p.var.value,p.type.value,self.visit(a),n.line)
+        res=None
+        try: self.visit(obj.body)
+        except ReturnValue as r: res=r.value
+        finally: self.scope.pop()
+        return res
+    def visit_Return(self, n): raise ReturnValue(self.visit(n.expr))
+    def visit_ListLit(self, n): return [self.visit(e) for e in n.elems]
+    def visit_ListAccess(self, n): return self.visit(n.var)[self.visit(n.idx)]
+    def visit_ListAssign(self, n): l=self.visit(n.var); i=self.visit(n.idx); v=self.visit(n.val); l[i]=v; return v
+    def visit_StructDecl(self, n): self.scope.set_global(n.name, 'STRUCT_DEF', n)
+    def visit_PropAccess(self, n): return self.visit(n.obj)['fields'][n.prop]['value']
+    def interpret(self): self.visit(self.parser.program())
+
+def execute_lambda(code):
+    try:
+        lexer=Lexer(code); parser=Parser(lexer); interpreter=Interpreter(parser)
+        interpreter.interpret()
+    except Exception as e: print(f"ERROR: {e}")
+`;
+
+        // 4. PYTHON NEURAL ENGINE SETUP
+        let pyodide = null;
+        let isEngineLoading = false;
+
+        async function initPyodide() {
+            if (pyodide || isEngineLoading) return;
+            isEngineLoading = true;
+            try {
+                pyodide = await loadPyodide();
+                // Load LambdaScript Core
+                await pyodide.runPythonAsync(LAMBDASCRIPT_CORE);
+                console.log("NEURAL ENGINE ONLINE");
+            } catch (err) {
+                console.error("ENGINE FAILURE:", err);
+            }
+            isEngineLoading = false;
+        }
+
+        // Initialize immediately
+        initPyodide();
+
+        // 5. RUN CODE SNIPPET
+        async function runLocalCode(btn) {
+            playSound('click');
+
+            const codeBlock = btn.previousElementSibling.querySelector('.code-content');
+            const terminal = btn.nextElementSibling;
+            let code = codeBlock.innerText;
+
+            // UI Feedback
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...`;
+            terminal.style.display = 'block';
+            terminal.innerHTML = `<div class="term-line"><span class="loading-pulse"></span>ESTABLISHING UPLINK...</div>`;
+
+            if (!pyodide) await initPyodide();
+
+            let outputLines = [];
+            pyodide.setStdout({ batched: (msg) => outputLines.push(msg) });
+
+            try {
+                playSound('execute');
+                // Run via LambdaScript Wrapper
+                await pyodide.runPythonAsync(`execute_lambda("""${code}""")`);
+                
+                if (outputLines.length === 0) outputLines.push(">>> Protocol executed silently.");
+                
+                outputLines.forEach((line, index) => {
+                    setTimeout(() => {
+                        const div = document.createElement('div');
+                        div.className = 'term-line';
+                        div.innerText = "> " + line;
+                        if(line.startsWith("ERROR")) div.style.color = "#ff5e57";
+                        terminal.appendChild(div);
+                        playSound('success');
+                    }, index * 200);
+                });
+
+            } catch (err) {
+                playSound('error');
+                const div = document.createElement('div');
+                div.className = 'term-line';
+                div.style.color = '#ff5e57';
+                div.innerText = "SYS ERR: " + err;
+                terminal.appendChild(div);
+            }
+
+            btn.innerHTML = originalBtnText;
+        }
+
+        // 6. AUDIO ENGINE
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (ctx.state === 'suspended') ctx.resume();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            const now = ctx.currentTime;
+            
+            if (type === 'click') {
+                osc.frequency.setValueAtTime(800, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'execute') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'success') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(500, now); 
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+        }
+    </script>
+</body>
+</html>
