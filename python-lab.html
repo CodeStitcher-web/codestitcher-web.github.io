@@ -562,6 +562,11 @@
         .theme-c      { color: #A8B9CC; } /* Silver/Grey */
 
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+		 /* LANGUAGE THEMES (Colors) */
+        .theme-python { color: #FFD43B; }
+        .theme-cpp    { color: #00599C; } 
+        .theme-c      { color: #A8B9CC; } 
+        .theme-lambdascript { color: #bd00ff; } /* Neon Purple for LambdaScript */
     </style>
 </head>
 <body>
@@ -602,8 +607,11 @@
                 <div style="display:flex; align-items:center;">
                     
                     <!-- NEW: LANGUAGE SELECTOR DROPDOWN -->
+                    <!-- NEW: LANGUAGE SELECTOR DROPDOWN -->
                     <div class="lang-selector" onclick="toggleLangMenu()" id="lang-selector">
-                        <i id="current-lang-icon" class="fa-brands fa-python theme-python"></i>
+                        <span id="current-lang-icon-wrapper">
+                            <i class="fa-brands fa-python theme-python"></i>
+                        </span>
                         <span id="current-filename">main.py</span>
                         <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
         
@@ -611,6 +619,9 @@
                         <div class="lang-dropdown" id="lang-menu">
                             <div class="lang-option" onclick="setLanguage('python')">
                                 <i class="fa-brands fa-python theme-python"></i> Python
+                            </div>
+                            <div class="lang-option" onclick="setLanguage('lambdascript')">
+                                <img src="lambdascript.png" style="width:16px; height:16px; filter: drop-shadow(0 0 5px #bd00ff);"> LambdaScript
                             </div>
                             <div class="lang-option" onclick="setLanguage('cpp')">
                                 <i class="fa-solid fa-c theme-cpp"></i> C++
@@ -762,6 +773,488 @@
             </div>
         </div>
     </div>
+	 <!-- ========================================== -->
+    <!-- LAMBDASCRIPT VIRTUAL MACHINE (EMBEDDED)    -->
+    <!-- ========================================== -->
+    <script type="text/python" id="lambdascript-engine">
+import re
+import random
+import sys
+import os
+
+class LSError(Exception): pass
+class SyntaxErrorLS(LSError): pass
+class TypeErrorLS(LSError): pass
+class RuntimeErrorLS(LSError): pass
+class ImportErrorLS(LSError): pass
+class BreakLoop(Exception): pass
+class ContinueLoop(Exception): pass
+class ReturnValue(Exception):
+    def __init__(self, value): self.value = value
+
+# FIX: Added the missing BuiltInFunc class!
+class BuiltInFunc:
+    def __init__(self, name, py_func):
+        self.name = name
+        self.py_func = py_func
+        self.type = 'FUNC'
+
+class ScopeManager:
+    def __init__(self):
+        self.scopes =[{}]
+    def push(self):
+        self.scopes.append({})
+    def pop(self):
+        self.scopes.pop()
+    def declare(self, name, type_str, value, line):
+        current_scope = self.scopes[-1]
+        if name in current_scope:
+            raise RuntimeErrorLS(f"Line {line}: '{name}' already declared in this scope.")
+        current_scope[name] = {'type': type_str, 'value': value}
+    def assign(self, name, value, line):
+        for scope in reversed(self.scopes):
+            if name in scope:
+                scope[name]['value'] = value
+                return
+        raise RuntimeErrorLS(f"Line {line}: Variable '{name}' not declared.")
+    def get(self, name, line):
+        for scope in reversed(self.scopes):
+            if name in scope: return scope[name]
+        raise RuntimeErrorLS(f"Line {line}: Variable '{name}' not found.")
+    def get_global(self, name):
+        return self.scopes[0].get(name)
+    def set_global(self, name, type_str, value):
+        self.scopes[0][name] = {'type': type_str, 'value': value}
+
+class Token:
+    def __init__(self, type, value, line):
+        self.type = type
+        self.value = value
+        self.line = line
+    def __repr__(self): return f"Token({self.type}, {repr(self.value)})"
+
+class Lexer:
+    def __init__(self, text):
+        self.text = text
+        self.pos = 0
+        self.line = 1
+        self.current_char = self.text[0] if self.text else None
+    def advance(self):
+        if self.current_char == '\n': self.line += 1
+        self.pos += 1
+        self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
+    def get_next_token(self):
+        while self.current_char is not None:
+            if self.current_char.isspace():
+                self.advance(); continue
+            if self.current_char == '/' and self.text[self.pos:self.pos+2] == '//':
+                while self.current_char and self.current_char != '\n': self.advance()
+                continue
+            if self.current_char == '/' and self.text[self.pos:self.pos+2] == '/*':
+                self.advance(); self.advance()
+                while self.current_char is not None:
+                    if self.current_char == '*' and self.text[self.pos:self.pos+2] == '*/':
+                        self.advance(); self.advance(); break
+                    self.advance()
+                continue
+            if self.current_char.isdigit(): return self._number()
+            if self.current_char == '"': return self._string()
+            if re.match(r'[a-zA-Z_]', self.current_char): return self._identifier()
+
+            line = self.line
+            for op in ('<<', '->', '==', '!=', '<=', '>=', '&&', '||'):
+                if self.text[self.pos:self.pos+2] == op:
+                    types = {'<<':'STREAM', '->':'ARROW', '==':'EQ', '!=':'NEQ', '<=':'LTE', '>=':'GTE', '&&':'AND', '||':'OR'}
+                    self.advance(); self.advance()
+                    return Token(types[op], op, line)
+            chars = {'+':'PLUS', '-':'MINUS', '*':'MUL', '/':'DIV', '%':'MOD', '(':'LPAREN', ')':'RPAREN', '{':'LBRACE', '}':'RBRACE', '[':'LBRACKET', ']':'RBRACKET', '=':'ASSIGN', ';':'SEMI', ',':'COMMA', '<':'LT', '>':'GT', '!':'NOT', '.':'DOT'}
+            if self.current_char in chars:
+                t = Token(chars[self.current_char], self.current_char, line)
+                self.advance()
+                return t
+            raise SyntaxErrorLS(f"Line {line}: Invalid character '{self.current_char}'")
+        return Token('EOF', None, self.line)
+    def _number(self):
+        res = ''; line = self.line
+        while self.current_char and self.current_char.isdigit():
+            res += self.current_char; self.advance()
+        if self.current_char == '.':
+            res += '.'; self.advance()
+            while self.current_char and self.current_char.isdigit():
+                res += self.current_char; self.advance()
+            return Token('FLOAT', float(res), line)
+        return Token('INTEGER', int(res), line)
+    def _string(self):
+        line = self.line; self.advance(); res = ''
+        while self.current_char and self.current_char != '"':
+            res += self.current_char; self.advance()
+        self.advance()
+        return Token('STRING', res, line)
+    def _identifier(self):
+        line = self.line; res = ''
+        while self.current_char and re.match(r'[a-zA-Z0-9_]', self.current_char):
+            res += self.current_char; self.advance()
+        keywords = {'print': 'PRINT', 'if': 'IF', 'else': 'ELSE', 'input': 'INPUT', 'int': 'TYPE', 'string': 'TYPE', 'float': 'TYPE', 'boolean': 'TYPE', 'while': 'WHILE', 'for': 'FOR', 'break': 'BREAK', 'continue': 'CONTINUE', 'func': 'FUNC', 'return': 'RETURN', 'true': 'TRUE', 'false': 'FALSE', 'struct': 'STRUCT', 'import': 'IMPORT'}
+        return Token(keywords.get(res, 'ID'), res, line)
+
+class AST: pass
+class BinOp(AST):
+    def __init__(self, left, op, right, line): self.left = left; self.op = op; self.right = right; self.line = line
+class UnaryOp(AST):
+    def __init__(self, op, expr, line): self.op = op; self.expr = expr; self.line = line
+class Num(AST):
+    def __init__(self, token): self.value = token.value; self.line = token.line
+class StringLit(AST):
+    def __init__(self, token): self.value = token.value; self.line = token.line
+class BoolLit(AST):
+    def __init__(self, token): self.value = (token.type == 'TRUE'); self.line = token.line
+class Var(AST):
+    def __init__(self, token): self.value = token.value; self.line = token.line
+class ListLit(AST):
+    def __init__(self, elements, line): self.elements = elements; self.line = line
+class ListAccess(AST):
+    def __init__(self, var_node, index_expr, line): self.var_node = var_node; self.index_expr = index_expr; self.line = line
+class ListAssign(AST):
+    def __init__(self, var_node, index_expr, value_expr, line): self.var_node = var_node; self.index_expr = index_expr; self.value_expr = value_expr; self.line = line
+class PropAccess(AST):
+    def __init__(self, obj_expr, prop_name, line): self.obj = obj_expr; self.prop = prop_name; self.line = line
+class PropAssign(AST):
+    def __init__(self, obj_expr, prop_name, value_expr, line): self.obj = obj_expr; self.prop = prop_name; self.value = value_expr; self.line = line
+class MethodCall(AST):
+    def __init__(self, obj_expr, method_name, args, line): self.obj = obj_expr; self.method = method_name; self.args = args; self.line = line
+class Assign(AST):
+    def __init__(self, left, op, right, line): self.left = left; self.op = op; self.right = right; self.line = line
+class VarDecl(AST):
+    def __init__(self, var_node, type_node, assign_node, line): self.var = var_node; self.type = type_node; self.assign = assign_node; self.line = line
+class Print(AST):
+    def __init__(self, exprs, line): self.exprs = exprs; self.line = line
+class Input(AST):
+    def __init__(self, prompt_expr, line): self.prompt = prompt_expr; self.line = line
+class If(AST):
+    def __init__(self, cond, body, else_body, line): self.cond = cond; self.body = body; self.else_body = else_body; self.line = line
+class While(AST):
+    def __init__(self, cond, body, line): self.cond = cond; self.body = body; self.line = line
+class For(AST):
+    def __init__(self, init, cond, update, body, line): self.init = init; self.cond = cond; self.update = update; self.body = body; self.line = line
+class Break(AST):
+    def __init__(self, line): self.line = line
+class Continue(AST):
+    def __init__(self, line): self.line = line
+class FuncDecl(AST):
+    def __init__(self, name, params, ret_type, body, line): self.name = name; self.params = params; self.ret_type = ret_type; self.body = body; self.line = line
+class FuncCall(AST):
+    def __init__(self, name, args, line): self.name = name; self.args = args; self.line = line
+class StructDecl(AST):
+    def __init__(self, name, fields, line): self.name = name; self.fields = fields; self.line = line
+class Return(AST):
+    def __init__(self, expr, line): self.expr = expr; self.line = line
+class Import(AST):
+    def __init__(self, module_name, line): self.module = module_name; self.line = line
+class Compound(AST):
+    def __init__(self): self.children =[]
+class NoOp(AST): pass
+
+class Parser:
+    PRECEDENCE = {'ASSIGN': 1, 'OR': 2, 'AND': 3, 'EQ': 4, 'NEQ': 4, 'LT': 5, 'GT': 5, 'LTE': 5, 'GTE': 5, 'PLUS': 6, 'MINUS': 6, 'MUL': 7, 'DIV': 7, 'MOD': 7, 'DOT': 9, 'LBRACKET': 9, 'LPAREN': 9}
+    def __init__(self, lexer): self.lexer = lexer; self.current_token = self.lexer.get_next_token()
+    def eat(self, type_str):
+        if self.current_token.type == type_str: self.current_token = self.lexer.get_next_token()
+        else: raise SyntaxErrorLS(f"Line {self.current_token.line}: Expected {type_str}, got {self.current_token.type}")
+    def program(self): return self.compound_statement()
+    def compound_statement(self):
+        nodes =[]
+        while self.current_token.type not in ('EOF', 'RBRACE'): nodes.append(self.statement())
+        root = Compound(); root.children = nodes; return root
+    def statement(self):
+        t = self.current_token.type
+        if t == 'FUNC': return self.function_declaration()
+        if t == 'STRUCT': return self.struct_declaration()
+        if t == 'IMPORT': return self.import_statement()
+        if t == 'RETURN': return self.return_statement()
+        if t == 'TYPE': return self.declaration_statement()
+        if t == 'ID': return self.expression_statement()
+        if t == 'PRINT': return self.print_statement()
+        if t == 'IF': return self.if_statement()
+        if t == 'WHILE': return self.while_statement()
+        if t == 'FOR': return self.for_statement()
+        if t == 'BREAK':
+            line = self.current_token.line; self.eat('BREAK'); self.eat('SEMI'); return Break(line)
+        if t == 'CONTINUE':
+            line = self.current_token.line; self.eat('CONTINUE'); self.eat('SEMI'); return Continue(line)
+        if t == 'LBRACE':
+            self.eat('LBRACE'); node = self.compound_statement(); self.eat('RBRACE'); return node
+        raise SyntaxErrorLS(f"Line {self.current_token.line}: Invalid statement starting with {self.current_token.value}")
+    def import_statement(self):
+        line = self.current_token.line; self.eat('IMPORT'); mod = self.current_token.value; self.eat('STRING'); self.eat('SEMI'); return Import(mod, line)
+    def struct_declaration(self):
+        line = self.current_token.line; self.eat('STRUCT'); name = self.current_token.value; self.eat('ID'); self.eat('LBRACE'); fields =[]
+        while self.current_token.type != 'RBRACE':
+            field_type = self.current_token.value; self.eat('TYPE'); field_name = self.current_token.value; self.eat('ID'); self.eat('SEMI'); fields.append((field_type, field_name))
+        self.eat('RBRACE'); return StructDecl(name, fields, line)
+    def function_declaration(self):
+        line = self.current_token.line; self.eat('FUNC'); name = self.current_token.value; self.eat('ID'); self.eat('LPAREN'); params =[]
+        if self.current_token.type != 'RPAREN':
+            params.append(self.param_decl())
+            while self.current_token.type == 'COMMA': self.eat('COMMA'); params.append(self.param_decl())
+        self.eat('RPAREN'); self.eat('ARROW'); ret_type = self.current_token; self.eat('TYPE'); self.eat('LBRACE'); body = self.compound_statement(); self.eat('RBRACE'); return FuncDecl(name, params, ret_type, body, line)
+    def param_decl(self):
+        type_node = self.current_token; self.eat('TYPE'); var_node = Var(self.current_token); self.eat('ID'); return VarDecl(var_node, type_node, None, var_node.line)
+    def return_statement(self):
+        line = self.current_token.line; self.eat('RETURN'); expr = self.parse_expression(); self.eat('SEMI'); return Return(expr, line)
+    def declaration_statement(self):
+        line = self.current_token.line; type_token = self.current_token; self.eat('TYPE')
+        if self.current_token.type == 'LBRACKET': self.eat('LBRACKET'); self.eat('RBRACKET'); type_token.value += "[]"
+        var_node = Var(self.current_token); self.eat('ID'); self.eat('ASSIGN'); expr = self.parse_expression(); self.eat('SEMI'); return VarDecl(var_node, type_token, expr, line)
+    def expression_statement(self): expr = self.parse_expression(); self.eat('SEMI'); return expr
+    def print_statement(self):
+        line = self.current_token.line; self.eat('PRINT'); exprs =[]
+        while self.current_token.type == 'STREAM': self.eat('STREAM'); exprs.append(self.parse_expression())
+        self.eat('SEMI'); return Print(exprs, line)
+    def if_statement(self):
+        line = self.current_token.line; self.eat('IF'); self.eat('LPAREN'); cond = self.parse_expression(); self.eat('RPAREN'); body = self.statement(); else_body = None
+        if self.current_token.type == 'ELSE': self.eat('ELSE'); else_body = self.statement()
+        return If(cond, body, else_body, line)
+    def while_statement(self):
+        line = self.current_token.line; self.eat('WHILE'); self.eat('LPAREN'); cond = self.parse_expression(); self.eat('RPAREN'); body = self.statement(); return While(cond, body, line)
+    def for_statement(self):
+        line = self.current_token.line; self.eat('FOR'); self.eat('LPAREN'); init = self.statement(); cond = self.parse_expression(); self.eat('SEMI'); up_expr = self.parse_expression(); self.eat('RPAREN'); body = self.statement(); return For(init, cond, up_expr, body, line)
+    def get_precedence(self): return self.PRECEDENCE.get(self.current_token.type, 0)
+    def parse_expression(self, precedence=0):
+        token = self.current_token; prefix_fn = getattr(self, f"prefix_{token.type.lower()}", None)
+        if not prefix_fn: raise SyntaxErrorLS(f"Line {token.line}: Cannot parse expression starting with {token.value}")
+        left = prefix_fn()
+        while precedence < self.get_precedence():
+            token = self.current_token; infix_fn = getattr(self, f"infix_{token.type.lower()}", None)
+            if not infix_fn: return left
+            left = infix_fn(left)
+        return left
+    def prefix_integer(self): t = self.current_token; self.eat('INTEGER'); return Num(t)
+    def prefix_float(self): t = self.current_token; self.eat('FLOAT'); return Num(t)
+    def prefix_string(self): t = self.current_token; self.eat('STRING'); return StringLit(t)
+    def prefix_true(self): t = self.current_token; self.eat('TRUE'); return BoolLit(t)
+    def prefix_false(self): t = self.current_token; self.eat('FALSE'); return BoolLit(t)
+    def prefix_id(self): t = self.current_token; self.eat('ID'); return Var(t)
+    def prefix_minus(self): t = self.current_token; self.eat('MINUS'); return UnaryOp(t, self.parse_expression(7), t.line)
+    def prefix_not(self): t = self.current_token; self.eat('NOT'); return UnaryOp(t, self.parse_expression(7), t.line)
+    def prefix_lparen(self): self.eat('LPAREN'); expr = self.parse_expression(); self.eat('RPAREN'); return expr
+    def prefix_lbracket(self):
+        line = self.current_token.line; self.eat('LBRACKET'); elems =[]
+        if self.current_token.type != 'RBRACKET':
+            elems.append(self.parse_expression())
+            while self.current_token.type == 'COMMA': self.eat('COMMA'); elems.append(self.parse_expression())
+        self.eat('RBRACKET'); return ListLit(elems, line)
+    def prefix_input(self):
+        line = self.current_token.line; self.eat('INPUT'); self.eat('LPAREN'); prompt = self.parse_expression(); self.eat('RPAREN'); return Input(prompt, line)
+    def infix_plus(self, left): return self._binop(left, 'PLUS')
+    def infix_minus(self, left): return self._binop(left, 'MINUS')
+    def infix_mul(self, left): return self._binop(left, 'MUL')
+    def infix_div(self, left): return self._binop(left, 'DIV')
+    def infix_mod(self, left): return self._binop(left, 'MOD')
+    def infix_eq(self, left): return self._binop(left, 'EQ')
+    def infix_neq(self, left): return self._binop(left, 'NEQ')
+    def infix_lt(self, left): return self._binop(left, 'LT')
+    def infix_gt(self, left): return self._binop(left, 'GT')
+    def infix_lte(self, left): return self._binop(left, 'LTE')
+    def infix_gte(self, left): return self._binop(left, 'GTE')
+    def infix_and(self, left): return self._binop(left, 'AND')
+    def infix_or(self, left): return self._binop(left, 'OR')
+    def infix_assign(self, left):
+        op = self.current_token; line = op.line; self.eat('ASSIGN'); right = self.parse_expression(self.PRECEDENCE['ASSIGN'] - 1)
+        if isinstance(left, Var): return Assign(left, op, right, line)
+        if isinstance(left, ListAccess): return ListAssign(left.var_node, left.index_expr, right, line)
+        if isinstance(left, PropAccess): return PropAssign(left.obj, left.prop, right, line)
+        raise SyntaxErrorLS(f"Line {line}: Invalid assignment target.")
+    def infix_lbracket(self, left):
+        line = self.current_token.line; self.eat('LBRACKET'); idx = self.parse_expression(); self.eat('RBRACKET'); return ListAccess(left, idx, line)
+    def infix_lparen(self, left):
+        line = self.current_token.line; self.eat('LPAREN'); args =[]
+        if self.current_token.type != 'RPAREN':
+            args.append(self.parse_expression())
+            while self.current_token.type == 'COMMA': self.eat('COMMA'); args.append(self.parse_expression())
+        self.eat('RPAREN')
+        if isinstance(left, PropAccess): return MethodCall(left.obj, left.prop, args, line)
+        elif isinstance(left, Var): return FuncCall(left.value, args, line)
+        raise SyntaxErrorLS(f"Line {line}: Invalid function call syntax.")
+    def infix_dot(self, left):
+        line = self.current_token.line; self.eat('DOT'); prop = self.current_token.value; self.eat('ID'); return PropAccess(left, prop, line)
+    def _binop(self, left, op_type):
+        op = self.current_token; prec = self.get_precedence(); self.eat(op_type); right = self.parse_expression(prec); return BinOp(left, op, right, op.line)
+
+class Interpreter:
+    def __init__(self, parser, debug=False):
+        self.parser = parser; self.debug = debug; self.scope = ScopeManager(); self.MAX_LOOPS = 10000
+        self.scope.set_global('len', 'FUNC', BuiltInFunc('len', lambda x: len(x)))
+        self.scope.set_global('str_to_int', 'FUNC', BuiltInFunc('str_to_int', lambda x: int(x)))
+        self.scope.set_global('random', 'FUNC', BuiltInFunc('random', random.randint))
+    def log_debug(self, msg):
+        if self.debug: print(f"[DEBUG] {msg}")
+    def format_string(self, text, line):
+        def repl(match):
+            var_name = match.group(1)
+            try:
+                val = self.scope.get(var_name, line)['value']
+                return str("true" if val is True else "false" if val is False else val)
+            except Exception: return match.group(0)
+        return re.sub(r'\{([a-zA-Z_]\w*)\}', repl, text)
+    def check_type(self, expected, val, line):
+        if expected == 'any': return
+        if expected.endswith('[]') and not isinstance(val, list): raise TypeErrorLS(f"Line {line}: Expected array.")
+        if expected == 'int' and (not isinstance(val, int) or isinstance(val, bool)): raise TypeErrorLS(f"Line {line}: Expected int.")
+        if expected == 'float' and (not isinstance(val, (int, float)) or isinstance(val, bool)): raise TypeErrorLS(f"Line {line}: Expected float.")
+        if expected == 'string' and not isinstance(val, str): raise TypeErrorLS(f"Line {line}: Expected string.")
+        if expected == 'boolean' and not isinstance(val, bool): raise TypeErrorLS(f"Line {line}: Expected boolean.")
+        if expected[0].isupper() and (not isinstance(val, dict) or val.get('__struct__') != expected): raise TypeErrorLS(f"Line {line}: Expected struct '{expected}'.")
+    def visit(self, node):
+        method_name = 'visit_' + type(node).__name__
+        visitor = getattr(self, method_name, self.generic_visit)
+        return visitor(node)
+    def generic_visit(self, node): raise RuntimeErrorLS(f'No visit_{type(node).__name__} method')
+    def visit_Compound(self, node):
+        for child in node.children: self.visit(child)
+    def visit_NoOp(self, node): pass
+    def visit_Import(self, node):
+        raise ImportErrorLS(f"Line {node.line}: Imports are disabled in Web Browser mode.")
+    def visit_StructDecl(self, node): self.scope.set_global(node.name, 'STRUCT_DEF', node)
+    def visit_VarDecl(self, node):
+        name = node.var.value; expected_type = node.type.value; val = self.visit(node.assign)
+        self.check_type(expected_type, val, node.line); self.scope.declare(name, expected_type, val, node.line)
+    def visit_Assign(self, node):
+        name = node.left.value; val = self.visit(node.right); target = self.scope.get(name, node.line)
+        self.check_type(target['type'], val, node.line); self.scope.assign(name, val, node.line); return val
+    def visit_Var(self, node): return self.scope.get(node.value, node.line)['value']
+    def visit_FuncDecl(self, node): self.scope.set_global(node.name, 'FUNC', node)
+    def visit_FuncCall(self, node):
+        func_info = self.scope.get_global(node.name)
+        if func_info and func_info['type'] == 'STRUCT_DEF':
+            struct_node = func_info['value']
+            if len(node.args) != len(struct_node.fields): raise RuntimeErrorLS(f"Line {node.line}: '{node.name}' constructor expects {len(struct_node.fields)} arguments.")
+            instance = {'__struct__': node.name, 'fields': {}}
+            for (f_type, f_name), arg_expr in zip(struct_node.fields, node.args):
+                arg_val = self.visit(arg_expr); self.check_type(f_type, arg_val, node.line); instance['fields'][f_name] = {'type': f_type, 'value': arg_val}
+            return instance
+        if not func_info or func_info['type'] != 'FUNC': raise RuntimeErrorLS(f"Line {node.line}: Function '{node.name}' not defined.")
+        func_obj = func_info['value']
+        if isinstance(func_obj, BuiltInFunc):
+            args = [self.visit(arg) for arg in node.args]; return func_obj.py_func(*args)
+        if len(node.args) != len(func_obj.params): raise RuntimeErrorLS(f"Line {node.line}: '{node.name}' expects {len(func_obj.params)} args.")
+        self.scope.push()
+        for param, arg_expr in zip(func_obj.params, node.args):
+            arg_val = self.visit(arg_expr); self.check_type(param.type.value, arg_val, node.line); self.scope.declare(param.var.value, param.type.value, arg_val, node.line)
+        res = None
+        try: self.visit(func_obj.body)
+        except ReturnValue as r:
+            res = r.value
+            if func_obj.ret_type.value != "void": self.check_type(func_obj.ret_type.value, res, node.line)
+        finally: self.scope.pop()
+        return res
+    def visit_MethodCall(self, node):
+        obj = self.visit(node.obj); args = [self.visit(arg) for arg in node.args]
+        if isinstance(obj, list):
+            if node.method == 'push': obj.append(args[0]); return obj
+            if node.method == 'pop': return obj.pop()
+            if node.method == 'remove': obj.remove(args[0]); return obj
+            if node.method == 'insert': obj.insert(args[0], args[1]); return obj
+            if node.method == 'map':
+                func_name = args[0]
+                return[self.visit(FuncCall(func_name, [Num(Token('INTEGER', x, node.line))], node.line)) for x in obj]
+        raise RuntimeErrorLS(f"Line {node.line}: Method '{node.method}' not found on object.")
+    def visit_PropAccess(self, node):
+        obj = self.visit(node.obj)
+        if not isinstance(obj, dict) or '__struct__' not in obj: raise RuntimeErrorLS(f"Line {node.line}: Target is not a struct instance.")
+        if node.prop not in obj['fields']: raise RuntimeErrorLS(f"Line {node.line}: Struct has no property '{node.prop}'.")
+        return obj['fields'][node.prop]['value']
+    def visit_PropAssign(self, node):
+        obj = self.visit(node.obj)
+        if not isinstance(obj, dict) or '__struct__' not in obj: raise RuntimeErrorLS(f"Line {node.line}: Target is not a struct instance.")
+        if node.prop not in obj['fields']: raise RuntimeErrorLS(f"Line {node.line}: Struct has no property '{node.prop}'.")
+        val = self.visit(node.value); self.check_type(obj['fields'][node.prop]['type'], val, node.line); obj['fields'][node.prop]['value'] = val; return val
+    def visit_Return(self, node): raise ReturnValue(self.visit(node.expr))
+    def visit_ListLit(self, node): return [self.visit(e) for e in node.elements]
+    def visit_ListAccess(self, node):
+        obj = self.visit(node.var_node); idx = self.visit(node.index_expr)
+        if not isinstance(obj, (list, str)): raise RuntimeErrorLS(f"Line {node.line}: Cannot index this type.")
+        return obj[idx]
+    def visit_ListAssign(self, node):
+        obj = self.visit(node.var_node); idx = self.visit(node.index_expr); val = self.visit(node.value_expr); obj[idx] = val; return val
+    def visit_Input(self, node):
+        prompt = self.visit(node.prompt)
+        return input(str(prompt))
+    def visit_BinOp(self, node):
+        op = node.op.type
+        if op == 'AND':
+            left = self.visit(node.left)
+            if not left: return False
+            return bool(self.visit(node.right))
+        if op == 'OR':
+            left = self.visit(node.left)
+            if left: return True
+            return bool(self.visit(node.right))
+        left = self.visit(node.left); right = self.visit(node.right)
+        if op == 'PLUS':
+            if isinstance(left, str) or isinstance(right, str): return str(left) + str(right)
+            return left + right
+        if op == 'MINUS': return left - right
+        if op == 'MUL': return left * right
+        if op == 'DIV': return left / right
+        if op == 'MOD': return left % right
+        if op == 'EQ': return left == right
+        if op == 'NEQ': return left != right
+        if op == 'LT': return left < right
+        if op == 'GT': return left > right
+        if op == 'LTE': return left <= right
+        if op == 'GTE': return left >= right
+    def visit_UnaryOp(self, node):
+        op = node.op.type
+        if op == 'PLUS': return +self.visit(node.expr)
+        if op == 'MINUS': return -self.visit(node.expr)
+        if op == 'NOT': return not self.visit(node.expr)
+    def visit_If(self, node):
+        if self.visit(node.cond): self.visit(node.body)
+        elif node.else_body: self.visit(node.else_body)
+    def visit_While(self, node):
+        loops = 0
+        while self.visit(node.cond):
+            loops += 1
+            if loops > self.MAX_LOOPS: raise RuntimeErrorLS(f"Line {node.line}: Infinite loop detected! (> {self.MAX_LOOPS} iterations)")
+            try: self.visit(node.body)
+            except BreakLoop: break
+            except ContinueLoop: continue
+    def visit_For(self, node):
+        self.visit(node.init); loops = 0
+        while self.visit(node.cond):
+            loops += 1
+            if loops > self.MAX_LOOPS: raise RuntimeErrorLS(f"Line {node.line}: Infinite loop detected!")
+            try: self.visit(node.body)
+            except BreakLoop: break
+            except ContinueLoop: self.visit(node.update); continue
+            self.visit(node.update)
+    def visit_Break(self, node): raise BreakLoop()
+    def visit_Continue(self, node): raise ContinueLoop()
+    def visit_Num(self, node): return node.value
+    def visit_BoolLit(self, node): return node.value
+    def visit_StringLit(self, node): return self.format_string(node.value, node.line)
+    def visit_Print(self, node):
+        res = ""
+        for expr in node.exprs:
+            val = self.visit(expr)
+            res += str("true" if val is True else "false" if val is False else val)
+        print(res)
+    def interpret(self):
+        tree = self.parser.program()
+        return self.visit(tree)
+
+def run_code(code_string, debug=False):
+    try:
+        lexer = Lexer(code_string)
+        parser = Parser(lexer)
+        interpreter = Interpreter(parser, debug=debug)
+        interpreter.interpret()
+    except LSError as e:
+        print(f"❌ {e.__class__.__name__}: {e}")
+    except Exception as e:
+        print(f"❌ CRITICAL SYSTEM ERROR: {e}")
+    </script>
+	
     <script src="script.js"></script>
     <script>
 		 /* --- UI: LANGUAGE SWITCHER --- */
@@ -791,29 +1284,30 @@
         /* --- UI: LANGUAGE SWITCHER LOGIC --- */
         function setLanguage(lang) {
             currentLang = lang;
-            const icon = document.getElementById('current-lang-icon');
+            const iconWrap = document.getElementById('current-lang-icon-wrapper');
             const fname = document.getElementById('current-filename');
 
             // 1. Update Visuals (Icon & Filename)
             if(lang === 'python') {
-                icon.className = 'fa-brands fa-python theme-python';
+                iconWrap.innerHTML = '<i class="fa-brands fa-python theme-python" style="font-size:1.2rem; filter: drop-shadow(0 0 5px currentColor);"></i>';
                 fname.innerText = 'main.py';
+            } else if(lang === 'lambdascript') {
+                iconWrap.innerHTML = '<img src="lambdascript.png" style="height:1.2rem; filter: drop-shadow(0 0 5px #bd00ff);">';
+                fname.innerText = 'main.ls';
             } else if(lang === 'cpp') {
-                icon.className = 'fa-solid fa-c theme-cpp'; 
+                iconWrap.innerHTML = '<i class="fa-solid fa-c theme-cpp" style="font-size:1.2rem; filter: drop-shadow(0 0 5px currentColor);"></i>'; 
                 fname.innerText = 'main.cpp';
             } else if(lang === 'c') {
-                icon.className = 'fa-solid fa-copyright theme-c';
+                iconWrap.innerHTML = '<i class="fa-solid fa-copyright theme-c" style="font-size:1.2rem; filter: drop-shadow(0 0 5px currentColor);"></i>';
                 fname.innerText = 'main.c';
             }
             
             // 2. Update Monaco Editor (Content & Syntax Highlighting)
             if (editor) {
-                // Update Code
                 editor.setValue(codeTemplates[lang]);
-                
-                // Update Syntax Highlighting Model
-                // Monaco uses 'cpp' for C++ and 'c' for C
                 const model = editor.getModel();
+                
+                // Set language directly to 'lambdascript' now!
                 monaco.editor.setModelLanguage(model, lang);
             }
 
@@ -827,10 +1321,10 @@
                 selector.classList.remove('active');
             }
         }
+        
         let editor, pyodide;
         let fontSize = 14;
         
-        // 1. CHECK FOR COPIED CODE FROM URL
         const urlParams = new URLSearchParams(window.location.search);
         const incomingCode = urlParams.get('code');
         
@@ -838,10 +1332,12 @@
         const codeTemplates = {
             python: `# CodeStitcher Neural IDE\n# Write your Python code below\n\nimport sys\nimport random\n\nprint("=== SYSTEM DIAGNOSTICS ===")\nprint(f"Python Kernel: {sys.version.split()[0]}")\nprint(f"Engine: Pyodide WebAssembly")\n\ndef neural_sync():\n    print("\\n> SYNCING NEURAL NETWORKS...")\n    return random.randint(85, 100)\n\nsync = neural_sync()\nprint(f"> SYNC COMPLETE: {sync}% Efficiency")\nprint("\\nReady for instructions.")`,
             
+            lambdascript: `// CodeStitcher Neural IDE\n// LambdaScript Virtual Machine v4.0\n\nprint << "=== SYSTEM DIAGNOSTICS ===";\nprint << "Engine: Pyodide LS-VM Wrapper";\n\nfunc neural_sync() -> int {\n    print << "> SYNCING NEURAL NETWORKS...";\n    return random(85, 100);\n}\n\nint sync = neural_sync();\nprint << "> SYNC COMPLETE: " << sync << "% Efficiency";\nprint << "Ready for instructions.";`,
+            
             cpp: `// CodeStitcher Neural IDE\n// Write your C++ code below\n\n#include <iostream>\n#include <vector>\n\nint main() {\n    std::cout << "=== SYSTEM DIAGNOSTICS ===" << std::endl;\n    std::cout << "Engine: Piston API (C++)" << std::endl;\n    \n    std::cout << "\\n> SYNCING NEURAL NETWORKS..." << std::endl;\n    std::cout << "> SYNC COMPLETE: 98% Efficiency" << std::endl;\n    \n    return 0;\n}`,
             
             c: `// CodeStitcher Neural IDE\n// Write your C code below\n\n#include <stdio.h>\n\nint main() {\n    printf("=== SYSTEM DIAGNOSTICS ===\\n");\n    printf("Engine: Piston API (C)\\n");\n    \n    printf("\\n> SYNCING NEURAL NETWORKS...\\n");\n    printf("> SYNC COMPLETE: 95% Efficiency\\n");\n    \n    return 0;\n}`
-        };
+        };;
 
         // Set default initial code
         let initialCode = codeTemplates.python;
@@ -870,7 +1366,61 @@
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' }});
                 require(['vs/editor/editor.main'], function() {
                     updateLoad(100);
+                    // --- 1. DEFINE LAMBDASCRIPT SYNTAX HIGHLIGHTING ---
+                    monaco.languages.register({ id: 'lambdascript' });
                     
+                    monaco.languages.setMonarchTokensProvider('lambdascript', {
+                        keywords:[
+                            'print', 'if', 'else', 'elif', 'input', 'int', 'string', 'float', 'boolean',
+                            'while', 'for', 'break', 'continue', 'func', 'return', 'true', 'false',
+                            'struct', 'import'
+                        ],
+                        operators:[
+                            '=', '>', '<', '!', '==', '<=', '>=', '!=', '&&', '||', '+', '-', '*', '/', '%', '<<', '->'
+                        ],
+                        symbols:  /[=><!&|+\-*\/\^%]+/,
+                        tokenizer: {
+                            root: [
+                                // identifiers and keywords
+                                [/[a-zA-Z_]\w*/, { cases: { '@keywords': 'keyword', '@default': 'identifier' } }],
+                                // whitespace
+                                { include: '@whitespace' },
+                                // delimiters and operators
+                                [/[{}()\[\]]/, '@brackets'],
+                                [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
+                                // numbers
+                                [/\d*\.\d+/, 'number.float'],[/\d+/, 'number'],
+                                // strings
+                                [/"([^"\\]|\\.)*$/, 'string.invalid' ],[/"/,  { token: 'string.quote', bracket: '@open', next: '@string' } ]
+                            ],
+                            string: [
+                                [/[^\\"]+/,  'string'],[/\\./,      'string.escape.invalid'],[/"/,        { token: 'string.quote', bracket: '@close', next: '@pop' } ]
+                            ],
+                            whitespace: [[/[ \t\r\n]+/, 'white'],[/\/\*/,       'comment', '@comment' ],
+                                [/\/\/.*$/,    'comment'],
+                            ],
+                            comment: [
+                                [/[^\/*]+/, 'comment' ],
+                                [/\/\*/,    'comment', '@push' ],
+                                ["\\*/",    'comment', '@pop'  ],
+                                [/[\/*]/,   'comment' ]
+                            ],
+                        }
+                    });
+
+                    // --- 2. DEFINE GLASS THEME ---
+                    monaco.editor.defineTheme('glass', {
+                        base: 'vs-dark', inherit: true,
+                        rules:[
+                            { background: '00000000' },
+                            { token: 'keyword', foreground: 'bd00ff', fontStyle: 'bold' }, // Neon purple keywords
+                            { token: 'string', foreground: '00D26A' },                     // Neon green strings
+                            { token: 'number', foreground: '00F0FF' },                     // Cyan numbers
+                            { token: 'comment', foreground: '888888', fontStyle: 'italic' }// Grey comments
+                        ],
+                        colors: { 'editor.background': '#00000000', 'minimap.background': '#00000000' }
+                    });
+
                     monaco.editor.defineTheme('glass', {
                         base: 'vs-dark', inherit: true,
                         rules: [{ background: '00000000' }],
@@ -1089,21 +1639,43 @@
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...';
             btn.style.opacity = "0.7"; btn.style.pointerEvents = "none";
 
-            if (currentLang === 'python') {
+            if (currentLang === 'python' || currentLang === 'lambdascript') {
                 if (!pyodide) { log("ERR: Python Engine not loaded yet.", "log-err"); cleanupRunState(); return; }
                 
                 // Expose user input securely to the Python WASM Environment
                 window.currentStdin = stdinValue;
-                
-                // Override sys.stdin dynamically using StringIO!
-                let processedCode = `
+                let processedCode = "";
+
+                if (currentLang === 'python') {
+                    log(">>> INITIALIZING NEURAL UPLINK (LOCAL WASM)...", "log-sys");
+                    processedCode = `
 import micropip
 import sys, io, js
 sys.stdin = io.StringIO(js.currentStdin)
 ` + code;
-                processedCode = processedCode.replace(/^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 'await install("$1")');
+                    processedCode = processedCode.replace(/^pip\s+install\s+["']?([a-zA-Z0-9_\-\.]+)["']?/gm, 'await install("$1")');
+                } else if (currentLang === 'lambdascript') {
+                    log(">>> BOOTING LAMBDASCRIPT VIRTUAL MACHINE...", "log-sys");
+                    
+                    window.lsCodeToRun = code;
+                    try {
+                        // 1. Grab the Python Interpreter source directly from the HTML embedded tag!
+                        const interpreterCode = document.getElementById('lambdascript-engine').textContent;
+                        
+                        // 2. Wrap it and route stdin to our Holographic Modal
+                        processedCode = `
+import sys, io, js
+sys.stdin = io.StringIO(js.currentStdin)
 
-                log(">>> INITIALIZING NEURAL UPLINK (LOCAL WASM)...", "log-sys");
+${interpreterCode}
+
+run_code(js.lsCodeToRun)
+`;
+                    } catch (err) {
+                        handleError("Failed to load embedded LambdaScript engine.");
+                        return;
+                    }
+                }
                 
                 setTimeout(async () => {
                     try {
@@ -1144,7 +1716,7 @@ sys.stdin = io.StringIO(js.currentStdin)
                 } catch (err) { handleError("COMPILER ERROR:\n" + err.message); }
             }
 
-            // (Helper functions remain identical)
+            // --- Helper Sub-Functions ---
             function displayOutput(lines) {
                 if (lines.length === 0) lines.push(">>> Protocol executed silently.");
                 let totalDelay = 0;
