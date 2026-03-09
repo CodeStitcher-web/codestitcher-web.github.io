@@ -111,7 +111,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
 }
 #bg-canvas{position:absolute;inset:0;z-index:0;}
 .wp-grid{
-  position:absolute;inset:0;z-index:1;opacity:calc(var(--particles)*0.055);
+  position:absolute;inset:0;z-index:1;opacity:calc(var(--particles)*0.15);
   background-image:linear-gradient(rgba(var(--primary-rgb),.6) 1px,transparent 1px),
     linear-gradient(90deg,rgba(var(--primary-rgb),.6) 1px,transparent 1px);
   background-size:55px 55px;
@@ -377,19 +377,20 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
 .about-ver{font-family:'Ubuntu Mono',monospace;color:var(--primary);font-size:.8rem;letter-spacing:2px;margin:6px 0 20px;}
 .about-specs{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:9px;padding:14px 22px;width:100%;text-align:left;font-family:'Ubuntu Mono',monospace;font-size:.78rem;color:#666;line-height:1.9;}
 .about-specs .k{color:var(--primary);} 
-
 /* ═══════════════════════════════════════
    DOCK
 ═══════════════════════════════════════ */
 #dock{
-  position:relative;z-index:400;display:flex;align-items:flex-end;
-  justify-content:center;padding:6px 0 8px;flex-shrink:0;height:74px;
+  position:absolute; bottom:0; width:100%; z-index:400; 
+  display:flex; align-items:flex-end; justify-content:center; 
+  padding:6px 0 8px; height:74px; pointer-events:none; /* Lets you click windows behind the empty dock space */
 }
 .dock-inner{
   display:flex;align-items:flex-end;gap:5px;
   background:var(--dock-bg);backdrop-filter:blur(30px);
   border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:7px 10px;
   box-shadow:0 -8px 36px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.03);
+  pointer-events:all; /* Re-enables clicking on the actual apps */
 }
 .ditem{
   display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -596,14 +597,24 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
    MOBILE & TOUCH RESPONSIVENESS
 ═══════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Override inline window sizes */
+  /* Fix Boot Screen crop on mobile */
+  .boot-logo { flex-direction: column; text-align: center; gap: 10px; }
+  .boot-name { font-size: 2rem; }
+  .boot-sub { letter-spacing: 2px; }
+  .boot-bar-track { width: 85%; }
+  .boot-ver { text-align: center; width: 100%; font-size: 0.6rem; padding: 0 10px; }
+
+  /* Window size fix: Avoid dock and span full available space */
+   /* Window size fix: Span full available space */
   .win {
-    width: 94% !important;
-    height: 75% !important;
-    min-width: unset !important;
-    min-height: unset !important;
-    left: 3% !important;
-    top: 5% !important;
+    top: 2% !important; 
+    left: 2% !important;
+    right: 2% !important; 
+    bottom: 2% !important; /* Changed from 85px to 2% to fill the whole screen! */
+    width: auto !important; 
+    height: auto !important;
+    min-width: 0 !important; 
+    min-height: 0 !important;
   }
   
   /* Make Sidebars scroll horizontally instead of vertically */
@@ -677,11 +688,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
     }
 
     /* Spinning Quantum Orbit */
+    /* Spinning Quantum Orbit */
     .cursor-ring::after {
         content: '';
         position: absolute;
         inset: -7px; /* Distance from the main ring */
-        border: 1px dashed rgba(255, 255, 255, 0.5);
+        border: 2px dashed rgba(255, 255, 255, 0.7); /* MUCH brighter and thicker */
         border-radius: 50%;
         animation: spinRing 6s linear infinite;
         transition: opacity 0.3s, transform 0.3s;
@@ -766,6 +778,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
       <div class="tb-sysbtn"><i class="fa-solid fa-wifi"></i></div>
       <div class="tb-sysbtn"><i class="fa-solid fa-volume-high"></i></div>
       <div class="tb-sysbtn"><i class="fa-solid fa-battery-three-quarters"></i></div>
+      <div class="tb-sysbtn" onclick="toggleFullScreen()" title="Fullscreen"><i class="fa-solid fa-expand" id="fs-icon"></i></div>
       <div class="tb-sysbtn" onclick="togglePowerMenu()"><i class="fa-solid fa-power-off" style="font-size:.7rem"></i></div>
     </div>
   </div>
@@ -1414,7 +1427,8 @@ function applyStoredTheme() {
   if (t.accent) applyAccent(t.accent, false);
   if (t.particles === false) setParticles(false, false);
   if (t.grid === false) setGrid(false, false);
-  if (t.wallpaper) applyWallpaper(t.wallpaper, false);
+  // DEFAULT TO WALLPAPER 2
+  applyWallpaper(t.wallpaper || 'wp2', false); 
 }
 
 function applyAccent(name, save=true) {
@@ -1452,9 +1466,9 @@ function applyWallpaper(name, save=true) {
   const glow = document.querySelector('.wp-glow');
   if (glow) {
     if (name.startsWith('wp')) {
-      // Apply JPG image with a dark readability tint over it
+      // Show ORIGINAL photo without dark tint
       const imgNum = name.replace('wp', '');
-      glow.style.background = `linear-gradient(rgba(10,10,18,0.55), rgba(4,4,10,0.85)), url('wallpaper${imgNum}.jpg') center/cover no-repeat`;
+      glow.style.background = `url('wallpaper${imgNum}.jpg') center/cover no-repeat`;
     } else {
       // It's a CSS gradient
       glow.style.background = WP_STYLES[name] || WP_STYLES.default;
@@ -1507,7 +1521,7 @@ function renderSettings(tab) {
 
   if (tab === 'appearance') {
     const current = t.accent || 'Quantum Blue';
-    const currentWp = t.wallpaper || 'default';
+    const currentWp = t.wallpaper || 'wp2';
     c.innerHTML = `
       <div class="sett-sec-title">// APPEARANCE</div>
       <div class="srow"><div class="srow-info"><div class="slabel">Accent Color</div><div class="sdesc">Changes primary glow & highlights across the OS</div></div></div>
@@ -2025,22 +2039,39 @@ function minWin(id) {
   const el = document.getElementById(id);
   el.classList.add('minimized');
 }
-
 function maxWin(id) {
   const el = document.getElementById(id);
-  const area = document.getElementById('desktop-area');
-  const aH = area.clientHeight;
   if (el._max) {
     Object.assign(el.style, el._savedStyle);
     el._max = false;
   } else {
     el._savedStyle = { left:el.style.left, top:el.style.top, width:el.style.width, height:el.style.height, borderRadius:el.style.borderRadius };
     el.style.left='0'; el.style.top='0';
-    el.style.width=window.innerWidth+'px'; el.style.height=aH+'px';
+    el.style.width='100%'; el.style.height='100%'; /* 100% guarantees it fits perfectly above the dock */
     el.style.borderRadius='0';
     el._max = true;
   }
   focusWin(el);
+}
+
+/* ══════════════════════════════════════════════════════════
+   § NATIVE FULLSCREEN API
+══════════════════════════════════════════════════════════ */
+function toggleFullScreen() {
+  const doc = window.document;
+  const docEl = doc.documentElement;
+  const fsIcon = document.getElementById('fs-icon');
+
+  const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+  const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+  if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+    requestFullScreen.call(docEl);
+    if(fsIcon) { fsIcon.classList.remove('fa-expand'); fsIcon.classList.add('fa-compress'); }
+  } else {
+    cancelFullScreen.call(doc);
+    if(fsIcon) { fsIcon.classList.remove('fa-compress'); fsIcon.classList.add('fa-expand'); }
+  }
 }
 
 function focusWin(el) {
