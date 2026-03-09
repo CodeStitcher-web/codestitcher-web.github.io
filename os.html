@@ -122,6 +122,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
   background:
     radial-gradient(ellipse at 75% 20%,rgba(var(--primary-rgb),.12) 0%,transparent 55%),
     radial-gradient(ellipse at 15% 85%,rgba(0,240,255,.07) 0%,transparent 45%);
+  transition: background 0.4s ease; /* Add this line */
 }
 
 /* ═══════════════════════════════════════
@@ -636,7 +637,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
   .os-toggle-pill { bottom: 85px; right: 10px; transform: scale(0.85); }
 }
 /* ═══════════════════════════════════════
-   CUSTOM CURSOR (Mice only)
+   CUSTOM CURSOR — "QUANTUM X-RAY" EDITION
 ═══════════════════════════════════════ */
 @media (pointer: fine) {
     /* Hide default pointers globally */
@@ -648,34 +649,59 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
     .win-tb, .win-title { cursor: move !important; }
 
     .cursor-core {
-        width: 6px; height: 6px;
-        background: var(--accent);
+        width: 5px; height: 5px;
+        background: #fff;
         border-radius: 50%;
         position: fixed;
         pointer-events: none;
-        z-index: 2147483647; /* Stays on top of boot screen */
+        z-index: 2147483647; 
         transform: translate(-50%, -50%);
-        transition: transform 0.05s, background 0.2s;
-        box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+        transition: transform 0.1s;
+        /* The magic property that inverts colors underneath */
+        mix-blend-mode: difference; 
     }
     
     .cursor-ring {
-        width: 36px; height: 36px;
-        border: 1px solid rgba(0, 240, 255, 0.4);
+        width: 32px; height: 32px;
+        border: 1.5px solid rgba(255, 255, 255, 0.8);
         border-radius: 50%;
         position: fixed;
         pointer-events: none;
         z-index: 2147483646;
-        transform: translate(-50%,-50%);
-        transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                    height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
+        transform: translate(-50%, -50%);
+        /* Bouncy spring transition */
+        transition: width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                    height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                     border-color 0.2s, background 0.2s, transform 0.15s;
+        mix-blend-mode: difference;
+    }
+
+    /* Spinning Quantum Orbit */
+    .cursor-ring::after {
+        content: '';
+        position: absolute;
+        inset: -7px; /* Distance from the main ring */
+        border: 1px dashed rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        animation: spinRing 6s linear infinite;
+        transition: opacity 0.3s, transform 0.3s;
     }
     
+    @keyframes spinRing { 
+        100% { transform: rotate(360deg); } 
+    }
+    
+    /* Magnetic Hover State */
     .cursor-ring.hovering {
-        width: 60px; height: 60px;
-        border-color: var(--primary);
-        background: rgba(var(--primary-rgb), 0.1);
+        width: 55px; height: 55px;
+        background: #fff; /* Solid white + difference = perfect color inversion */
+        border-color: transparent;
+    }
+    
+    /* Hide the dashed orbit when hovering */
+    .cursor-ring.hovering::after {
+        opacity: 0;
+        transform: scale(1.5) rotate(90deg);
     }
 }
 
@@ -946,7 +972,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
       <div class="ditem" onclick="goExternal('python-lab.html')">
         <div class="dico ic-py"><i class="fa-brands fa-python"></i></div>
         <div class="ddot"></div>
-        <div class="dlabel">Python IDE</div>
+        <div class="dlabel">CodeStitcher IDE</div>
       </div>
       <div class="ditem" onclick="goExternal('game.html')">
         <div class="dico ic-game"><i class="fa-solid fa-gamepad"></i></div>
@@ -1424,8 +1450,19 @@ const WP_STYLES = {
 
 function applyWallpaper(name, save=true) {
   const glow = document.querySelector('.wp-glow');
-  if (glow) glow.style.background = WP_STYLES[name] || WP_STYLES.default;
+  if (glow) {
+    if (name.startsWith('wp')) {
+      // Apply JPG image with a dark readability tint over it
+      const imgNum = name.replace('wp', '');
+      glow.style.background = `linear-gradient(rgba(10,10,18,0.55), rgba(4,4,10,0.85)), url('wallpaper${imgNum}.jpg') center/cover no-repeat`;
+    } else {
+      // It's a CSS gradient
+      glow.style.background = WP_STYLES[name] || WP_STYLES.default;
+    }
+  }
   if (save) saveTheme({ wallpaper: name });
+  
+  // Highlight the active preset in settings
   document.querySelectorAll('.wpreset').forEach(p => p.classList.toggle('active', p.dataset.wp === name));
 }
 
@@ -1480,15 +1517,26 @@ function renderSettings(tab) {
             style="background:${a.hex};box-shadow:0 0 12px ${a.hex}55"
             onclick="applyAccent('${name}')"></div>`).join('')}
       </div>
-      <div class="srow"><div class="srow-info"><div class="slabel">Wallpaper Style</div><div class="sdesc">Background gradient preset</div></div></div>
-      <div class="wp-presets" style="margin-bottom:18px">
+
+      <div class="srow"><div class="srow-info"><div class="slabel">Gradient Styles</div><div class="sdesc">Procedural CSS backgrounds</div></div></div>
+      <div class="wp-presets" style="margin-bottom:12px">
         ${Object.entries({default:'Default',deep:'Deep Space',aurora:'Aurora',midnight:'Midnight'}).map(([k,n]) => `
           <div class="wpreset ${k===currentWp?'active':''}" data-wp="${k}"
             title="${n}" onclick="applyWallpaper('${k}')"
             style="background:linear-gradient(135deg,#${k==='default'?'0d0d2e,#0a0a0f':k==='deep'?'000020,#000':k==='aurora'?'001a10,#1a0020':'0a0520,#000'})">
           </div>`).join('')}
       </div>
-      <div class="srow"><div class="srow-info"><div class="slabel">Neural Particle Background</div><div class="sdesc">Animated particle network — disable to save battery</div></div>${makeTog('particles',true)}</div>
+
+      <div class="srow"><div class="srow-info"><div class="slabel">Photo Wallpapers</div><div class="sdesc">High-resolution image backgrounds</div></div></div>
+      <div class="wp-presets" style="margin-bottom:18px">
+        ${[1, 2, 3].map(i => `
+          <div class="wpreset ${'wp'+i===currentWp?'active':''}" data-wp="wp${i}"
+            title="Wallpaper ${i}" onclick="applyWallpaper('wp${i}')"
+            style="background: url('wallpaper${i}.jpg') center/cover no-repeat;">
+          </div>`).join('')}
+      </div>
+
+      <div class="srow"><div class="srow-info"><div class="slabel">Neural Particle Background</div><div class="sdesc">Animated particle network</div></div>${makeTog('particles',true)}</div>
       <div class="srow"><div class="srow-info"><div class="slabel">Grid Overlay</div><div class="sdesc">Show background grid lines</div></div>${makeTog('grid',true)}</div>
       <div class="srow"><div class="srow-info"><div class="slabel">Window Blur / Glass Effect</div><div class="sdesc">Glassmorphism on windows</div></div>${makeTog('blur',true)}</div>
     `;
