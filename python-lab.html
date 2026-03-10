@@ -182,7 +182,7 @@
         text-decoration: none;
     }
     .nav-logo img {
-        height: 32px; border-radius: 4px;
+        height: 38px; border-radius: 3px;
         border: 1px solid rgba(124,58,237,0.3);
         filter: drop-shadow(0 0 6px rgba(124,58,237,0.3));
         transition: 0.35s var(--ease-spring);
@@ -421,6 +421,8 @@
         font-size: 0.75rem; transition: 0.2s var(--ease-spring);
         border: 1px solid transparent; background: transparent;
     }
+    .ib-snap   { color: var(--cyan); border-color: rgba(0,245,255,0.2); background: rgba(0,245,255,0.06); }
+    .ib-snap:hover   { background: var(--cyan); color: #000; box-shadow: var(--glow-cyan); transform: scale(1.1); }
     .ib-copy   { color: var(--violet2); border-color: rgba(168,85,247,0.2); background: rgba(168,85,247,0.06); }
     .ib-copy:hover   { background: var(--violet); color: #fff; box-shadow: var(--glow-violet); transform: scale(1.1); }
     .ib-paste  { color: var(--amber); border-color: rgba(255,184,0,0.2); background: rgba(255,184,0,0.06); }
@@ -635,6 +637,16 @@
     .spin { animation: spin 0.8s linear infinite; }
     @keyframes spin { 100%{transform:rotate(360deg)} }
 
+    /* Mobile hamburger toggle */
+    .mobile-toggle {
+        display: none;
+        color: var(--white); font-size: 1.2rem;
+        padding: 7px 10px; cursor: pointer;
+        border: 1px solid var(--border); border-radius: 8px;
+        background: transparent; transition: 0.3s;
+    }
+    .mobile-toggle:hover { border-color: var(--violet2); color: var(--violet2); }
+
     /* ============================================================
        RESPONSIVE
     ============================================================ */
@@ -643,10 +655,31 @@
             grid-template-columns: 1fr; grid-template-rows: 1.6fr 1fr;
             padding: 10px; gap: 10px;
         }
-        .nav-tag, .nav-wordmark { display: none; }
+        .nav-tag { display: none; }
         .tb-btn span { display: none; }
-        .mob-tools-btn { display: flex; }
         .hide-mob { display: none !important; }
+
+        /* Mobile toggle visible */
+        .mobile-toggle { display: flex; align-items: center; }
+
+        /* Nav right becomes a dropdown on mobile */
+        .nav-right {
+            position: absolute; top: 100%; left: 0; width: 100%;
+            background: rgba(2,2,8,0.98);
+            border-bottom: 1px solid rgba(124,58,237,0.2);
+            padding: 14px 16px;
+            flex-direction: column; gap: 10px;
+            opacity: 0; transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.3s var(--ease-smooth), transform 0.3s var(--ease-smooth);
+            z-index: 999;
+        }
+        .nav-right.open {
+            opacity: 1; transform: translateY(0);
+            pointer-events: all;
+        }
+        .nav-btn { width: 100%; justify-content: center; padding: 12px; font-size: 0.9rem; }
+        .docs-menu { position: static; width: 100%; box-shadow: none; border-color: rgba(0,255,136,0.15); margin-top: 4px; }
     }
 
     @media (max-width: 480px) {
@@ -711,7 +744,7 @@
                         <i class="fa-brands fa-python lo-py"></i> Python
                     </div>
                     <div class="lang-opt" onclick="setLang('lambdascript');event.stopPropagation()">
-                        <i class="fa-solid fa-lambda lo-ls"></i> LambdaScript
+                        <img src="lambdascript.png" style="width:16px;height:16px;filter:drop-shadow(0 0 4px #A855F7);border-radius:2px"> LambdaScript
                     </div>
                     <div class="lang-opt" onclick="setLang('cpp');event.stopPropagation()">
                         <i class="fa-solid fa-c lo-cpp"></i> C++
@@ -723,16 +756,21 @@
             </div>
         </div>
 
-        <div class="nav-right">
+        <!-- Mobile hamburger -->
+        <button class="mobile-toggle" id="mob-toggle" onclick="toggleNavMenu()">
+            <i class="fa-solid fa-bars" id="mob-icon"></i>
+        </button>
+
+        <div class="nav-right" id="nav-right">
             <a href="javascript:void(0)" onclick="delayedNav('index.html')" class="nav-btn btn-home"><i class="fa-solid fa-house"></i><span>Home</span></a>
             <div class="docs-wrap">
                 <button class="nav-btn btn-docs" onclick="toggleDocsMenu(event)"><i class="fa-solid fa-book-open"></i><span>Docs</span> <i class="fa-solid fa-chevron-down" style="font-size:0.6em;opacity:0.6"></i></button>
                 <div class="docs-menu" id="docs-menu">
                     <a href="learn-python.html" class="docs-item"><i class="fa-brands fa-python" style="color:#FFD43B"></i> Python</a>
-                    <a href="learn-lambdascript.html" class="docs-item"><i class="fa-solid fa-lambda" style="color:var(--violet2)"></i> LambdaScript</a>
+                    <a href="learn-lambdascript.html" class="docs-item"><img src="lambdascript.png" style="width:14px;height:14px;filter:drop-shadow(0 0 4px #A855F7);border-radius:2px"> LambdaScript</a>
                 </div>
             </div>
-            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn btn-found"><i class="fa-solid fa-user-astronaut"></i><span>Founder</span></a>
+            <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn btn-found" onclick="playSound('click')"><i class="fa-solid fa-user-astronaut"></i><span>Founder</span></a>
         </div>
     </nav>
 
@@ -804,10 +842,7 @@
                     <span class="panel-title">EDITOR // <span id="panel-lang-label" style="color:var(--violet2)">PYTHON</span></span>
                 </div>
                 <div class="panel-bar-right">
-                    <button class="icon-btn ib-copy" onclick="copyCode()" title="Copy"><i class="fa-regular fa-copy"></i></button>
-                    <button class="icon-btn ib-paste" onclick="pasteCode()" title="Paste"><i class="fa-regular fa-paste"></i></button>
-                    <button class="icon-btn ib-save" onclick="saveCode()" title="Save"><i class="fa-solid fa-download"></i></button>
-                    <button class="icon-btn ib-upload" onclick="document.getElementById('file-upload').click()" title="Open"><i class="fa-solid fa-folder-open"></i></button>
+                    <button class="icon-btn ib-snap" onclick="triggerSnapshot()" title="Snapshot"><i class="fa-solid fa-camera-retro"></i></button>
                 </div>
             </div>
 
@@ -1516,6 +1551,18 @@ async def install(packages):
 };
 
 /* ============================================================
+   MOBILE NAV MENU
+============================================================ */
+function toggleNavMenu() {
+    const menu = document.getElementById('nav-right');
+    const icon = document.getElementById('mob-icon');
+    const isOpen = menu.classList.contains('open');
+    menu.classList.toggle('open');
+    icon.className = isOpen ? 'fa-solid fa-bars' : 'fa-solid fa-xmark';
+    playSound('click');
+}
+
+/* ============================================================
    LANGUAGE SWITCHER
 ============================================================ */
 function toggleLangMenu(e) {
@@ -1527,15 +1574,23 @@ function toggleLangMenu(e) {
     playSound('click');
 }
 
-window.addEventListener('click', () => {
+window.addEventListener('click', (e) => {
     document.getElementById('lang-dropdown').classList.remove('open');
     document.getElementById('lang-pill').classList.remove('open');
     document.getElementById('docs-menu').classList.remove('open');
+    // close mobile nav if clicked outside
+    const navRight = document.getElementById('nav-right');
+    const toggle = document.getElementById('mob-toggle');
+    if (navRight && toggle && !navRight.contains(e.target) && !toggle.contains(e.target)) {
+        navRight.classList.remove('open');
+        const icon = document.getElementById('mob-icon');
+        if (icon) icon.className = 'fa-solid fa-bars';
+    }
 });
 
 const langConfig = {
     python:       { icon: '<i class="fa-brands fa-python" style="color:#FFD43B"></i>', fname: 'main.py',  label: 'PYTHON',       sb: 'PYTHON 3.11' },
-    lambdascript: { icon: '<i class="fa-solid fa-lambda" style="color:#A855F7"></i>', fname: 'main.ls',  label: 'LAMBDASCRIPT', sb: 'LAMBDASCRIPT' },
+    lambdascript: { icon: '<img src="lambdascript.png" style="width:1.1em;height:1.1em;filter:drop-shadow(0 0 5px #A855F7);border-radius:2px;vertical-align:middle">', fname: 'main.ls',  label: 'LAMBDASCRIPT', sb: 'LAMBDASCRIPT' },
     cpp:          { icon: '<i class="fa-solid fa-c" style="color:#00B4D8"></i>', fname: 'main.cpp', label: 'C++',          sb: 'C++20 (CLOUD)' },
     c:            { icon: '<i class="fa-solid fa-copyright" style="color:#adb5bd"></i>', fname: 'main.c',   label: 'C',            sb: 'C17 (CLOUD)' },
 };
@@ -1791,193 +1846,341 @@ function showToast(msg, icon) {
 function delayedNav(url) { playSound('click'); setTimeout(() => window.location.href = url, 280); }
 
 /* ============================================================
-   MOBILE TOOLS
+   MOBILE TOOLS (toolbar overflow)
 ============================================================ */
 function toggleMobMenu() {
-    // On mobile, show a compact row of actions below toolbar
-    // Simple implementation: just play click and show toast
     playSound('click');
-    showToast('USE THE PANEL BUTTONS', 'fa-info-circle');
+    showToast('USE TOOLBAR BUTTONS', 'fa-info-circle');
 }
 
 /* ============================================================
-   SNAPSHOT ENGINE
+   SNAPSHOT ENGINE — PROFESSIONAL SOCIAL MEDIA EDITION
 ============================================================ */
 function triggerSnapshot() {
     const panel = document.getElementById('editor-panel');
-    const wm = document.getElementById('wm');
+    const wm    = document.getElementById('wm');
     const flash = document.getElementById('shutter');
 
+    // — EXACT ORIGINAL AUDIO —
     const snapAudio = new Audio('capture.wav');
     snapAudio.volume = 1.0;
-    snapAudio.play().catch(()=>{});
+    snapAudio.play().catch(e => console.warn('Audio blocked:', e));
 
+    // Shutter flash
     flash.style.opacity = '1';
-    setTimeout(() => flash.style.opacity = '0', 90);
+    setTimeout(() => { flash.style.opacity = '0'; }, 100);
 
-    panel.style.border = '1px solid var(--cyan)';
-    panel.style.boxShadow = '0 0 60px rgba(0,245,255,0.1)';
+    // Brief snapshot-mode glow on editor panel
+    panel.classList.add('running');
     wm.style.display = 'flex';
 
+    // Pre-load logo before delay so it's ready
     const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
     logoImg.src = 'codestitcher.png';
+
+    function cleanup() {
+        panel.classList.remove('running');
+        wm.style.display = 'none';
+    }
 
     setTimeout(() => {
         try {
-            const code = editor ? editor.getValue() : '';
-            const lines = code.split('\n');
-            const SCALE = 1, CW = 1920, CH = 1500;
-            const mx = 10, my = 10;
-            const cW = CW - mx*2, cH = CH - my*2;
-            const lh = 48, fs = 36, gutter = 100, headerH = 90;
+            const code = editor ? editor.getValue() : '// No code loaded';
+            const allLines = code.split('\n');
+
+            // ── Canvas dimensions: 1920×1500 (great for social sharing) ──
+            const CW = 1920, CH = 1500;
+            const MARGIN = 60;
+            // Card dimensions with margin
+            const cardX = MARGIN, cardY = MARGIN;
+            const cardW = CW - MARGIN * 2;
+            const cardH = CH - MARGIN * 2;
+
             const canvas = document.createElement('canvas');
-            canvas.width = CW * SCALE; canvas.height = CH * SCALE;
+            canvas.width  = CW;
+            canvas.height = CH;
             const cx = canvas.getContext('2d');
-            cx.scale(SCALE, SCALE);
 
-            // Background
-            const grad = cx.createLinearGradient(0, 0, 0, CH);
-            grad.addColorStop(0, '#020208');
-            grad.addColorStop(1, '#07071A');
-            cx.fillStyle = grad;
+            // ══════════════════════════════════════════
+            // 1. DEEP SPACE BACKGROUND
+            // ══════════════════════════════════════════
+            const bgGrad = cx.createLinearGradient(0, 0, 0, CH);
+            bgGrad.addColorStop(0,   '#020208');
+            bgGrad.addColorStop(0.5, '#06061A');
+            bgGrad.addColorStop(1,   '#030310');
+            cx.fillStyle = bgGrad;
             cx.fillRect(0, 0, CW, CH);
 
-            // Ambient orb
-            const radGrad = cx.createRadialGradient(CW*0.8, CH*0.2, 0, CW*0.8, CH*0.2, 600);
-            radGrad.addColorStop(0, 'rgba(124,58,237,0.08)');
-            radGrad.addColorStop(1, 'transparent');
-            cx.fillStyle = radGrad;
-            cx.fillRect(0, 0, CW, CH);
+            // Violet ambient orb (top-right)
+            const orb1 = cx.createRadialGradient(CW * 0.85, CH * 0.12, 0, CW * 0.85, CH * 0.12, 700);
+            orb1.addColorStop(0, 'rgba(124,58,237,0.12)');
+            orb1.addColorStop(1, 'transparent');
+            cx.fillStyle = orb1; cx.fillRect(0, 0, CW, CH);
 
-            // Card shadow
-            cx.shadowColor = 'rgba(0,0,0,0.6)';
-            cx.shadowBlur = 120; cx.shadowOffsetY = 50;
-            cx.fillStyle = '#0B0B18';
-            cx.beginPath(); cx.roundRect(mx, my, cW, cH, 20); cx.fill();
-            cx.shadowBlur = 0; cx.shadowOffsetY = 0;
+            // Cyan ambient orb (bottom-left)
+            const orb2 = cx.createRadialGradient(CW * 0.1, CH * 0.88, 0, CW * 0.1, CH * 0.88, 500);
+            orb2.addColorStop(0, 'rgba(0,245,255,0.07)');
+            orb2.addColorStop(1, 'transparent');
+            cx.fillStyle = orb2; cx.fillRect(0, 0, CW, CH);
 
-            // Card border
-            cx.strokeStyle = 'rgba(124,58,237,0.25)'; cx.lineWidth = 1.5;
-            cx.beginPath(); cx.roundRect(mx, my, cW, cH, 20); cx.stroke();
+            // Subtle grid pattern
+            cx.strokeStyle = 'rgba(255,255,255,0.015)';
+            cx.lineWidth = 1;
+            for (let gx = 0; gx < CW; gx += 80) { cx.beginPath(); cx.moveTo(gx, 0); cx.lineTo(gx, CH); cx.stroke(); }
+            for (let gy = 0; gy < CH; gy += 80) { cx.beginPath(); cx.moveTo(0, gy); cx.lineTo(CW, gy); cx.stroke(); }
 
-            // Top gradient line
-            const topGrad = cx.createLinearGradient(mx, 0, mx+cW, 0);
-            topGrad.addColorStop(0, 'transparent');
-            topGrad.addColorStop(0.3, 'rgba(124,58,237,0.6)');
-            topGrad.addColorStop(0.7, 'rgba(0,245,255,0.4)');
-            topGrad.addColorStop(1, 'transparent');
-            cx.strokeStyle = topGrad; cx.lineWidth = 2;
-            cx.beginPath(); cx.moveTo(mx, my+1); cx.lineTo(mx+cW, my+1); cx.stroke();
+            // ══════════════════════════════════════════
+            // 2. EDITOR CARD (with depth shadow)
+            // ══════════════════════════════════════════
+            cx.shadowColor   = 'rgba(0,0,0,0.7)';
+            cx.shadowBlur    = 140;
+            cx.shadowOffsetY = 60;
+            cx.fillStyle = '#0A0A1A';
+            cx.beginPath(); cx.roundRect(cardX, cardY, cardW, cardH, 24); cx.fill();
+            cx.shadowBlur = 0; cx.shadowOffsetY = 0; cx.shadowColor = 'transparent';
 
-            // Header
-            cx.fillStyle = 'rgba(255,255,255,0.015)';
-            cx.beginPath(); cx.roundRect(mx, my, cW, headerH, [20,20,0,0]); cx.fill();
-            cx.strokeStyle = 'rgba(255,255,255,0.04)'; cx.lineWidth = 1;
-            cx.beginPath(); cx.moveTo(mx, my+headerH); cx.lineTo(mx+cW, my+headerH); cx.stroke();
+            // Card subtle inner border
+            cx.strokeStyle = 'rgba(255,255,255,0.06)'; cx.lineWidth = 1.5;
+            cx.beginPath(); cx.roundRect(cardX, cardY, cardW, cardH, 24); cx.stroke();
 
-            // Window dots
-            const dy = my+45, ds = mx+50;
-            [[0,'#FF5F56'],[1,'#FFBD2E'],[2,'#27C93F']].forEach(([i,c]) => {
-                cx.fillStyle = c; cx.beginPath(); cx.arc(ds+i*32, dy, 10, 0, Math.PI*2); cx.fill();
+            // Violet outer glow border
+            cx.strokeStyle = 'rgba(124,58,237,0.2)'; cx.lineWidth = 3;
+            cx.beginPath(); cx.roundRect(cardX - 1, cardY - 1, cardW + 2, cardH + 2, 25); cx.stroke();
+
+            // Top gradient accent line
+            const topLine = cx.createLinearGradient(cardX, 0, cardX + cardW, 0);
+            topLine.addColorStop(0,   'transparent');
+            topLine.addColorStop(0.2, 'rgba(124,58,237,0.8)');
+            topLine.addColorStop(0.5, 'rgba(0,245,255,0.6)');
+            topLine.addColorStop(0.8, 'rgba(0,255,136,0.4)');
+            topLine.addColorStop(1,   'transparent');
+            cx.strokeStyle = topLine; cx.lineWidth = 3;
+            cx.beginPath(); cx.moveTo(cardX, cardY + 1.5); cx.lineTo(cardX + cardW, cardY + 1.5); cx.stroke();
+
+            // ══════════════════════════════════════════
+            // 3. WINDOW HEADER BAR
+            // ══════════════════════════════════════════
+            const headerH = 100;
+            cx.fillStyle = 'rgba(255,255,255,0.02)';
+            cx.beginPath(); cx.roundRect(cardX, cardY, cardW, headerH, [24, 24, 0, 0]); cx.fill();
+            cx.strokeStyle = 'rgba(255,255,255,0.05)'; cx.lineWidth = 1;
+            cx.beginPath(); cx.moveTo(cardX, cardY + headerH); cx.lineTo(cardX + cardW, cardY + headerH); cx.stroke();
+
+            // macOS traffic lights
+            const dotY  = cardY + 50;
+            const dotSX = cardX + 56;
+            const dotGap = 38;
+            const dotColors = ['#FF5F56', '#FFBD2E', '#27C93F'];
+            dotColors.forEach((c, i) => {
+                // Glow
+                cx.shadowColor = c; cx.shadowBlur = 18;
+                cx.fillStyle = c;
+                cx.beginPath(); cx.arc(dotSX + i * dotGap, dotY, 12, 0, Math.PI * 2); cx.fill();
+                cx.shadowBlur = 0;
             });
 
-            // Filename
-            cx.fillStyle = '#556'; cx.font = `500 26px 'JetBrains Mono', monospace`;
-            cx.textAlign = 'center';
-            cx.fillText(langConfig[currentLang]?.fname || 'main.py', mx+cW/2, dy+9);
-            cx.textAlign = 'left';
+            // Window title (filename)
+            const fname = langConfig[currentLang]?.fname || 'main.py';
+            cx.fillStyle = '#666'; cx.font = `500 28px 'JetBrains Mono', monospace`;
+            cx.textAlign = 'center'; cx.textBaseline = 'middle';
+            cx.fillText(fname, cardX + cardW / 2, dotY); cx.textAlign = 'left'; cx.textBaseline = 'alphabetic';
 
-            // Code
-            const TH = { kw:'#A855F7', fn:'#FFD740', str:'#FF8A65', num:'#00FF88', cm:'#2E7D52', op:'#ECEFF1', tx:'#00E5FF', df:'#D0D0D0' };
-            const codePT = headerH + 60;
-            const maxLines = Math.floor((cH - codePT - 60) / lh);
-            const visible = lines.slice(0, maxLines);
-            const textX = mx + 60 + gutter;
+            // Language tag (top-right of header)
+            const langLabel = langConfig[currentLang]?.label || 'PYTHON';
+            cx.fillStyle = 'rgba(124,58,237,0.12)';
+            cx.strokeStyle = 'rgba(124,58,237,0.3)'; cx.lineWidth = 1;
+            const tagW = 200, tagH = 36, tagX = cardX + cardW - tagW - 36, tagY2 = cardY + 32;
+            cx.beginPath(); cx.roundRect(tagX, tagY2, tagW, tagH, 5); cx.fill(); cx.stroke();
+            cx.fillStyle = '#A855F7'; cx.font = `700 20px 'JetBrains Mono', monospace`;
+            cx.textAlign = 'center'; cx.textBaseline = 'middle';
+            cx.fillText(langLabel, tagX + tagW / 2, tagY2 + tagH / 2); cx.textAlign = 'left'; cx.textBaseline = 'alphabetic';
 
-            visible.forEach((line, i) => {
-                const y = my + codePT + i * lh;
-                cx.fillStyle = 'rgba(255,255,255,0.2)';
-                cx.font = `400 ${fs-4}px 'JetBrains Mono', monospace`;
-                cx.textAlign = 'right'; cx.fillText(String(i+1), mx+60+gutter-20, y); cx.textAlign = 'left';
-                cx.font = `${fs}px 'JetBrains Mono', monospace`;
+            // ══════════════════════════════════════════
+            // 4. CODE AREA
+            // ══════════════════════════════════════════
+            const codePadTop = headerH + 55;
+            const lineH = 50;
+            const codeFontSize = 34;
+            const gutterW = 110;
+            const codeX = cardX + 60 + gutterW;
+            const maxVisLines = Math.floor((cardH - codePadTop - 80) / lineH);
+            const visLines = allLines.slice(0, maxVisLines);
 
-                const tokenRe = /([#].*$)|((?:r|f|b)?["'](?:[^\\"\r\n]|\\.)*["'])|\b(class|def|import|from|return|if|else|elif|for|while|try|except|with|as|pass|lambda|is|in|not|and|or|global|continue|break|func|print|true|false|int|string|float|boolean|while|struct)\b|\b(self)\b|\b(True|False|None)\b|\b(\d+)\b|(@[\w.]+)|\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*\()|\b([A-Z][a-zA-Z0-9_]*)\b|([^\s\w])/g;
-                let lastIdx = 0, match, curX = textX;
+            const TH = {
+                kw: '#A855F7', fn: '#FFD740', str: '#FF8A65', num: '#00FF88',
+                cm: '#2E7D52', op: '#ECEFF1', tx: '#00E5FF', self: '#569CD6',
+                bool: '#00FF88', type: '#4DD0E1', dec: '#FFD740'
+            };
+
+            const tokenRe = /([#].*$)|(\/\/.*$)|((?:r|f|b)?["'](?:[^\\"\r\n]|\\.)*["'])|\b(class|def|import|from|return|if|else|elif|for|while|try|except|with|as|pass|lambda|is|in|not|and|or|global|continue|break|func|print|true|false|int|string|float|boolean|struct|void|include|using|namespace|std|cout|endl|cin|auto|const|let|var)\b|\b(self|this)\b|\b(True|False|None|true|false|null|undefined)\b|\b(\d+(?:\.\d+)?)\b|(@[\w.]+)|\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*\()|\b([A-Z][a-zA-Z0-9_]*)\b|([^\s\w])/g;
+
+            visLines.forEach((rawLine, i) => {
+                const y = cardY + codePadTop + i * lineH;
+
+                // Subtle line highlight for alternating rows
+                if (i % 2 === 0) {
+                    cx.fillStyle = 'rgba(255,255,255,0.008)';
+                    cx.fillRect(cardX, y - lineH * 0.72, cardW, lineH);
+                }
+
+                // Line number
+                cx.fillStyle = 'rgba(255,255,255,0.18)';
+                cx.font = `400 ${codeFontSize - 6}px 'JetBrains Mono', monospace`;
+                cx.textAlign = 'right'; cx.textBaseline = 'middle';
+                cx.fillText(String(i + 1), cardX + 60 + gutterW - 20, y - 2);
+                cx.textAlign = 'left';
+
+                // Gutter divider
+                cx.strokeStyle = 'rgba(255,255,255,0.04)'; cx.lineWidth = 1;
+                cx.beginPath(); cx.moveTo(cardX + 60 + gutterW - 8, y - lineH * 0.7); cx.lineTo(cardX + 60 + gutterW - 8, y + lineH * 0.3); cx.stroke();
+
+                // Render code tokens
+                cx.font = `${codeFontSize}px 'JetBrains Mono', monospace`;
+                let lastIdx = 0, curX = codeX;
+                const line = rawLine.length > 160 ? rawLine.slice(0, 160) + ' …' : rawLine;
+                tokenRe.lastIndex = 0;
+
+                let match;
                 while ((match = tokenRe.exec(line)) !== null) {
-                    if (match.index > lastIdx) { const pt = line.slice(lastIdx, match.index); cx.fillStyle = TH.tx; cx.fillText(pt, curX, y); curX += cx.measureText(pt).width; }
-                    const tok = match[0];
-                    if (match[1]) cx.fillStyle = TH.cm;
-                    else if (match[2]) cx.fillStyle = TH.str;
-                    else if (match[3]) cx.fillStyle = TH.kw;
-                    else if (match[4]) cx.fillStyle = '#569CD6';
-                    else if (match[5]) cx.fillStyle = TH.num;
-                    else if (match[6]) cx.fillStyle = TH.num;
-                    else if (match[7]) cx.fillStyle = TH.fn;
-                    else if (match[8]) cx.fillStyle = TH.fn;
-                    else if (match[9]) cx.fillStyle = '#4DD0E1';
-                    else if (match[10]) cx.fillStyle = TH.op;
-                    else cx.fillStyle = TH.tx;
-                    cx.fillText(tok, curX, y); curX += cx.measureText(tok).width;
+                    // Plain text before match
+                    if (match.index > lastIdx) {
+                        cx.fillStyle = TH.tx; cx.textBaseline = 'middle';
+                        const pt = line.slice(lastIdx, match.index);
+                        cx.fillText(pt, curX, y - 2); curX += cx.measureText(pt).width;
+                    }
+                    const tok = match[0]; cx.textBaseline = 'middle';
+                    if      (match[1] || match[2]) cx.fillStyle = TH.cm;      // comment
+                    else if (match[3])             cx.fillStyle = TH.str;     // string
+                    else if (match[4])             cx.fillStyle = TH.kw;      // keyword
+                    else if (match[5])             cx.fillStyle = TH.self;    // self/this
+                    else if (match[6])             cx.fillStyle = TH.bool;    // bool/null
+                    else if (match[7])             cx.fillStyle = TH.num;     // number
+                    else if (match[8])             cx.fillStyle = TH.dec;     // decorator
+                    else if (match[9])             cx.fillStyle = TH.fn;      // function call
+                    else if (match[10])            cx.fillStyle = TH.type;    // Type/Class
+                    else if (match[11])            cx.fillStyle = TH.op;      // operator/punct
+                    else                           cx.fillStyle = TH.tx;
+                    cx.fillText(tok, curX, y - 2); curX += cx.measureText(tok).width;
                     lastIdx = tokenRe.lastIndex;
                 }
-                if (lastIdx < line.length) { cx.fillStyle = TH.tx; cx.fillText(line.slice(lastIdx), curX, y); }
+                // Remaining text
+                if (lastIdx < line.length) {
+                    cx.fillStyle = TH.tx; cx.textBaseline = 'middle';
+                    cx.fillText(line.slice(lastIdx), curX, y - 2);
+                }
             });
 
-            if (lines.length > maxLines) {
-                cx.fillStyle = 'rgba(255,255,255,0.25)'; cx.font = `italic ${fs}px 'JetBrains Mono', monospace`;
-                cx.fillText(`... (${lines.length-maxLines} more lines)`, textX, my+codePT+maxLines*lh);
+            // Truncation notice
+            if (allLines.length > maxVisLines) {
+                cx.fillStyle = 'rgba(255,255,255,0.2)';
+                cx.font = `italic ${codeFontSize}px 'JetBrains Mono', monospace`;
+                cx.textBaseline = 'middle';
+                cx.fillText(
+                    `  ···  ${allLines.length - maxVisLines} more lines hidden`,
+                    codeX,
+                    cardY + codePadTop + maxVisLines * lineH - 2
+                );
             }
 
-            // Grain
-            cx.globalCompositeOperation = 'overlay'; cx.fillStyle = 'rgba(255,255,255,0.025)';
-            for (let n=0;n<15000;n++) { const nx=Math.random()*CW,ny=Math.random()*CH; cx.fillRect(nx,ny,1.5,1.5); }
+            // Fade gradient at bottom of code area
+            const fadeGrad = cx.createLinearGradient(0, cardY + cardH - 220, 0, cardY + cardH - 60);
+            fadeGrad.addColorStop(0, 'transparent');
+            fadeGrad.addColorStop(1, '#0A0A1A');
+            cx.fillStyle = fadeGrad;
+            cx.fillRect(cardX + 1, cardY + cardH - 220, cardW - 2, 160);
+
+            // ══════════════════════════════════════════
+            // 5. FILM GRAIN OVERLAY
+            // ══════════════════════════════════════════
+            cx.globalCompositeOperation = 'overlay';
+            cx.fillStyle = 'rgba(255,255,255,0.03)';
+            for (let n = 0; n < 18000; n++) {
+                cx.fillRect(Math.random() * CW, Math.random() * CH, 1.5, 1.5);
+            }
             cx.globalCompositeOperation = 'source-over';
 
-            // Watermark
-            const wmW=440,wmH=180,wmX=CW-wmW-70,wmY=CH-wmH-70;
-            cx.shadowColor='rgba(0,0,0,0.4)'; cx.shadowBlur=40; cx.shadowOffsetY=10;
-            cx.fillStyle='rgba(255,255,255,0.05)'; cx.beginPath(); cx.roundRect(wmX,wmY,wmW,wmH,14); cx.fill();
-            cx.strokeStyle='rgba(255,255,255,0.1)'; cx.lineWidth=1; cx.stroke();
-            cx.shadowBlur=0; cx.shadowOffsetY=0;
+            // ══════════════════════════════════════════
+            // 6. PROFESSIONAL WATERMARK (bottom-right)
+            // ══════════════════════════════════════════
+            const wmW = 500, wmH = 110;
+            const wmX = cardX + cardW - wmW - 40;
+            const wmY = cardY + cardH - wmH - 40;
 
-            const drawWM = () => {
-                cx.fillStyle='rgba(255,255,255,0.9)'; cx.font=`bold 38px 'Sora', sans-serif`; cx.textBaseline='middle';
-                cx.fillText('CodeStitcher', wmX+155, wmY+72);
-                cx.fillStyle='#00FF88'; cx.font=`500 18px 'JetBrains Mono', monospace`;
-                cx.fillText('N E U R A L _ L A B', wmX+158, wmY+112);
-                cx.textBaseline='alphabetic';
-            };
+            // Watermark backing pill
+            cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = 30; cx.shadowOffsetY = 8;
+            cx.fillStyle = 'rgba(10,10,26,0.85)';
+            cx.beginPath(); cx.roundRect(wmX, wmY, wmW, wmH, 14); cx.fill();
+            cx.shadowBlur = 0; cx.shadowOffsetY = 0;
+            cx.strokeStyle = 'rgba(255,255,255,0.1)'; cx.lineWidth = 1;
+            cx.strokeStyle = 'rgba(124,58,237,0.3)'; cx.stroke();
 
-            const lW=90, lH=lW*(443/336), lY=wmY+(wmH-lH)/2;
-            const finish = () => {
+            // Draw watermark content (logo + text)
+            function drawWatermark() {
+                const logoSize = 72;
+                const logoX = wmX + 22;
+                const logoY = wmY + (wmH - logoSize) / 2;
+
+                if (logoImg.complete && logoImg.naturalWidth > 0) {
+                    cx.save();
+                    cx.beginPath(); cx.roundRect(logoX, logoY, logoSize, logoSize, 8); cx.clip();
+                    cx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+                    cx.restore();
+                }
+
+                cx.fillStyle = 'rgba(255,255,255,0.92)';
+                cx.font = `bold 42px 'Sora', 'Outfit', sans-serif`;
+                cx.textBaseline = 'middle';
+                cx.fillText('CodeStitcher', wmX + logoSize + 34, wmY + wmH * 0.38);
+
+                cx.fillStyle = '#00FF88';
+                cx.font = `600 20px 'JetBrains Mono', monospace`;
+                cx.fillText('N E U R A L _ L A B', wmX + logoSize + 36, wmY + wmH * 0.72);
+                cx.textBaseline = 'alphabetic';
+            }
+
+            // Timestamp tag (bottom-left of card)
+            const ts = new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+            cx.fillStyle = 'rgba(255,255,255,0.18)';
+            cx.font = `400 22px 'JetBrains Mono', monospace`;
+            cx.textBaseline = 'middle';
+            cx.fillText(`codestitcher.dev  ·  ${ts}`, cardX + 44, cardY + cardH - wmH / 2 - 10);
+            cx.textBaseline = 'alphabetic';
+
+            // ── Finalize & Download ──
+            function finishAndSave() {
+                drawWatermark();
                 canvas.toBlob(blob => {
-                    if (!blob) { alert('Snapshot failed.'); cleanup(); return; }
+                    if (!blob) { alert('Snapshot generation failed.'); cleanup(); return; }
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.download = `CodeStitcher_${Date.now()}.png`; a.href = url;
+                    const a   = document.createElement('a');
+                    const ts2 = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, '');
+                    a.download = `CodeStitcher_${ts2}.png`;
+                    a.href = url;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    showToast('SNAPSHOT SAVED', 'fa-camera');
-                    playSound('success'); cleanup();
+                    showToast('SNAPSHOT SECURED', 'fa-camera');
+                    playSound('success');
+                    cleanup();
                 }, 'image/png');
-            };
+            }
 
             if (logoImg.complete && logoImg.naturalWidth > 0) {
-                cx.save(); cx.beginPath(); cx.roundRect(wmX+28,lY,lW,lH,5); cx.clip();
-                cx.drawImage(logoImg, wmX+28, lY, lW, lH); cx.restore();
-                drawWM(); finish();
+                finishAndSave();
             } else {
-                logoImg.onload = () => { cx.save(); cx.beginPath(); cx.roundRect(wmX+28,lY,lW,lH,5); cx.clip(); cx.drawImage(logoImg,wmX+28,lY,lW,lH); cx.restore(); drawWM(); finish(); };
-                logoImg.onerror = () => { drawWM(); finish(); };
+                logoImg.onload  = finishAndSave;
+                logoImg.onerror = finishAndSave; // still save even without logo
             }
-        } catch(e) { console.error(e); alert('Snapshot error: ' + e.message); cleanup(); }
-    }, 220);
 
-    function cleanup() {
-        panel.style.border = ''; panel.style.boxShadow = '';
-        wm.style.display = 'none';
-    }
+        } catch (err) {
+            console.error('Snapshot error:', err);
+            alert('Snapshot failed: ' + err.message);
+            cleanup();
+        }
+    }, 250);
 }
+
+
 
 /* ============================================================
    AI MODAL
@@ -2012,6 +2215,3 @@ function closeAI() {
 </script>
 </body>
 </html>
-
-
-
