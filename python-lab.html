@@ -623,13 +623,31 @@
        SHUTTER FLASH + WATERMARK
     ============================================================ */
     #shutter { position: fixed; inset:0; background:#fff; z-index:99998; opacity:0; pointer-events:none; transition: opacity 0.08s; }
+	
     .snap-watermark {
-        position: absolute; bottom: 18px; right: 20px;
-        display: none; align-items: center; gap: 12px; z-index: 50;
-        background: rgba(7,7,26,0.85); backdrop-filter: blur(8px);
-        padding: 10px 16px; border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
+    position: absolute;
+    bottom: 18px;
+    right: 20px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 50;
+
+    background: rgba(7,7,26,0.85);
+    backdrop-filter: blur(8px);
+
+    padding: 10px 16px;
+    border-radius: 12px;
+
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Watermark image keeps original aspect ratio */
+.snap-watermark img {
+    height: 36px;
+    width: auto;
+    display: block;
+}
 
     /* ============================================================
        LOADING PULSE (run btn)
@@ -850,12 +868,13 @@
 
             <!-- Watermark (snapshot mode) -->
             <div class="snap-watermark" id="wm">
-                <img src="codestitcher.png" style="height:32px;border-radius:5px">
+                <img src="codestitcher.png" style="height:36px;border-radius:3px">
                 <div style="display:flex;flex-direction:column">
-                    <span style="font-family:var(--font-display);font-weight:800;font-size:0.9rem">CodeStitcher</span>
+				
+                    <span style="font-family:var(--font-display);font-weight:800;font-size:0.9rem">Code<span>Stitcher</span> <span style="color:#444;font-size:0.9rem;font-weight:800">// IDE</span>
                     <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--green);letter-spacing:2px">NEURAL_LAB</span>
                 </div>
-            </div>
+            </div> 
         </div>
 
         <!-- TERMINAL PANEL -->
