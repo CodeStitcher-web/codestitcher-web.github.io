@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#020208">
     <link rel="icon" type="image/png" href="codestitcher.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Sora:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
@@ -38,9 +38,9 @@
         --glow-violet: 0 0 40px rgba(124,58,237,0.35);
         --glow-green:  0 0 40px rgba(0,255,136,0.25);
 
-        --font-display: 'JetBrains Mono', sans-serif;
-        --font-mono:    'JetBrains Mono', monospace;
-        --font-body:    'JetBrains Mono', sans-serif;
+        --font-display: 'Sora', sans-serif;
+--font-body: 'Inter', sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
 
         --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
         --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
@@ -1188,6 +1188,8 @@
         text-transform: uppercase; color: #444;
         margin-top: 6px;
     }
+	.btn-utilities { color: var(--amber); background: rgba(255,184,0,0.07); border-color: rgba(255,184,0,0.18); }
+.btn-utilities:hover { background: var(--amber); color: #000; box-shadow: 0 0 30px rgba(255,184,0,0.4); transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -1250,6 +1252,9 @@
         <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn btn-founder" onclick="playSound('click')">
             <i class="fa-solid fa-user-astronaut"></i> Founder
         </a>
+		<a href="javascript:void(0)" onclick="delayedNav('utilities.html')" class="nav-btn btn-utilities">
+    <i class="fa-solid fa-wrench"></i> Utilities
+</a>
         <a href="javascript:void(0)" onclick="delayedNav('products/index.html')" class="nav-btn btn-products">
             <i class="fa-solid fa-download"></i> Products
         </a>
