@@ -747,7 +747,7 @@
         <div class="nav-left">
             <a href="javascript:void(0)" onclick="delayedNav('index.html')" class="nav-logo">
                 <img src="codestitcher.png" alt="CS">
-                <span class="nav-wordmark">CodeStitcher</span>
+                <span class="nav-wordmark">Code<span style="color: var(--violet2);">Stitcher</span></span>
                 <span class="nav-tag">// IDE</span>
             </a>
 
@@ -869,7 +869,7 @@
             <div class="snap-watermark" id="wm">
                 <img src="codestitcher.png" style="height:36px;border-radius:3px">
                 <div style="display:flex;flex-direction:column">
-                    <span style="font-family:var(--font-display);font-weight:800;font-size:0.9rem">CodeStitcher</span>
+                    <span style="font-family:var(--font-display);font-weight:800;font-size:0.9rem">Code<span style="color: var(--violet2);">Stitcher</span></span>
                     <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--green);letter-spacing:2px">NEURAL_LAB</span>
                 </div>
             </div>
@@ -2161,7 +2161,7 @@ function triggerSnapshot() {
             cx.fillStyle = 'rgba(255,255,255,0.18)';
             cx.font = `400 22px 'JetBrains Mono', monospace`;
             cx.textBaseline = 'middle';
-            cx.fillText(`codestitcher-web.github.io  ·  ${ts}`, cardX + 44, cardY + cardH - wmH / 2 - 10);
+            cx.fillText(`codestitcher.dev  ·  ${ts}`, cardX + 44, cardY + cardH - wmH / 2 - 10);
             cx.textBaseline = 'alphabetic';
 
             // ── Finalize & Download ──
@@ -2232,4 +2232,3 @@ function closeAI() {
 </script>
 </body>
 </html>
-
