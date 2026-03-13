@@ -18,25 +18,28 @@
        DESIGN TOKENS & RESET
     ============================================================ */
     :root {
-        --void:       #020208;
-        --deep:       #07071A;
-        --surface:    #0D0D28;
-        --elevated:   #12122E;
-        --glass:      rgba(13,13,40,0.6);
-        --border:     rgba(255,255,255,0.06);
-        --border-hot: rgba(100,80,255,0.4);
+        /* Deep Navy/Slate backgrounds */
+        --void:       #0B0F19;
+        --deep:       #111827;
+        --surface:    #1F2937;
+        --elevated:   #374151;
+        --glass:      rgba(31, 41, 55, 0.7);
+        --border:     rgba(255, 255, 255, 0.08);
+        --border-hot: rgba(56, 189, 248, 0.4);
 
-        --cyan:   #00F5FF;
-        --violet: #7C3AED;
+        /* Tech/Developer accents */
+        --cyan:   #38BDF8;  /* Sky Blue */
+        --violet: #6366F1;
         --violet2:#A855F7;
-        --green:  #00FF88;
-        --amber:  #FFB800;
-        --red:    #FF4D6D;
-        --white:  #F0F0FF;
+        --green:  #34D399;
+        --amber:  #FBBF24;
+        --red:    #F87171;
+        --white:  #F3F4F6;
 
-        --glow-cyan:   0 0 40px rgba(0,245,255,0.25);
-        --glow-violet: 0 0 40px rgba(124,58,237,0.35);
-        --glow-green:  0 0 40px rgba(0,255,136,0.25);
+        /* Softer Glows */
+        --glow-cyan:   0 0 30px rgba(56, 189, 248, 0.2);
+        --glow-violet: 0 0 30px rgba(99, 102, 241, 0.2);
+        --glow-green:  0 0 30px rgba(52, 211, 153, 0.15);
 
         --font-display: 'Sora', sans-serif;
 --font-body: 'Inter', sans-serif;
@@ -1231,7 +1234,7 @@
 <nav id="navbar">
     <a href="index.html" class="nav-logo">
         <img src="codestitcher.png" alt="CodeStitcher">
-        <span class="nav-wordmark">CodeStitcher</span>
+        <span class="nav-wordmark">Code<span style="color: var(--violet2);">Stitcher</span></span>
         <span class="nav-tag">// HOME</span>
     </a>
 
