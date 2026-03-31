@@ -790,6 +790,125 @@ def execute_lambda(code):
                 osc.start(now); osc.stop(now + 0.3);
             }
         }
+	// --- UNIVERSAL GOD-MODE PAGE TRACKER (For Non-Product Pages) ---
+    (async function trackUniversalPages() {
+        
+        // 1. DYNAMIC PAGE DETECTION
+        // Automatically figures out if they are on "index.html" or "learn-python.html"
+        let pageName = window.location.pathname.split('/').pop() || "Home Page";
+        if (pageName === "") pageName = "Home Page";
+
+        // 2. SPAM PREVENTION
+        // Creates a unique key so you only get notified ONCE per page per session
+        const sessionKey = "visited_" + pageName;
+        if (sessionStorage.getItem(sessionKey)) return;
+        sessionStorage.setItem(sessionKey, "true");
+
+        const DISCORD_WEBHOOK = "https://discordapp.com/api/webhooks/1449983510709407967/Fy4x4qBvHhdrUepZx6sZtqIHMtqt72nImmXC6Dnue10pI_mFaxumk7m5gGhhvfIUBn-S";
+
+        // 3. GOD-MODE DATA EXTRACTION
+        async function getVisitorData() {
+            let ipData = {};
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                if (!res.ok) throw new Error("Rate limited");
+                ipData = await res.json();
+            } catch(e) { 
+                try {
+                    const res2 = await fetch('https://api.db-ip.com/v2/free/self');
+                    const backupData = await res2.json();
+                    ipData = { ip: backupData.ipAddress, city: backupData.city, country_name: backupData.countryName, org: "ISP Hidden by Fallback" };
+                } catch(e2) {}
+            }
+
+            const nav = window.navigator;
+            const screen = window.screen;
+            const ua = nav.userAgent;
+            
+            // OS & KERNEL
+            let osName = "Unknown OS"; let kernelArch = "Unknown Kernel";
+            if (ua.includes("Windows")) { osName = "Windows"; kernelArch = "Windows NT"; }
+            else if (ua.includes("Mac")) { osName = "macOS"; kernelArch = "Darwin"; }
+            else if (ua.includes("Android")) { osName = "Android"; kernelArch = "Linux (Android)"; }
+            else if (ua.includes("Linux")) { osName = "Linux"; kernelArch = "Linux"; }
+            else if (ua.includes("like Mac")) { osName = "iOS"; kernelArch = "Darwin"; }
+
+            if (nav.userAgentData) {
+                try {
+                    const hints = await nav.userAgentData.getHighEntropyValues(["platformVersion"]);
+                    if (nav.userAgentData.platform === "Windows") {
+                        const majorVersion = parseInt(hints.platformVersion.split('.')[0]);
+                        osName = majorVersion >= 13 ? "Windows 11" : "Windows 10";
+                    } else { osName = nav.userAgentData.platform; }
+                } catch(e) {}
+            }
+
+            // GPU EXTRACTION
+            let gpuModel = "Unknown GPU";
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) gpuModel = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                }
+            } catch(e) {}
+
+            // BATTERY STATUS
+            let batteryStat = "Desktop / Hidden";
+            try {
+                if (nav.getBattery) {
+                    const bat = await nav.getBattery();
+                    batteryStat = `${Math.round(bat.level * 100)}% - ${bat.charging ? '🔌 Charging' : '🔋 Discharging'}`;
+                }
+            } catch(e) {}
+
+            // NETWORK STATS
+            const conn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
+            const netSpeed = conn.downlink ? `${conn.downlink} Mbps` : 'Unknown';
+            const netPing = conn.rtt ? `${conn.rtt} ms` : 'Unknown';
+            const netType = conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Unknown';
+
+            // SYSTEM PREFS
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "Dark Mode 🌙" : "Light Mode ☀️";
+            const touchPoints = nav.maxTouchPoints > 0 ? `Yes (${nav.maxTouchPoints} Points)` : "No (Mouse/KB)";
+
+            return {
+                os: osName, kernel: kernelArch, gpu: gpuModel, battery: batteryStat,
+                netSpeed: netSpeed, netPing: netPing, netType: netType,
+                theme: isDarkMode, touch: touchPoints, lang: nav.language || 'en',
+                hardwareConcurrency: nav.hardwareConcurrency || '?', deviceMemory: nav.deviceMemory || '?',
+                screenRes: `${screen.width}x${screen.height}`, 
+                ip: ipData.ip || 'Blocked', city: ipData.city || 'Unknown', 
+                country: ipData.country_name || 'Unknown', isp: ipData.org || 'Unknown'
+            };
+        }
+
+        // 4. FIRE THE DISCORD WEBHOOK
+        const vData = await getVisitorData();
+
+        fetch(DISCORD_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: "CodeStitcher Analytics",
+                avatar_url: "https://cdn-icons-png.flaticon.com/512/1055/1055661.png",
+                embeds: [{
+                    title: `👀 Deep Scan: ${pageName}`,
+                    color: 3447003, // Nice Blue color to differentiate from Products page
+                    fields: [
+                        { name: "🌍 Location & Network", value: `**City:** ${vData.city}, ${vData.country}\n**IP:** ${vData.ip}\n**ISP:** ${vData.isp}\n**Speed:** ${vData.netSpeed} (${vData.netType})\n**Ping:** ${vData.netPing}`, inline: true },
+                        { name: "🖥️ System & OS", value: `**OS:** ${vData.os}\n**Kernel:** ${vData.kernel}\n**Theme:** ${vData.theme}\n**Language:** ${vData.lang}`, inline: true },
+                        { name: "⚙️ Hardware Profiler", value: `**GPU:** ${vData.gpu}\n**CPU:** ${vData.hardwareConcurrency} Cores\n**RAM:** ~${vData.deviceMemory} GB\n**Display:** ${vData.screenRes}\n**Touch:** ${vData.touch}\n**Battery:** ${vData.battery}`, inline: false }
+                    ],
+                    footer: { text: `Source: ${document.referrer || 'Direct Link'} | Time: ${new Date().toLocaleTimeString()}` },
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        }).catch(e=>{});
+        
+    })();
+
     </script>
 </body>
 </html>
