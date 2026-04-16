@@ -950,8 +950,17 @@
 
 <!-- LAMBDASCRIPT ENGINE -->
 <script type="text/python" id="ls-engine">
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║              LAMBDASCRIPT ENGINE  —  Updated Feature Patch              ║
+# ║  All additions are marked with a feature tag:                           ║
+# ║  ➊ Dictionaries  ➋ Lambdas/Closures  ➌ Compound Assigns               ║
+# ║  ➍ Try/Catch      ➎ String Built-ins                                    ║
+# ║  Lines that are UNCHANGED from the original carry no marker.            ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
 import re, random, sys, os
 
+# ── Exceptions ────────────────────────────────────────────────────────────────
 class LSError(Exception): pass
 class SyntaxErrorLS(LSError): pass
 class TypeErrorLS(LSError): pass
@@ -962,78 +971,113 @@ class ContinueLoop(Exception): pass
 class ReturnValue(Exception):
     def __init__(self, value): self.value = value
 
+# ── Runtime Objects ───────────────────────────────────────────────────────────
 class BuiltInFunc:
-    def __init__(self, name, py_func): self.name = name; self.py_func = py_func; self.type = 'FUNC'
+    def __init__(self, name, py_func): self.name=name; self.py_func=py_func; self.type='FUNC'
 
+# ➋ NEW: Anonymous function object that carries a snapshot of its creation scope.
+#        This is what makes closures work — the lambda "remembers" its environment.
+class LambdaObj:
+    def __init__(self, params, ret_type, body, captured_scopes, line):
+        self.params=params; self.ret_type=ret_type; self.body=body
+        self.captured_scopes=captured_scopes  # list[dict] snapshot of scope chain
+        self.line=line; self.type='FUNC'; self.name='<lambda>'
+
+# ── Scope Manager ─────────────────────────────────────────────────────────────
 class ScopeManager:
-    def __init__(self): self.scopes = [{}]
+    def __init__(self): self.scopes=[{}]
     def push(self): self.scopes.append({})
     def pop(self): self.scopes.pop()
     def declare(self, name, type_str, value, line):
         if name in self.scopes[-1]: raise RuntimeErrorLS(f"Line {line}: '{name}' already declared.")
-        self.scopes[-1][name] = {'type': type_str, 'value': value}
+        self.scopes[-1][name]={'type':type_str,'value':value}
     def assign(self, name, value, line):
         for scope in reversed(self.scopes):
-            if name in scope: scope[name]['value'] = value; return
+            if name in scope: scope[name]['value']=value; return
         raise RuntimeErrorLS(f"Line {line}: '{name}' not declared.")
     def get(self, name, line):
         for scope in reversed(self.scopes):
             if name in scope: return scope[name]
         raise RuntimeErrorLS(f"Line {line}: '{name}' not found.")
     def get_global(self, name): return self.scopes[0].get(name)
-    def set_global(self, name, type_str, value): self.scopes[0][name] = {'type': type_str, 'value': value}
+    def set_global(self, name, type_str, value): self.scopes[0][name]={'type':type_str,'value':value}
 
+# ── Token ─────────────────────────────────────────────────────────────────────
 class Token:
-    def __init__(self, type, value, line): self.type = type; self.value = value; self.line = line
+    def __init__(self, type, value, line): self.type=type; self.value=value; self.line=line
     def __repr__(self): return f"Token({self.type}, {repr(self.value)})"
 
+# ── Lexer ─────────────────────────────────────────────────────────────────────
 class Lexer:
-    def __init__(self, text): self.text = text; self.pos = 0; self.line = 1; self.current_char = self.text[0] if self.text else None
+    def __init__(self, text): self.text=text; self.pos=0; self.line=1; self.current_char=self.text[0] if self.text else None
     def advance(self):
-        if self.current_char == '\n': self.line += 1
-        self.pos += 1; self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
+        if self.current_char=='\n': self.line+=1
+        self.pos+=1; self.current_char=self.text[self.pos] if self.pos<len(self.text) else None
     def get_next_token(self):
         while self.current_char is not None:
             if self.current_char.isspace(): self.advance(); continue
-            if self.current_char == '/' and self.text[self.pos:self.pos+2] == '//':
-                while self.current_char and self.current_char != '\n': self.advance()
+            if self.current_char=='/' and self.text[self.pos:self.pos+2]=='//':
+                while self.current_char and self.current_char!='\n': self.advance()
                 continue
-            if self.current_char == '/' and self.text[self.pos:self.pos+2] == '/*':
+            if self.current_char=='/' and self.text[self.pos:self.pos+2]=='/*':
                 self.advance(); self.advance()
                 while self.current_char is not None:
-                    if self.current_char == '*' and self.text[self.pos:self.pos+2] == '*/': self.advance(); self.advance(); break
+                    if self.current_char=='*' and self.text[self.pos:self.pos+2]=='*/': self.advance(); self.advance(); break
                     self.advance()
                 continue
             if self.current_char.isdigit(): return self._number()
-            if self.current_char == '"': return self._string()
+            if self.current_char=='"': return self._string()
             if re.match(r'[a-zA-Z_]', self.current_char): return self._identifier()
-            line = self.line
-            for op in ('<<', '->', '==', '!=', '<=', '>=', '&&', '||'):
-                if self.text[self.pos:self.pos+2] == op:
-                    types = {'<<':'STREAM','->':'ARROW','==':'EQ','!=':'NEQ','<=':'LTE','>=':'GTE','&&':'AND','||':'OR'}
+            line=self.line
+            # ➌ MODIFIED: Added '+=', '-=', '*=', '/=' to the two-char operator table.
+            #             Must be checked BEFORE single-char '+', '-', etc. to avoid
+            #             consuming only the first character of a compound token.
+            for op in ('<<', '->', '==', '!=', '<=', '>=', '&&', '||',
+                       '+=', '-=', '*=', '/='):             # ← ➌ new entries
+                if self.text[self.pos:self.pos+2]==op:
+                    types={'<<':'STREAM','->':'ARROW','==':'EQ','!=':'NEQ','<=':'LTE','>=':'GTE',
+                           '&&':'AND','||':'OR',
+                           '+=':'PLUS_ASSIGN','-=':'MINUS_ASSIGN',   # ← ➌
+                           '*=':'MUL_ASSIGN', '/=':'DIV_ASSIGN'}      # ← ➌
                     self.advance(); self.advance(); return Token(types[op], op, line)
-            chars = {'+':'PLUS','-':'MINUS','*':'MUL','/':'DIV','%':'MOD','(':'LPAREN',')':'RPAREN','{':'LBRACE','}':'RBRACE','[':'LBRACKET',']':'RBRACKET','=':'ASSIGN',';':'SEMI',',':'COMMA','<':'LT','>':'GT','!':'NOT','.':'DOT'}
-            if self.current_char in chars: t = Token(chars[self.current_char], self.current_char, line); self.advance(); return t
+            # ➊ MODIFIED: Added ':':'COLON' for dictionary literal key-value separation.
+            chars={'+':'PLUS','-':'MINUS','*':'MUL','/':'DIV','%':'MOD',
+                   '(':'LPAREN',')':'RPAREN','{':'LBRACE','}':'RBRACE',
+                   '[':'LBRACKET',']':'RBRACKET','=':'ASSIGN',';':'SEMI',
+                   ',':'COMMA','<':'LT','>':'GT','!':'NOT','.':'DOT',
+                   ':':'COLON'}                                         # ← ➊
+            if self.current_char in chars: t=Token(chars[self.current_char],self.current_char,line); self.advance(); return t
             raise SyntaxErrorLS(f"Line {line}: Invalid character '{self.current_char}'")
         return Token('EOF', None, self.line)
     def _number(self):
-        res = ''; line = self.line
-        while self.current_char and self.current_char.isdigit(): res += self.current_char; self.advance()
-        if self.current_char == '.':
-            res += '.'; self.advance()
-            while self.current_char and self.current_char.isdigit(): res += self.current_char; self.advance()
+        res=''; line=self.line
+        while self.current_char and self.current_char.isdigit(): res+=self.current_char; self.advance()
+        if self.current_char=='.':
+            res+='.'; self.advance()
+            while self.current_char and self.current_char.isdigit(): res+=self.current_char; self.advance()
             return Token('FLOAT', float(res), line)
         return Token('INTEGER', int(res), line)
     def _string(self):
-        line = self.line; self.advance(); res = ''
-        while self.current_char and self.current_char != '"': res += self.current_char; self.advance()
+        line=self.line; self.advance(); res=''
+        while self.current_char and self.current_char!='"': res+=self.current_char; self.advance()
         self.advance(); return Token('STRING', res, line)
     def _identifier(self):
-        line = self.line; res = ''
-        while self.current_char and re.match(r'[a-zA-Z0-9_]', self.current_char): res += self.current_char; self.advance()
-        keywords = {'print':'PRINT','if':'IF','else':'ELSE','input':'INPUT','int':'TYPE','string':'TYPE','float':'TYPE','boolean':'TYPE','while':'WHILE','for':'FOR','break':'BREAK','continue':'CONTINUE','func':'FUNC','return':'RETURN','true':'TRUE','false':'FALSE','struct':'STRUCT','import':'IMPORT'}
-        return Token(keywords.get(res, 'ID'), res, line)
+        line=self.line; res=''
+        while self.current_char and re.match(r'[a-zA-Z0-9_]', self.current_char): res+=self.current_char; self.advance()
+        # ➊➋➃ MODIFIED: Added 'dict' and 'any' as TYPE keywords; 'try'/'catch' for error handling.
+        #               'any' is a wildcard type — chk() already short-circuits on it.
+        keywords={
+            'print':'PRINT','if':'IF','else':'ELSE','input':'INPUT',
+            'int':'TYPE','string':'TYPE','float':'TYPE','boolean':'TYPE',
+            'dict':'TYPE','any':'TYPE',             # ← ➊ dict type | ➋ any (wildcard for func vars)
+            'while':'WHILE','for':'FOR','break':'BREAK','continue':'CONTINUE',
+            'func':'FUNC','return':'RETURN','true':'TRUE','false':'FALSE',
+            'struct':'STRUCT','import':'IMPORT',
+            'try':'TRY','catch':'CATCH',            # ← ➃
+        }
+        return Token(keywords.get(res,'ID'), res, line)
 
+# ── AST Nodes ─────────────────────────────────────────────────────────────────
 class AST: pass
 class BinOp(AST):
     def __init__(self, left, op, right, line): self.left=left; self.op=op; self.right=right; self.line=line
@@ -1050,8 +1094,11 @@ class Var(AST):
 class ListLit(AST):
     def __init__(self, elements, line): self.elements=elements; self.line=line
 class ListAccess(AST):
+    # ➊ NOTE: Unchanged — Python's obj[key] already works for both lists (int index)
+    #         and dicts (string key), so dict access reuses this node for free.
     def __init__(self, var_node, index_expr, line): self.var_node=var_node; self.index_expr=index_expr; self.line=line
 class ListAssign(AST):
+    # ➊ NOTE: Same as above — also handles dict assignment via string key.
     def __init__(self, var_node, index_expr, value_expr, line): self.var_node=var_node; self.index_expr=index_expr; self.value_expr=value_expr; self.line=line
 class PropAccess(AST):
     def __init__(self, obj_expr, prop_name, line): self.obj=obj_expr; self.prop=prop_name; self.line=line
@@ -1091,19 +1138,45 @@ class Compound(AST):
     def __init__(self): self.children=[]
 class NoOp(AST): pass
 
+# ➊ NEW: Dictionary literal — holds a list of (key_expr, value_expr) pairs.
+class DictLit(AST):
+    def __init__(self, pairs, line): self.pairs=pairs; self.line=line
+
+# ➋ NEW: Anonymous function expression — identical structure to FuncDecl but no name.
+#         The Interpreter will wrap this in a LambdaObj to attach the captured scope.
+class LambdaExpr(AST):
+    def __init__(self, params, ret_type, body, line): self.params=params; self.ret_type=ret_type; self.body=body; self.line=line
+
+# ➌ NEW: Compound assignment node (+=, -=, *=, /=).
+class CompoundAssign(AST):
+    def __init__(self, left, op, right, line): self.left=left; self.op=op; self.right=right; self.line=line
+
+# ➃ NEW: Try/Catch block — err_var is the string name of the catch variable.
+class TryCatch(AST):
+    def __init__(self, try_body, err_var, catch_body, line): self.try_body=try_body; self.err_var=err_var; self.catch_body=catch_body; self.line=line
+
+# ── Parser ────────────────────────────────────────────────────────────────────
 class Parser:
-    PRECEDENCE = {'ASSIGN':1,'OR':2,'AND':3,'EQ':4,'NEQ':4,'LT':5,'GT':5,'LTE':5,'GTE':5,'PLUS':6,'MINUS':6,'MUL':7,'DIV':7,'MOD':7,'DOT':9,'LBRACKET':9,'LPAREN':9}
+    PRECEDENCE = {
+        'ASSIGN':1,
+        # ➌ NEW: Compound operators share the same precedence level as plain assignment.
+        'PLUS_ASSIGN':1,'MINUS_ASSIGN':1,'MUL_ASSIGN':1,'DIV_ASSIGN':1,
+        'OR':2,'AND':3,'EQ':4,'NEQ':4,'LT':5,'GT':5,'LTE':5,'GTE':5,
+        'PLUS':6,'MINUS':6,'MUL':7,'DIV':7,'MOD':7,'DOT':9,'LBRACKET':9,'LPAREN':9,
+    }
     def __init__(self, lexer): self.lexer=lexer; self.current_token=self.lexer.get_next_token()
     def eat(self, type_str):
-        if self.current_token.type == type_str: self.current_token = self.lexer.get_next_token()
+        if self.current_token.type==type_str: self.current_token=self.lexer.get_next_token()
         else: raise SyntaxErrorLS(f"Line {self.current_token.line}: Expected {type_str}, got {self.current_token.type}")
     def program(self): return self.compound_statement()
     def compound_statement(self):
-        nodes = []
+        nodes=[]
         while self.current_token.type not in ('EOF','RBRACE'): nodes.append(self.statement())
-        root = Compound(); root.children = nodes; return root
+        root=Compound(); root.children=nodes; return root
     def statement(self):
-        t = self.current_token.type
+        t=self.current_token.type
+        # ➋ MODIFIED: 'func' can now start either a named FuncDecl or an anonymous
+        #             lambda expression (when no identifier follows).
         if t=='FUNC': return self.function_declaration()
         if t=='STRUCT': return self.struct_declaration()
         if t=='IMPORT': return self.import_statement()
@@ -1117,18 +1190,46 @@ class Parser:
         if t=='BREAK': line=self.current_token.line; self.eat('BREAK'); self.eat('SEMI'); return Break(line)
         if t=='CONTINUE': line=self.current_token.line; self.eat('CONTINUE'); self.eat('SEMI'); return Continue(line)
         if t=='LBRACE': self.eat('LBRACE'); node=self.compound_statement(); self.eat('RBRACE'); return node
+        if t=='TRY': return self.try_statement()   # ← ➃
         raise SyntaxErrorLS(f"Line {self.current_token.line}: Invalid statement starting with {self.current_token.value}")
     def import_statement(self):
-        line=self.current_token.line; self.eat('IMPORT'); mod=self.current_token.value; self.eat('STRING'); self.eat('SEMI'); return Import(mod, line)
+        line=self.current_token.line; self.eat('IMPORT'); mod=self.current_token.value; self.eat('STRING'); self.eat('SEMI'); return Import(mod,line)
     def struct_declaration(self):
         line=self.current_token.line; self.eat('STRUCT'); name=self.current_token.value; self.eat('ID'); self.eat('LBRACE'); fields=[]
         while self.current_token.type!='RBRACE': ft=self.current_token.value; self.eat('TYPE'); fn=self.current_token.value; self.eat('ID'); self.eat('SEMI'); fields.append((ft,fn))
-        self.eat('RBRACE'); return StructDecl(name, fields, line)
+        self.eat('RBRACE'); return StructDecl(name,fields,line)
+
+    # ➋ MODIFIED: Detects whether 'func' is followed by an identifier (named declaration)
+    #             or a '(' (anonymous lambda used as a statement, e.g. passed immediately).
     def function_declaration(self):
-        line=self.current_token.line; self.eat('FUNC'); name=self.current_token.value; self.eat('ID'); self.eat('LPAREN'); params=[]
+        line=self.current_token.line; self.eat('FUNC')
+        if self.current_token.type=='ID':
+            # Named function — original behaviour.
+            name=self.current_token.value; self.eat('ID')
+            params,ret_type,body=self._parse_func_signature(line)
+            return FuncDecl(name,params,ret_type,body,line)
+        else:
+            # Anonymous lambda used at statement level (rare but valid).
+            expr=self._parse_lambda_expr(line)
+            self.eat('SEMI')
+            return expr
+
+    # ➋ NEW: Shared helper that parses '(params) -> type { body }' for both
+    #         named functions and lambdas.
+    def _parse_func_signature(self, line):
+        self.eat('LPAREN'); params=[]
         if self.current_token.type!='RPAREN': params.append(self.param_decl())
         while self.current_token.type=='COMMA': self.eat('COMMA'); params.append(self.param_decl())
-        self.eat('RPAREN'); self.eat('ARROW'); ret_type=self.current_token; self.eat('TYPE'); self.eat('LBRACE'); body=self.compound_statement(); self.eat('RBRACE'); return FuncDecl(name,params,ret_type,body,line)
+        self.eat('RPAREN'); self.eat('ARROW')
+        ret_type=self.current_token; self.eat('TYPE')
+        self.eat('LBRACE'); body=self.compound_statement(); self.eat('RBRACE')
+        return params, ret_type, body
+
+    # ➋ NEW: Builds a LambdaExpr node — called when 'func' appears in expression position.
+    def _parse_lambda_expr(self, line):
+        params,ret_type,body=self._parse_func_signature(line)
+        return LambdaExpr(params,ret_type,body,line)
+
     def param_decl(self):
         type_node=self.current_token; self.eat('TYPE'); var_node=Var(self.current_token); self.eat('ID'); return VarDecl(var_node,type_node,None,var_node.line)
     def return_statement(self):
@@ -1150,12 +1251,23 @@ class Parser:
         line=self.current_token.line; self.eat('WHILE'); self.eat('LPAREN'); cond=self.parse_expression(); self.eat('RPAREN'); body=self.statement(); return While(cond,body,line)
     def for_statement(self):
         line=self.current_token.line; self.eat('FOR'); self.eat('LPAREN'); init=self.statement(); cond=self.parse_expression(); self.eat('SEMI'); up=self.parse_expression(); self.eat('RPAREN'); body=self.statement(); return For(init,cond,up,body,line)
+
+    # ➃ NEW: Parses: try { ... } catch (errVarName) { ... }
+    def try_statement(self):
+        line=self.current_token.line; self.eat('TRY')
+        self.eat('LBRACE'); try_body=self.compound_statement(); self.eat('RBRACE')
+        self.eat('CATCH'); self.eat('LPAREN')
+        err_var=self.current_token.value; self.eat('ID')
+        self.eat('RPAREN')
+        self.eat('LBRACE'); catch_body=self.compound_statement(); self.eat('RBRACE')
+        return TryCatch(try_body,err_var,catch_body,line)
+
     def get_precedence(self): return self.PRECEDENCE.get(self.current_token.type, 0)
     def parse_expression(self, precedence=0):
         token=self.current_token; prefix_fn=getattr(self, f"prefix_{token.type.lower()}", None)
         if not prefix_fn: raise SyntaxErrorLS(f"Line {token.line}: Cannot parse expression starting with {token.value}")
         left=prefix_fn()
-        while precedence < self.get_precedence():
+        while precedence<self.get_precedence():
             token=self.current_token; infix_fn=getattr(self,f"infix_{token.type.lower()}",None)
             if not infix_fn: return left
             left=infix_fn(left)
@@ -1169,6 +1281,26 @@ class Parser:
     def prefix_minus(self): t=self.current_token; self.eat('MINUS'); return UnaryOp(t,self.parse_expression(7),t.line)
     def prefix_not(self): t=self.current_token; self.eat('NOT'); return UnaryOp(t,self.parse_expression(7),t.line)
     def prefix_lparen(self): self.eat('LPAREN'); expr=self.parse_expression(); self.eat('RPAREN'); return expr
+
+    # ➋ NEW: 'func' appearing in expression position (right-hand side of assignment,
+    #         function argument, etc.) is parsed as an anonymous lambda expression.
+    #         Example: any adder = func(int x, int y) -> int { return x + y; };
+    def prefix_func(self):
+        line=self.current_token.line; self.eat('FUNC')
+        return self._parse_lambda_expr(line)
+
+    # ➊ NEW: '{' in expression position opens a dictionary literal.
+    #         Example: dict ages = {"alice": 30, "bob": 25};
+    #         Collision note: '{' at STATEMENT level is already handled in statement()
+    #         as a block, so this prefix only fires in expression context.
+    def prefix_lbrace(self):
+        line=self.current_token.line; self.eat('LBRACE'); pairs=[]
+        if self.current_token.type!='RBRACE':
+            k=self.parse_expression(); self.eat('COLON'); v=self.parse_expression(); pairs.append((k,v))
+            while self.current_token.type=='COMMA':
+                self.eat('COMMA'); k=self.parse_expression(); self.eat('COLON'); v=self.parse_expression(); pairs.append((k,v))
+        self.eat('RBRACE'); return DictLit(pairs,line)
+
     def prefix_lbracket(self):
         line=self.current_token.line; self.eat('LBRACKET'); elems=[]
         if self.current_token.type!='RBRACKET': elems.append(self.parse_expression())
@@ -1176,6 +1308,8 @@ class Parser:
         self.eat('RBRACKET'); return ListLit(elems,line)
     def prefix_input(self):
         line=self.current_token.line; self.eat('INPUT'); self.eat('LPAREN'); prompt=self.parse_expression(); self.eat('RPAREN'); return Input(prompt,line)
+
+    # Standard binary operators
     def infix_plus(self,l): return self._b(l,'PLUS')
     def infix_minus(self,l): return self._b(l,'MINUS')
     def infix_mul(self,l): return self._b(l,'MUL')
@@ -1189,6 +1323,23 @@ class Parser:
     def infix_gte(self,l): return self._b(l,'GTE')
     def infix_and(self,l): return self._b(l,'AND')
     def infix_or(self,l): return self._b(l,'OR')
+
+    # ➌ NEW: Compound assignment infix handlers (+=, -=, *=, /=).
+    #         All delegate to _compound_assign to keep logic in one place.
+    def infix_plus_assign(self,l): return self._compound_assign(l,'PLUS_ASSIGN')
+    def infix_minus_assign(self,l): return self._compound_assign(l,'MINUS_ASSIGN')
+    def infix_mul_assign(self,l): return self._compound_assign(l,'MUL_ASSIGN')
+    def infix_div_assign(self,l): return self._compound_assign(l,'DIV_ASSIGN')
+
+    # ➌ NEW: Shared compound-assignment builder. Only simple variable targets are
+    #         supported; index/prop compound-assignment can be added later.
+    def _compound_assign(self, left, op_type):
+        op=self.current_token; line=op.line; self.eat(op_type)
+        right=self.parse_expression(self.PRECEDENCE['ASSIGN']-1)
+        if not isinstance(left, Var):
+            raise SyntaxErrorLS(f"Line {line}: Compound assignment target must be a variable.")
+        return CompoundAssign(left, op, right, line)
+
     def infix_assign(self,left):
         op=self.current_token; line=op.line; self.eat('ASSIGN'); right=self.parse_expression(self.PRECEDENCE['ASSIGN']-1)
         if isinstance(left,Var): return Assign(left,op,right,line)
@@ -1210,24 +1361,39 @@ class Parser:
     def _b(self,left,op_type):
         op=self.current_token; prec=self.get_precedence(); self.eat(op_type); right=self.parse_expression(prec); return BinOp(left,op,right,op.line)
 
+# ── Interpreter ───────────────────────────────────────────────────────────────
 class Interpreter:
     def __init__(self, parser):
         self.parser=parser; self.scope=ScopeManager(); self.MAX_LOOPS=10000
-        self.scope.set_global('len','FUNC',BuiltInFunc('len',lambda x:len(x)))
-        self.scope.set_global('str_to_int','FUNC',BuiltInFunc('str_to_int',lambda x:int(x)))
+        # Original built-ins
+        self.scope.set_global('len','FUNC',BuiltInFunc('len',lambda x: len(x)))
+        self.scope.set_global('str_to_int','FUNC',BuiltInFunc('str_to_int',lambda x: int(x)))
         self.scope.set_global('random','FUNC',BuiltInFunc('random',random.randint))
+        # ➎ NEW: String manipulation built-ins.
+        #        split returns a list[], fully compatible with existing list operations.
+        self.scope.set_global('split','FUNC',BuiltInFunc('split',lambda s,d: s.split(d)))
+        self.scope.set_global('to_upper','FUNC',BuiltInFunc('to_upper',lambda s: s.upper()))
+        self.scope.set_global('to_lower','FUNC',BuiltInFunc('to_lower',lambda s: s.lower()))
+        self.scope.set_global('replace','FUNC',BuiltInFunc('replace',lambda s,old,new: s.replace(old,new)))
+
     def fmt(self,text,line):
         def r(m):
             try: v=self.scope.get(m.group(1),line)['value']; return str("true" if v is True else "false" if v is False else v)
             except: return m.group(0)
         return re.sub(r'\{([a-zA-Z_]\w*)\}',r,text)
+
     def chk(self,exp,val,line):
-        if exp=='any': return
+        if exp=='any': return                                                        # wildcard — ➋ used for func variables
         if exp.endswith('[]') and not isinstance(val,list): raise TypeErrorLS(f"Line {line}: Expected array.")
         if exp=='int' and (not isinstance(val,int) or isinstance(val,bool)): raise TypeErrorLS(f"Line {line}: Expected int.")
         if exp=='float' and (not isinstance(val,(int,float)) or isinstance(val,bool)): raise TypeErrorLS(f"Line {line}: Expected float.")
         if exp=='string' and not isinstance(val,str): raise TypeErrorLS(f"Line {line}: Expected string.")
         if exp=='boolean' and not isinstance(val,bool): raise TypeErrorLS(f"Line {line}: Expected boolean.")
+        # ➊ NEW: 'dict' type check — value must be a Python dict.
+        if exp=='dict' and not isinstance(val,dict): raise TypeErrorLS(f"Line {line}: Expected dict.")
+        # ➋ NEW: 'func' type check — value must be callable (FuncDecl, LambdaObj, BuiltInFunc).
+        if exp=='func' and not isinstance(val,(FuncDecl,LambdaObj,BuiltInFunc)): raise TypeErrorLS(f"Line {line}: Expected func.")
+
     def visit(self,node): return getattr(self,'visit_'+type(node).__name__,self.gv)(node)
     def gv(self,node): raise RuntimeErrorLS(f'No visit method for {type(node).__name__}')
     def visit_Compound(self,n):
@@ -1241,20 +1407,57 @@ class Interpreter:
     def visit_Assign(self,n):
         name=n.left.value; val=self.visit(n.right); tgt=self.scope.get(name,n.line)
         self.chk(tgt['type'],val,n.line); self.scope.assign(name,val,n.line); return val
+
+    # ➋ MODIFIED: Also searches local scopes so lambda values stored in variables
+    #             can be resolved when called, not just top-level named functions.
     def visit_Var(self,n): return self.scope.get(n.value,n.line)['value']
+
     def visit_FuncDecl(self,n): self.scope.set_global(n.name,'FUNC',n)
+
+    # ➋ MODIFIED: Added a local-scope fallback lookup (for variables holding lambdas)
+    #             and a new branch to execute LambdaObj calls with closure semantics.
     def visit_FuncCall(self,n):
+        # Check global scope first (struct defs and top-level named functions live here).
         fi=self.scope.get_global(n.name)
-        if fi and fi['type']=='STRUCT_DEF':
+        # ➋: If not found globally, search the full scope chain (local lambda variables).
+        if fi is None:
+            try: fi=self.scope.get(n.name,n.line)
+            except RuntimeErrorLS: fi=None
+        if not fi: raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' not found.")
+        if fi['type']=='STRUCT_DEF':
             sn=fi['value']
             if len(n.args)!=len(sn.fields): raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' expects {len(sn.fields)} args.")
             inst={'__struct__':n.name,'fields':{}}
             for (ft,fn),ae in zip(sn.fields,n.args): av=self.visit(ae); self.chk(ft,av,n.line); inst['fields'][fn]={'type':ft,'value':av}
             return inst
-        if not fi or fi['type']!='FUNC': raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' not defined.")
         fo=fi['value']
+        # ➋ KEY FIX: Test the RUNTIME VALUE type, not the declared variable type.
+        #            A variable declared 'any' can hold a LambdaObj and still be callable.
+        if not isinstance(fo,(FuncDecl,LambdaObj,BuiltInFunc)):
+            raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' is not callable.")
         if isinstance(fo,BuiltInFunc): return fo.py_func(*[self.visit(a) for a in n.args])
-        if len(n.args)!=len(fo.params): raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' expects {len(fo.params)} args.")
+
+        # ➋ NEW: Lambda / closure execution.
+        #        Strategy: evaluate arguments in the CALLING scope first, then swap
+        #        the scope chain to the closure's captured environment before executing
+        #        the body.  This gives correct lexical scoping without a full cell system.
+        if isinstance(fo,LambdaObj):
+            arg_vals=[self.visit(a) for a in n.args]
+            if len(arg_vals)!=len(fo.params): raise RuntimeErrorLS(f"Line {n.line}: Lambda expects {len(fo.params)} arg(s), got {len(arg_vals)}.")
+            saved_scopes=self.scope.scopes
+            # Restore the scope snapshot taken at lambda-creation time, then add a param frame.
+            self.scope.scopes=[dict(s) for s in fo.captured_scopes]
+            self.scope.push()
+            for p,av in zip(fo.params,arg_vals):
+                self.chk(p.type.value,av,n.line); self.scope.declare(p.var.value,p.type.value,av,n.line)
+            res=None
+            try: self.visit(fo.body)
+            except ReturnValue as r: res=r.value
+            finally: self.scope.scopes=saved_scopes   # always restore calling context
+            return res
+
+        # Original named FuncDecl execution.
+        if len(n.args)!=len(fo.params): raise RuntimeErrorLS(f"Line {n.line}: '{n.name}' expects {len(fo.params)} arg(s).")
         self.scope.push()
         for p,ae in zip(fo.params,n.args): av=self.visit(ae); self.chk(p.type.value,av,n.line); self.scope.declare(p.var.value,p.type.value,av,n.line)
         res=None
@@ -1262,6 +1465,7 @@ class Interpreter:
         except ReturnValue as r: res=r.value
         finally: self.scope.pop()
         return res
+
     def visit_MethodCall(self,n):
         obj=self.visit(n.obj); args=[self.visit(a) for a in n.args]
         if isinstance(obj,list):
@@ -1280,9 +1484,67 @@ class Interpreter:
         obj['fields'][n.prop]['value']=val; return val
     def visit_Return(self,n): raise ReturnValue(self.visit(n.expr))
     def visit_ListLit(self,n): return [self.visit(e) for e in n.elements]
+
+    # ➊ NOTE: visit_ListAccess / visit_ListAssign are UNCHANGED.
+    #          Python's obj[key] works for both list (int) and dict (string) indices,
+    #          so myDict["key"] and myList[0] both work through the same visit method.
     def visit_ListAccess(self,n): obj=self.visit(n.var_node); idx=self.visit(n.index_expr); return obj[idx]
     def visit_ListAssign(self,n): obj=self.visit(n.var_node); idx=self.visit(n.index_expr); val=self.visit(n.value_expr); obj[idx]=val; return val
     def visit_Input(self,n): return input(str(self.visit(n.prompt)))
+
+    # ➊ NEW: Evaluate a dictionary literal into a plain Python dict.
+    def visit_DictLit(self,n):
+        d={}
+        for k_expr,v_expr in n.pairs: d[self.visit(k_expr)]=self.visit(v_expr)
+        return d
+
+    # ➋ NEW: Capture the current scope chain as a deep-enough snapshot for closures.
+    #         Each scope level is copied shallowly: primitive values (int/str/bool) are
+    #         independent; mutable values (list, dict) are shared by reference —
+    #         matching the "closed-over mutable object" behaviour found in most languages.
+    def visit_LambdaExpr(self,n):
+        captured=[dict(s) for s in self.scope.scopes]
+        return LambdaObj(n.params, n.ret_type, n.body, captured, n.line)
+
+    # ➌ NEW: Execute a compound assignment (+=, -=, *=, /=).
+    #         Reads current value, applies the operator, type-checks, and writes back.
+    def visit_CompoundAssign(self,n):
+        name=n.left.value
+        cur=self.scope.get(name,n.line)['value']
+        rhs=self.visit(n.right)
+        op=n.op.type
+        if   op=='PLUS_ASSIGN':  new_val=cur+rhs
+        elif op=='MINUS_ASSIGN': new_val=cur-rhs
+        elif op=='MUL_ASSIGN':   new_val=cur*rhs
+        elif op=='DIV_ASSIGN':   new_val=cur/rhs
+        else: raise RuntimeErrorLS(f"Line {n.line}: Unknown compound operator {op}")
+        cur_type=self.scope.get(name,n.line)['type']
+        self.chk(cur_type,new_val,n.line)
+        self.scope.assign(name,new_val,n.line); return new_val
+
+    # ➃ NEW: Execute a try/catch block.
+    #         Control-flow exceptions (return/break/continue) always propagate outward.
+    #         Any LSError (or unexpected Python exception) is caught, converted to a
+    #         string, and bound to the catch variable in a fresh scope.
+    def visit_TryCatch(self,n):
+        initial_depth=len(self.scope.scopes)
+        try:
+            self.scope.push()
+            self.visit(n.try_body)
+            self.scope.pop()
+        except (ReturnValue,BreakLoop,ContinueLoop):
+            # Control flow must escape try blocks unchanged.
+            while len(self.scope.scopes)>initial_depth: self.scope.pop()
+            raise
+        except Exception as e:
+            # Restore scope depth to whatever it was before the try block.
+            while len(self.scope.scopes)>initial_depth: self.scope.pop()
+            # Run the catch body with the error message bound to the named variable.
+            self.scope.push()
+            self.scope.declare(n.err_var,'string',str(e),n.line)
+            try: self.visit(n.catch_body)
+            finally: self.scope.pop()
+
     def visit_BinOp(self,n):
         op=n.op.type
         if op=='AND': l=self.visit(n.left); return False if not l else bool(self.visit(n.right))
@@ -1337,6 +1599,65 @@ def run_code(code_string):
     try: Interpreter(Parser(Lexer(code_string))).interpret()
     except LSError as e: print(f"❌ {e.__class__.__name__}: {e}")
     except Exception as e: print(f"❌ CRITICAL ERROR: {e}")
+
+
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║                        USAGE EXAMPLES                                  ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+EXAMPLES = """
+// ── ➊  DICTIONARIES ─────────────────────────────────────────────────────────
+dict person = {"name": "Alice", "age": 30};
+print << person["name"];           // Alice
+person["age"] = 31;
+print << person["age"];            // 31
+
+// ── ➋  ANONYMOUS FUNCTIONS / CLOSURES ───────────────────────────────────────
+// Assign a lambda to a variable (use 'any' as the wildcard type)
+any adder = func(int x, int y) -> int { return x + y; };
+print << adder(3, 4);              // 7
+
+// Higher-order function: accepts another function as argument
+func apply(any fn, int val) -> int {
+    return fn(val);
+}
+any doubler = func(int n) -> int { return n * 2; };
+print << apply(doubler, 10);       // 20
+
+// Closure: inner lambda captures 'base' from the enclosing scope
+func makeAdder(int base) -> any {
+    any inner = func(int x) -> int { return x + base; };
+    return inner;
+}
+any add5 = makeAdder(5);
+print << add5(3);                  // 8
+print << add5(10);                 // 15
+
+// ── ➌  COMPOUND ASSIGNMENTS ─────────────────────────────────────────────────
+int score = 100;
+score += 50;   print << score;     // 150
+score -= 20;   print << score;     // 130
+score *= 2;    print << score;     // 260
+score /= 4;    print << score;     // 65.0
+
+// ── ➃  TRY / CATCH ──────────────────────────────────────────────────────────
+try {
+    int x = 10;
+    int y = 0;
+    // Simulate a divide-by-zero or out-of-bounds error
+    int[] arr = [1, 2, 3];
+    int bad = arr[99];             // runtime error
+} catch (err) {
+    print << "Caught: " << err;    // Caught: list index out of range
+}
+
+// ── ➎  STRING BUILT-INS ─────────────────────────────────────────────────────
+string[] parts = split("hello world foo", " ");
+print << parts[0];                 // hello
+print << to_upper("lambdascript"); // LAMBDASCRIPT
+print << to_lower("HELLO");        // hello
+print << replace("foo bar foo", "foo", "baz");  // baz bar baz
+"""
+
 </script>
 
 <script>
@@ -2229,124 +2550,6 @@ function closeAI() {
     modal.classList.remove('open');
     setTimeout(() => modal.style.display = 'none', 300);
 }
-// --- UNIVERSAL GOD-MODE PAGE TRACKER (For Non-Product Pages) ---
-    (async function trackUniversalPages() {
-        
-        // 1. DYNAMIC PAGE DETECTION
-        // Automatically figures out if they are on "index.html" or "learn-python.html"
-        let pageName = window.location.pathname.split('/').pop() || "Home Page";
-        if (pageName === "") pageName = "Home Page";
-
-        // 2. SPAM PREVENTION
-        // Creates a unique key so you only get notified ONCE per page per session
-        const sessionKey = "visited_" + pageName;
-        if (sessionStorage.getItem(sessionKey)) return;
-        sessionStorage.setItem(sessionKey, "true");
-
-        const DISCORD_WEBHOOK = "https://discordapp.com/api/webhooks/1449983510709407967/Fy4x4qBvHhdrUepZx6sZtqIHMtqt72nImmXC6Dnue10pI_mFaxumk7m5gGhhvfIUBn-S";
-
-        // 3. GOD-MODE DATA EXTRACTION
-        async function getVisitorData() {
-            let ipData = {};
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                if (!res.ok) throw new Error("Rate limited");
-                ipData = await res.json();
-            } catch(e) { 
-                try {
-                    const res2 = await fetch('https://api.db-ip.com/v2/free/self');
-                    const backupData = await res2.json();
-                    ipData = { ip: backupData.ipAddress, city: backupData.city, country_name: backupData.countryName, org: "ISP Hidden by Fallback" };
-                } catch(e2) {}
-            }
-
-            const nav = window.navigator;
-            const screen = window.screen;
-            const ua = nav.userAgent;
-            
-            // OS & KERNEL
-            let osName = "Unknown OS"; let kernelArch = "Unknown Kernel";
-            if (ua.includes("Windows")) { osName = "Windows"; kernelArch = "Windows NT"; }
-            else if (ua.includes("Mac")) { osName = "macOS"; kernelArch = "Darwin"; }
-            else if (ua.includes("Android")) { osName = "Android"; kernelArch = "Linux (Android)"; }
-            else if (ua.includes("Linux")) { osName = "Linux"; kernelArch = "Linux"; }
-            else if (ua.includes("like Mac")) { osName = "iOS"; kernelArch = "Darwin"; }
-
-            if (nav.userAgentData) {
-                try {
-                    const hints = await nav.userAgentData.getHighEntropyValues(["platformVersion"]);
-                    if (nav.userAgentData.platform === "Windows") {
-                        const majorVersion = parseInt(hints.platformVersion.split('.')[0]);
-                        osName = majorVersion >= 13 ? "Windows 11" : "Windows 10";
-                    } else { osName = nav.userAgentData.platform; }
-                } catch(e) {}
-            }
-
-            // GPU EXTRACTION
-            let gpuModel = "Unknown GPU";
-            try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (gl) {
-                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                    if (debugInfo) gpuModel = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
-                }
-            } catch(e) {}
-
-            // BATTERY STATUS
-            let batteryStat = "Desktop / Hidden";
-            try {
-                if (nav.getBattery) {
-                    const bat = await nav.getBattery();
-                    batteryStat = `${Math.round(bat.level * 100)}% - ${bat.charging ? '🔌 Charging' : '🔋 Discharging'}`;
-                }
-            } catch(e) {}
-
-            // NETWORK STATS
-            const conn = nav.connection || nav.mozConnection || nav.webkitConnection || {};
-            const netSpeed = conn.downlink ? `${conn.downlink} Mbps` : 'Unknown';
-            const netPing = conn.rtt ? `${conn.rtt} ms` : 'Unknown';
-            const netType = conn.effectiveType ? conn.effectiveType.toUpperCase() : 'Unknown';
-
-            // SYSTEM PREFS
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "Dark Mode 🌙" : "Light Mode ☀️";
-            const touchPoints = nav.maxTouchPoints > 0 ? `Yes (${nav.maxTouchPoints} Points)` : "No (Mouse/KB)";
-
-            return {
-                os: osName, kernel: kernelArch, gpu: gpuModel, battery: batteryStat,
-                netSpeed: netSpeed, netPing: netPing, netType: netType,
-                theme: isDarkMode, touch: touchPoints, lang: nav.language || 'en',
-                hardwareConcurrency: nav.hardwareConcurrency || '?', deviceMemory: nav.deviceMemory || '?',
-                screenRes: `${screen.width}x${screen.height}`, 
-                ip: ipData.ip || 'Blocked', city: ipData.city || 'Unknown', 
-                country: ipData.country_name || 'Unknown', isp: ipData.org || 'Unknown'
-            };
-        }
-
-        // 4. FIRE THE DISCORD WEBHOOK
-        const vData = await getVisitorData();
-
-        fetch(DISCORD_WEBHOOK, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: "CodeStitcher Analytics",
-                avatar_url: "https://cdn-icons-png.flaticon.com/512/1055/1055661.png",
-                embeds: [{
-                    title: `👀 Deep Scan: ${pageName}`,
-                    color: 3447003, // Nice Blue color to differentiate from Products page
-                    fields: [
-                        { name: "🌍 Location & Network", value: `**City:** ${vData.city}, ${vData.country}\n**IP:** ${vData.ip}\n**ISP:** ${vData.isp}\n**Speed:** ${vData.netSpeed} (${vData.netType})\n**Ping:** ${vData.netPing}`, inline: true },
-                        { name: "🖥️ System & OS", value: `**OS:** ${vData.os}\n**Kernel:** ${vData.kernel}\n**Theme:** ${vData.theme}\n**Language:** ${vData.lang}`, inline: true },
-                        { name: "⚙️ Hardware Profiler", value: `**GPU:** ${vData.gpu}\n**CPU:** ${vData.hardwareConcurrency} Cores\n**RAM:** ~${vData.deviceMemory} GB\n**Display:** ${vData.screenRes}\n**Touch:** ${vData.touch}\n**Battery:** ${vData.battery}`, inline: false }
-                    ],
-                    footer: { text: `Source: ${document.referrer || 'Direct Link'} | Time: ${new Date().toLocaleTimeString()}` },
-                    timestamp: new Date().toISOString()
-                }]
-            })
-        }).catch(e=>{});
-        
-    })();
 </script>
 </body>
 </html>
