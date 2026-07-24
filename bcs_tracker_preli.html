@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BCS Study Tracker (Preli) | CodeStitcher</title>
+    <link rel="icon" type="image/png" href="codestitcher.png">
+
+    <!-- FONTS & LIBRARIES -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+    /* ============================================================
+       DESIGN TOKENS — "LIQUID GLASS" REVISION
+    ============================================================ */
+    :root {
+        --void:       #07080D;
+        --deep:       #0E111A;
+        --surface:    #161B27;
+        --elevated:   #232A3B;
+
+        --glass-fill:      linear-gradient(155deg, rgba(255,255,255,0.09), rgba(255,255,255,0.015) 60%);
+        --glass-fill-hov:  linear-gradient(155deg, rgba(255,255,255,0.13), rgba(255,255,255,0.03) 60%);
+        --glass-border:    rgba(255,255,255,0.14);
+        --glass-border-lo: rgba(255,255,255,0.05);
+        --glass-shadow:    0 1px 0 rgba(255,255,255,0.16) inset, 0 -1px 0 rgba(0,0,0,0.3) inset, 0 20px 50px rgba(0,0,0,0.45);
+
+        --border:     rgba(255, 255, 255, 0.08);
+        --border-hot: rgba(90, 200, 250, 0.45);
+
+        --cyan:   #5AC8FA;
+        --violet: #7C7CF9;
+        --violet2:#B57BF2;
+        --green:  #63E6BE;
+        --amber:  #FFB454;
+        --red:    #FF7A7A;
+        --white:  #F5F6FA;
+
+        --glow-cyan:   0 0 34px rgba(90, 200, 250, 0.22);
+        --glow-violet: 0 0 34px rgba(124, 124, 249, 0.22);
+        --glow-green:  0 0 30px rgba(99, 230, 190, 0.18);
+        --glow-amber:  0 0 30px rgba(255, 180, 84, 0.22);
+
+        --font-display: 'Sora', sans-serif;
+        --font-body: 'Hind Siliguri', 'Inter', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        --radius-lg: 26px;
+        --radius-md: 16px;
+        --radius-sm: 10px;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        background:
+            radial-gradient(ellipse 900px 500px at 15% -5%, rgba(124,124,249,0.16), transparent 60%),
+            radial-gradient(ellipse 800px 500px at 90% 10%, rgba(90,200,250,0.10), transparent 55%),
+            var(--void);
+        color: var(--white);
+        font-family: var(--font-body);
+        overflow-x: hidden;
+        min-height: 100vh;
+        cursor: none;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: rgba(90,200,250,0.28); color: #fff; }
+
+    ::-webkit-scrollbar { width: 9px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(124,124,249,0.4); }
+
+    /* QUANTUM X-RAY CURSOR */
+    @media (pointer: fine) {
+        *, body, a, button { cursor: none !important; }
+        input, textarea { cursor: text !important; }
+
+        .cursor-core {
+            width: 5px; height: 5px;
+            background: #fff; border-radius: 50%; position: fixed;
+            pointer-events: none; z-index: 2147483647;
+            transform: translate(-50%, -50%); transition: transform 0.1s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-ring {
+            width: 32px; height: 32px;
+            border: 1.5px solid rgba(90, 200, 250, 0.8); border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 2147483646;
+            transform: translate(-50%, -50%);
+            transition: width 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        height 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        border-color 0.2s, background 0.2s, transform 0.15s;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-ring::after {
+            content: ''; position: absolute; inset: -7px;
+            border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 50%;
+            animation: spinRing 6s linear infinite; transition: opacity 0.3s, transform 0.3s;
+        }
+
+        @keyframes spinRing { 100% { transform: rotate(360deg); } }
+
+        .cursor-ring.hovering {
+            width: 55px; height: 55px; background: #fff; border-color: transparent;
+        }
+
+        .cursor-ring.hovering::after { opacity: 0; transform: scale(1.5) rotate(90deg); }
+    }
+
+    @media (pointer: coarse) {
+        .cursor-core, .cursor-ring { display: none !important; }
+        body { cursor: auto; }
+        *, a, button { cursor: auto !important; }
+    }
+
+    /* BACKGROUND CANVAS & NOISE */
+    #bg-canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index: -2; }
+    .noise-layer {
+        position: fixed; inset:0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.025; pointer-events: none; z-index: -1;
+    }
+
+    /* NAVIGATION */
+    nav {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+        padding: 0 4%; height: 72px; display: flex; align-items: center; justify-content: space-between;
+        background: rgba(8,9,15,0.55); backdrop-filter: blur(26px) saturate(190%);
+        -webkit-backdrop-filter: blur(26px) saturate(190%);
+        border-bottom: 1px solid var(--glass-border-lo);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; flex-shrink: 0; }
+    .nav-logo img {
+        height: 38px; width: auto; border-radius: 3px;
+        border: 1px solid rgba(124,124,249,0.3); transition: 0.4s var(--ease-spring);
+        filter: drop-shadow(0 0 8px rgba(124,124,249,0.2));
+    }
+    .nav-logo:hover img {
+        transform: scale(1.15) rotate(-3deg);
+        filter: drop-shadow(0 0 16px var(--green)) drop-shadow(0 0 32px var(--green));
+        border-color: var(--green);
+    }
+
+    .nav-wordmark {
+        font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; letter-spacing: -0.5px; color: var(--white);
+    }
+
+    .nav-tag {
+        font-family: var(--font-mono); font-size: 0.65rem; color: var(--violet2);
+        background: rgba(124,124,249,0.12); border: 1px solid rgba(124,124,249,0.25);
+        padding: 2px 7px; border-radius: 6px; letter-spacing: 1px;
+    }
+
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+
+    .nav-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-family: var(--font-display); font-size: 0.82rem; font-weight: 600;
+        padding: 7px 14px; border-radius: 11px; text-decoration: none;
+        border: 1px solid transparent; transition: all 0.25s var(--ease-spring);
+        cursor: pointer; white-space: nowrap; letter-spacing: 0.2px;
+    }
+    .nav-btn i { font-size: 0.85em; }
+
+    .btn-home      { color: var(--cyan); background: rgba(90,200,250,0.08); border-color: rgba(90,200,250,0.2); }
+    .btn-home:hover { background: var(--cyan); color: #06131a; box-shadow: var(--glow-cyan); transform: translateY(-2px); }
+
+    .btn-founder   { color: var(--cyan); background: rgba(90,200,250,0.08); border-color: rgba(90,200,250,0.2); }
+    .btn-founder:hover { background: var(--cyan); color: #06131a; box-shadow: var(--glow-cyan); transform: translateY(-2px); }
+
+    .btn-utilities { color: var(--amber); background: rgba(255,180,84,0.08); border-color: rgba(255,180,84,0.2); }
+    .btn-utilities:hover { background: var(--amber); color: #1a1206; box-shadow: var(--glow-amber); transform: translateY(-2px); }
+
+    .lang-toggle-btn {
+        display: flex; align-items: center; background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-hot); border-radius: 30px; padding: 2px; cursor: pointer;
+    }
+    .lang-opt {
+        padding: 4px 10px; border-radius: 20px; font-family: var(--font-mono); font-size: 0.68rem;
+        font-weight: 700; color: #6b7280; transition: 0.3s;
+    }
+    .lang-opt.active { background: linear-gradient(135deg, var(--violet), var(--violet2)); color: #fff; box-shadow: 0 0 12px rgba(124,124,249,0.5); }
+
+    /* LIQUID GLASS SURFACES */
+    .product-card, .glass-card {
+        background: var(--glass-fill);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: blur(22px) saturate(170%);
+        -webkit-backdrop-filter: blur(22px) saturate(170%);
+        box-shadow: var(--glass-shadow);
+        transition: 0.45s var(--ease-spring);
+        position: relative; overflow: hidden;
+    }
+    .product-card::before, .glass-card::before {
+        content: ''; position: absolute; inset:0; border-radius: inherit;
+        background: radial-gradient(560px circle at var(--mx,50%) var(--my,-20%), rgba(255,255,255,0.14), transparent 55%);
+        opacity: 0; transition: opacity 0.4s; pointer-events: none;
+    }
+    .product-card::after, .glass-card::after {
+        content: ''; position: absolute; top:0; left: 8%; right: 8%; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+        pointer-events: none;
+    }
+    .product-card:hover::before, .glass-card:hover::before { opacity:1; }
+    .product-card:hover, .glass-card:hover {
+        border-color: rgba(124,124,249,0.4); transform: translateY(-6px);
+        box-shadow: var(--glow-violet), 0 26px 64px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.2) inset;
+        background: var(--glass-fill-hov);
+    }
+
+    /* HEADER & STATS */
+    .header-section { padding: 105px 5% 30px; max-width: 1250px; margin: 0 auto; }
+    .page-title {
+        font-family: var(--font-display); font-size: clamp(1.8rem, 4.2vw, 3rem); font-weight: 800; letter-spacing: -1.2px;
+    }
+    .line-2 {
+        background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 60%, var(--green) 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .widgets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+    .widget-card { padding: 20px; }
+    .widget-title { font-family: var(--font-mono); font-size: 0.7rem; color: #8a93a6; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .widget-value { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--white); margin-top: 6px; }
+    .widget-sub { font-family: var(--font-mono); font-size: 0.68rem; color: #6b7280; margin-top: 4px; }
+    .edit-icon { color: #616b7d; font-size: 0.85rem; transition: 0.2s; }
+    .edit-icon:hover { color: var(--cyan); }
+
+    /* POMODORO & RADAR TOOLBAR */
+    .utility-bar { max-width: 1250px; margin: 0 auto 30px; padding: 0 5%; display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+    @media(max-width:900px){ .utility-bar { grid-template-columns: 1fr; } }
+
+    .pomo-display { font-family: var(--font-mono); font-size: 2.3rem; font-weight: 800; color: var(--amber); letter-spacing: 2px; text-shadow: 0 0 24px rgba(255,180,84,0.25); }
+    .btn-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+
+    .btn-action {
+        padding: 9px 16px; border-radius: 12px; border: 1px solid transparent; font-family: var(--font-display);
+        font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: 0.3s var(--ease-spring);
+        display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    }
+    .btn-cyan { background: rgba(90,200,250,0.09); color: var(--cyan); border-color: rgba(90,200,250,0.3); }
+    .btn-cyan:hover { background: var(--cyan); color: #06131a; box-shadow: var(--glow-cyan); transform: translateY(-2px); }
+    .btn-violet { background: rgba(124,124,249,0.12); color: var(--violet2); border-color: rgba(124,124,249,0.35); }
+    .btn-violet:hover { background: var(--violet); color: #fff; box-shadow: var(--glow-violet); transform: translateY(-2px); }
+    .btn-outline { background: rgba(255,255,255,0.03); color: var(--white); border-color: var(--border-hot); }
+    .btn-outline:hover { background: rgba(124,124,249,0.1); border-color: var(--violet2); transform: translateY(-2px); }
+
+    .chart-container { height: 210px; width: 100%; position: relative; margin-top: 10px; }
+
+    /* ============================================================
+       NESTED SYLLABUS ACCORDIONS (Subject ➔ Chapter ➔ Micro Sub-Topics)
+    ============================================================ */
+    .syllabus-container { max-width: 1250px; margin: 0 auto 60px; padding: 0 5%; display: flex; flex-direction: column; gap: 16px; }
+    .subject-card { border-radius: var(--radius-lg); overflow: hidden; }
+
+    .subject-header {
+        padding: 18px 22px; background: rgba(255,255,255,0.015); display: flex; justify-content: space-between;
+        align-items: center; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); gap: 12px;
+    }
+    .subject-title-area { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+    .subject-icon {
+        width: 38px; height: 38px; border-radius: 11px; background: rgba(124,124,249,0.13);
+        border: 1px solid rgba(124,124,249,0.28); display: flex; align-items: center; justify-content: center;
+        color: var(--cyan); font-size: 1rem; flex-shrink: 0;
+    }
+    .subject-meta-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .subject-mini-bar { flex: 1; max-width: 140px; height: 5px; background: rgba(255,255,255,0.07); border-radius: 6px; overflow: hidden; }
+    .subject-mini-fill { height: 100%; background: linear-gradient(90deg, var(--violet), var(--cyan)); border-radius: 6px; transition: width 0.6s ease; }
+    .subject-pct { font-family: var(--font-mono); font-size: 0.68rem; color: var(--cyan); }
+
+    .subject-card.collapsed .chapter-container { display: none; }
+    .subject-card.collapsed .subject-chevron { transform: rotate(-90deg); }
+    .subject-chevron { transition: transform 0.3s; color: #616b7d; flex-shrink: 0; }
+
+    /* CHAPTER LEVEL ACCORDION */
+    .chapter-container { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); }
+    .chapter-card {
+        background: rgba(22, 27, 39, 0.6); border: 1px solid rgba(255,255,255,0.06);
+        border-radius: var(--radius-md); overflow: hidden; transition: 0.3s;
+    }
+    .chapter-header {
+        padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        cursor: pointer; user-select: none; background: rgba(255,255,255,0.02);
+    }
+    .chapter-header:hover { background: rgba(90, 200, 250, 0.05); }
+    .chapter-title { font-weight: 700; font-size: 0.9rem; color: var(--white); display: flex; align-items: center; gap: 8px; }
+    .chapter-card.collapsed .subtopic-list { display: none; }
+    .chapter-card.collapsed .chap-chevron { transform: rotate(-90deg); }
+    .chap-chevron { transition: transform 0.3s; color: var(--violet2); font-size: 0.8rem; }
+
+    /* SUB-TOPIC GRID (Responsive) */
+    .subtopic-list {
+        padding: 12px 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 8px; border-top: 1px solid rgba(255,255,255,0.04); background: rgba(7, 8, 13, 0.4);
+    }
+    .topic-item {
+        background: rgba(14, 17, 26, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-sm);
+        padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        transition: 0.3s;
+    }
+    .topic-item:hover { border-color: rgba(90,200,250,0.3); background: rgba(90,200,250,0.05); }
+
+    .status-badge {
+        font-family: var(--font-mono); font-size: 0.62rem; padding: 4px 8px; border-radius: 20px;
+        cursor: pointer; user-select: none; font-weight: 700; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+    }
+    .status-0 { background: rgba(255,122,122,0.1); color: var(--red); border: 1px solid rgba(255,122,122,0.3); }
+    .status-1 { background: rgba(255,180,84,0.1); color: var(--amber); border: 1px solid rgba(255,180,84,0.3); }
+    .status-2 { background: rgba(99,230,190,0.1); color: var(--green); border: 1px solid rgba(99,230,190,0.3); box-shadow: 0 0 12px rgba(99,230,190,0.2); }
+
+    .topic-title-text { font-size: 0.85rem; flex-grow: 1; color: #dfe3ea; word-break: break-word; }
+    .note-btn { color: rgba(255,255,255,0.28); cursor: pointer; padding: 4px; transition: 0.2s; font-size: 0.85rem; flex-shrink: 0; }
+    .note-btn.has-note { color: var(--amber); }
+    .note-btn:hover { color: var(--cyan); }
+
+    /* SPINNER WHEEL */
+    .wheel-wrapper { position: relative; width: 300px; height: 300px; margin: 15px auto 10px; display: flex; align-items: center; justify-content: center; }
+    #wheel-canvas { width: 300px; height: 300px; border-radius: 50%; box-shadow: 0 0 30px rgba(90, 200, 250, 0.25); }
+    .wheel-needle { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 24px solid var(--amber); z-index: 10; filter: drop-shadow(0 0 10px var(--amber)); }
+    .wheel-center-cap { position: absolute; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle, var(--surface) 0%, var(--void) 100%); border: 2px solid var(--cyan); z-index: 5; display: flex; align-items: center; justify-content: center; color: var(--cyan); }
+    .spin-result-card { background: rgba(0,0,0,0.4); border: 1px solid var(--border-hot); border-radius: 14px; padding: 14px; margin-top: 15px; text-align: center; display: none; }
+
+    /* MODAL POPUPS */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(3,4,8,0.75); backdrop-filter: blur(16px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: linear-gradient(160deg, rgba(35,42,59,0.92), rgba(22,27,39,0.95)); border: 1px solid rgba(255,255,255,0.14); border-radius: 20px; width: 100%; max-width: 500px; padding: 24px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 18px; right: 18px; color: #8a93a6; cursor: pointer; font-size: 1.1rem; }
+    
+    .input-field { width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: var(--radius-sm); color: #fff; outline: none; margin-top: 6px; }
+    .note-textarea { width: 100%; height: 130px; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: var(--radius-sm); color: #fff; padding: 12px; outline: none; margin: 14px 0; resize: none; }
+
+    footer { padding: 30px 5%; text-align: center; border-top: 1px solid var(--border); color: rgba(240,240,255,0.4); font-size: 0.8rem; }
+
+    /* ============================================================
+       MOBILE SCREEN ALIGNMENT OVERRIDES (< 768px)
+    ============================================================ */
+    @media (max-width: 768px) {
+        nav { padding: 0 12px; height: 60px; }
+        .nav-wordmark { font-size: 0.92rem; }
+        .nav-tag { display: none; }
+        .nav-btn { padding: 5px 9px; font-size: 0.75rem; border-radius: 8px; }
+        .nav-btn span { display: none; } /* Hide button labels on mobile for clean icon look */
+        
+        .header-section { padding-top: 80px; }
+        .page-title { font-size: 1.6rem; }
+        
+        .widgets-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .widget-card { padding: 14px; }
+        .widget-value { font-size: 1.4rem; }
+
+        .chapter-container { padding: 8px; }
+        .subtopic-list { grid-template-columns: 1fr; padding: 8px; gap: 6px; }
+        
+        .wheel-wrapper { width: 250px; height: 250px; }
+        #wheel-canvas { width: 250px; height: 250px; }
+    }
+    </style>
+</head>
+<body>
+
+<div class="noise-layer"></div>
+<canvas id="bg-canvas"></canvas>
+
+<div class="cursor-core" id="cursor-core"></div>
+<div class="cursor-ring"  id="cursor-ring"></div>
+
+<!-- NAVIGATION BAR -->
+<nav>
+    <a href="index.html" class="nav-logo">
+        <img src="codestitcher.png" alt="CodeStitcher">
+        <span class="nav-wordmark">Code<span style="color: var(--violet2);">Stitcher</span></span>
+        <span class="nav-tag">// BCS TRACKER</span>
+    </a>
+
+    <div class="nav-actions">
+        <div class="lang-toggle-btn" onclick="toggleLanguage(); playSound('click');">
+            <span class="lang-opt" id="lang-bn">বাংলা</span>
+            <span class="lang-opt" id="lang-en">ENG</span>
+        </div>
+
+        <a href="index.html" class="nav-btn btn-home" onclick="playSound('click')">
+            <i class="fa-solid fa-house"></i> <span>Home</span>
+        </a>
+
+        <a href="https://mustafijratul.github.io" target="_blank" class="nav-btn btn-founder" onclick="playSound('click')">
+            <i class="fa-solid fa-user-astronaut"></i> <span>Founder</span>
+        </a>
+
+        <a href="utilities.html" class="nav-btn btn-utilities" onclick="playSound('click')">
+            <i class="fa-solid fa-wrench"></i> <span>Utilities</span>
+        </a>
+    </div>
+</nav>
+
+<!-- DASHBOARD HEADER -->
+<section class="header-section">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h1 class="page-title" id="t-page-title">BCS Study Tracker <span class="line-2">(Preli)</span></h1>
+            <p style="color: rgba(240,240,255,0.55); font-size: 0.9rem; margin-top: 4px;" id="t-page-sub">আপনার প্রস্তুতি ট্র্যাক করুন, নোট নিন এবং রিভিশন দিন এক জায়গায়।</p>
+            <div id="user-display-badge" style="margin-top: 8px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--cyan);"></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-action btn-outline" onclick="openReviewModal(); playSound('click');"><i class="fa-solid fa-layer-group"></i> <span id="t-btn-review">নোট রিভিউ</span></button>
+            <button class="btn-action btn-outline" onclick="exportData(); playSound('click');"><i class="fa-solid fa-download"></i> <span>Backup</span></button>
+            <button class="btn-action btn-outline" onclick="importData(); playSound('click');"><i class="fa-solid fa-upload"></i> <span>Restore</span></button>
+            <input type="file" id="import-file" style="display:none" onchange="processImport(event)">
+        </div>
+    </div>
+
+    <!-- STATS INTERACTIVE CARDS -->
+    <div class="widgets-grid">
+        <div class="glass-card widget-card">
+            <div class="widget-title" id="t-w1">প্রস্তুতির অগ্রগতি</div>
+            <div class="widget-value" id="val-progress">0%</div>
+            <div style="height:6px; background:rgba(255,255,255,0.06); border-radius:10px; margin-top:10px; overflow:hidden;">
+                <div id="bar-progress" style="height:100%; width:0%; background:linear-gradient(90deg, var(--violet), var(--cyan), var(--green)); transition:0.6s ease; box-shadow:0 0 10px var(--cyan);"></div>
+            </div>
+        </div>
+        <div class="glass-card widget-card">
+            <div class="widget-title" id="t-w2">স্টাডি স্ট্রিক 🔥</div>
+            <div class="widget-value" id="val-streak">0 Days</div>
+            <div class="widget-sub" id="val-streak-sub">—</div>
+        </div>
+        <div class="glass-card widget-card">
+            <div class="widget-title" id="t-w3">টার্গেট কাউন্টডাউন
+                <i class="fa-solid fa-pen edit-icon" onclick="openDateModal(); playSound('click');"></i>
+            </div>
+            <div class="widget-value" id="val-countdown">-- Days</div>
+            <div class="widget-sub" id="val-exam-date">—</div>
+        </div>
+        <div class="glass-card widget-card">
+            <div class="widget-title" id="t-w4">আজকের ফোকাস টাইম ⏱️</div>
+            <div class="widget-value" id="val-focus">0 মিনিট</div>
+            <div class="widget-sub" id="val-focus-sub">Pomodoro sessions today</div>
+        </div>
+    </div>
+</section>
+
+<!-- POMODORO & RADAR TOOLBAR -->
+<section class="utility-bar">
+    <div class="glass-card" style="padding:20px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span class="widget-title" id="t-pomo-title">Focus Pomodoro Timer</span>
+                <span style="font-size:0.75rem; color:var(--cyan); font-family:var(--font-mono);" id="pomo-status">WORK MODE</span>
+            </div>
+            <div class="pomo-display" id="pomo-timer">25:00</div>
+        </div>
+        <div class="btn-group">
+            <button class="btn-action btn-cyan" onclick="startPomodoro(); playSound('click');"><i class="fa-solid fa-play"></i> Start</button>
+            <button class="btn-action btn-outline" onclick="pausePomodoro(); playSound('click');"><i class="fa-solid fa-pause"></i> Pause</button>
+            <button class="btn-action btn-outline" onclick="resetPomodoro(); playSound('click');"><i class="fa-solid fa-rotate"></i> Reset</button>
+            <button class="btn-action btn-violet" onclick="openSpinnerModal(); playSound('click');"><i class="fa-solid fa-dice-d20"></i> <span id="t-btn-suggest">আজকে কী পড়ব?</span></button>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding:20px;">
+        <div class="widget-title" id="t-chart-title">বিষয়ভিত্তিক প্রিপারেশন রাডার (Analytics)</div>
+        <div class="chart-container">
+            <canvas id="radarChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- SEARCH FILTER -->
+<div style="max-width:1250px; margin:0 auto 20px; padding:0 5%;">
+    <input type="text" class="btn-action btn-outline" id="search-input" placeholder="টপিক বা বিষয় খুঁজুন..." style="width:100%; padding:12px 18px; border-radius:14px; outline:none;" oninput="filterTopics(this.value)">
+</div>
+
+<!-- SYLLABUS CONTAINER -->
+<main class="syllabus-container" id="syllabus-app"></main>
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-overlay" id="onboarding-modal">
+    <div class="modal-box">
+        <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--cyan); letter-spacing:2px; margin-bottom:6px;">INITIALIZING PROFILE // SYSTEM ONBOARDING</div>
+        <h2 style="font-family:var(--font-display); color:#fff; font-size:1.4rem; margin-bottom:8px;">স্বাগতম BCS Study Tracker-এ! 👋</h2>
+        <p style="color:rgba(240,240,255,0.6); font-size:0.85rem; margin-bottom:16px;">আপনার প্রস্তুতি কাস্টমাইজ করতে অনুগ্রহ করে আপনার পরিচিতি প্রদান করুন। (এটি প্রথমবার একবারই দিতে হবে)</p>
+
+        <label style="font-size:0.78rem; font-family:var(--font-mono); color:var(--violet2);">আপনার পূর্ণ নাম (Full Name)*</label>
+        <input type="text" class="input-field" id="user-name-input" placeholder="e.g. Mustafijur Rahman">
+
+        <div style="margin-top:12px;">
+            <label style="font-size:0.78rem; font-family:var(--font-mono); color:var(--violet2);">বিশ্ববিদ্যালয় / প্রতিষ্ঠানের নাম (University/College)*</label>
+            <input type="text" class="input-field" id="user-uni-input" placeholder="e.g. University of Dhaka / SUST">
+        </div>
+
+        <button class="btn-action btn-violet" style="width:100%; justify-content:center; margin-top:20px; padding:12px;" onclick="submitUserProfile()">
+            লঞ্চ ড্যাশবোর্ড <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- NOTE EDITOR MODAL -->
+<div class="modal-overlay" id="note-modal">
+    <div class="modal-box">
+        <i class="fa-solid fa-xmark modal-close" onclick="closeNoteModal()"></i>
+        <h3 style="font-family:var(--font-display); color:#fff;" id="modal-topic-title">Topic Note</h3>
+        <textarea class="note-textarea" id="note-text" placeholder="গুরুত্বপূর্ণ তথ্য, সূত্র বা শর্টকাট লিখে রাখুন..."></textarea>
+        <button class="btn-action btn-cyan" onclick="saveNote(); playSound('click');"><i class="fa-solid fa-floppy-disk"></i> Save Note</button>
+    </div>
+</div>
+
+<!-- GAMIFIED LUCKY SPIN WHEEL -->
+<div class="modal-overlay" id="suggest-modal">
+    <div class="modal-box" style="text-align:center;">
+        <i class="fa-solid fa-xmark modal-close" onclick="closeSuggestModal()"></i>
+        <h3 style="font-family:var(--font-display); color:var(--amber);" id="t-suggest-head">🎡 ভাগ্যচক্র: আজকে কী পড়ব?</h3>
+        <p style="font-size:0.8rem; color:#8a93a6; margin-top:4px;" id="t-suggest-note">চাকা ঘুরিয়ে আপনার আজকের টপিক নির্ধারণ করুন!</p>
+        
+        <div class="wheel-wrapper">
+            <div class="wheel-needle"></div>
+            <div class="wheel-center-cap"><i class="fa-solid fa-bolt"></i></div>
+            <canvas id="wheel-canvas" width="300" height="300"></canvas>
+        </div>
+
+        <button class="btn-action btn-violet" id="spin-trigger-btn" style="width:100%; justify-content:center; padding:12px; margin-top:10px;" onclick="spinTheWheel()">
+            <i class="fa-solid fa-rotate-right"></i> চাকা ঘুরান (SPIN NOW)
+        </button>
+
+        <div class="spin-result-card" id="spin-result-card">
+            <div style="font-size:0.75rem; color:var(--cyan); font-family:var(--font-mono);" id="res-subject-text">SUBJECT</div>
+            <div style="font-size:1rem; font-weight:800; color:#fff; margin-top:4px;" id="res-topic-text">TOPIC NAME</div>
+            <button class="btn-action btn-cyan" style="margin-top:12px; font-size:0.8rem;" onclick="closeSuggestModal()">
+                পড়া শুরু করুন! <i class="fa-solid fa-check"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- EXAM DATE MODAL -->
+<div class="modal-overlay" id="date-modal">
+    <div class="modal-box">
+        <i class="fa-solid fa-xmark modal-close" onclick="closeDateModal()"></i>
+        <h3 style="font-family:var(--font-display); color:#fff;">🎯 Target Exam Date</h3>
+        <div class="field-label">Set your exam / target date</div>
+        <input type="date" class="date-input" id="exam-date-input">
+        <button class="btn-action btn-cyan" style="width:100%; justify-content:center;" onclick="saveExamDate(); playSound('click');"><i class="fa-solid fa-floppy-disk"></i> Save Date</button>
+    </div>
+</div>
+
+<!-- NOTES REVIEW MODAL -->
+<div class="modal-overlay" id="review-modal">
+    <div class="modal-box">
+        <i class="fa-solid fa-xmark modal-close" onclick="closeReviewModal()"></i>
+        <h3 style="font-family:var(--font-display); color:#fff;" id="review-subject-name">—</h3>
+        <div style="font-size:1rem; font-weight:700; color:var(--cyan); margin-top:8px;" id="review-topic-name">—</div>
+        <textarea class="note-textarea" id="review-note-text" readonly style="margin-top:12px;"></textarea>
+        <div class="flash-counter" id="review-counter">0 / 0</div>
+        <div class="flash-nav">
+            <button class="btn-action btn-outline" onclick="reviewPrev(); playSound('click');"><i class="fa-solid fa-arrow-left"></i> আগেরটি</button>
+            <button class="btn-action btn-violet" onclick="reviewNext(); playSound('click');">পরেরটি <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 <span style="color:var(--violet2); font-weight:700;">CodeStitcher</span> Ecosystem | BCS Study Tracker (Preli)</p>
+</footer>
+
+<script>
+/* AUDIO ENGINE */
+const clickAudio = new Audio('click.wav');
+clickAudio.preload = 'auto';
+const actx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (type === 'click') {
+        const c = clickAudio.cloneNode();
+        c.volume = 0.4;
+        c.play().catch(()=>{});
+        return;
+    }
+    if (actx.state === 'suspended') actx.resume();
+    const osc = actx.createOscillator();
+    const gain = actx.createGain();
+    osc.connect(gain); gain.connect(actx.destination);
+    const now = actx.currentTime;
+
+    if (type === 'tick') {
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now);
+        gain.gain.setValueAtTime(0.04, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'win') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+        gain.gain.setValueAtTime(0.08, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.4);
+        osc.start(now); osc.stop(now + 0.4);
+    }
+}
+
+/* QUANTUM X-RAY CURSOR */
+const cursorCore = document.getElementById('cursor-core');
+const cursorRing = document.getElementById('cursor-ring');
+let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+
+if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        cursorCore.style.left = mouseX + 'px'; cursorCore.style.top  = mouseY + 'px';
+    });
+    (function animRing() {
+        ringX += (mouseX - ringX) * 0.12; ringY += (mouseY - ringY) * 0.12;
+        cursorRing.style.left = ringX + 'px'; cursorRing.style.top  = ringY + 'px';
+        requestAnimationFrame(animRing);
+    })();
+    function bindCursorHover() {
+        document.querySelectorAll('a, button, .glass-card, .nav-btn, .btn-action, .topic-item, .status-badge, .lang-toggle-btn, .chapter-header').forEach(el => {
+            el.addEventListener('mouseenter', () => cursorRing.classList.add('hovering'));
+            el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovering'));
+        });
+    }
+}
+
+/* BILINGUAL DICTIONARY */
+const I18N = {
+    bn: {
+        pageTitle: "BCS Study Tracker (Preli)",
+        pageSub: "আপনার প্রস্তুতি ট্র্যাক করুন, নোট নিন এবং রিভিশন দিন এক জায়গায়।",
+        w1: "প্রস্তুতির অগ্রগতি (নম্বর-ভিত্তিক)",
+        w2: "স্টাডি স্ট্রিক 🔥",
+        w3: "টার্গেট কাউন্টডাউন",
+        w4: "আজকের ফোকাস টাইম ⏱️",
+        pomoTitle: "Focus Pomodoro Timer",
+        btnSuggest: "আজকে কী পড়ব?",
+        btnReview: "নোট রিভিউ",
+        chartTitle: "বিষয়ভিত্তিক প্রিপারেশন রাডার (Analytics)",
+        searchPlaceholder: "টপিক বা বিষয় খুঁজুন...",
+        suggestHead: "🎡 ভাগ্যচক্র: আজকে কী পড়ব?",
+        suggestNote: "চাকা ঘুরিয়ে আপনার আজকের টপিক নির্ধারণ করুন!",
+        statusList: ["🔴 পড়া হয়নি", "🟡 রিভিশন দরকার", "🟢 মাস্টার করেছি"],
+        days: "দিন", minutes: "মিনিট",
+        streakActive: "আজও পড়াশোনা চলছে!", streakStart: "আজই শুরু করুন",
+        noExamDate: "তারিখ সেট করুন", noNotes: "এখনো কোনো নোট নেই। টপিকে নোট যোগ করুন।"
+    },
+    en: {
+        pageTitle: "BCS Study Tracker (Preli)",
+        pageSub: "Track, take notes, and master your BCS syllabus in one place.",
+        w1: "Weighted Progress (by Marks)",
+        w2: "Study Streak 🔥",
+        w3: "Target Countdown",
+        w4: "Today's Focus Time ⏱️",
+        pomoTitle: "Focus Pomodoro Timer",
+        btnSuggest: "What to Study Today?",
+        btnReview: "Review Notes",
+        chartTitle: "Subject Preparation Radar (Analytics)",
+        searchPlaceholder: "Search topics or subjects...",
+        suggestHead: "🎡 Wheel of Fortune: Today's Topic",
+        suggestNote: "Spin the wheel to randomize your study focus!",
+        statusList: ["🔴 Unread", "🟡 Needs Revision", "🟢 Mastered"],
+        days: "Days", minutes: "min",
+        streakActive: "Still going strong today!", streakStart: "Start your streak today",
+        noExamDate: "Set your date", noNotes: "No notes yet. Add notes to topics to review them here."
+    }
+};
+
+/* ============================================================
+   INDIVIDUAL MICRO-TOPICS DATASTRUCTURE (NO INNER NUMBERING)
+============================================================ */
+const SYLLABUS_DATA = [
+    {
+        id: "bangla",
+        title: { bn: "বাংলা ভাষা ও সাহিত্য", en: "Bangla Language & Literature" },
+        marks: 30, icon: "fa-book-open",
+        chapters: [
+            {
+                id: "b_lang", title: { bn: "১. ভাষা (ব্যাকরণ পার্ট) [১৫ নম্বর]", en: "1. Language & Grammar [15 Marks]" },
+                topics: [
+                    { id: "b1", bn: "প্রয়োগ-অপপ্রয়োগ", en: "Proyog & Opoproyog" },
+                    { id: "b2", bn: "বানান ও বাক্য শুদ্ধি", en: "Spelling & Sentence Correction" },
+                    { id: "b3", bn: "পরিভাষা", en: "Terminology (Poribhasha)" },
+                    { id: "b4", bn: "সমার্থক ও বিপরীতার্থক শব্দ", en: "Synonyms & Antonyms" },
+                    { id: "b5", bn: "ধ্বনি", en: "Sound (Dhoni)" },
+                    { id: "b6", bn: "বর্ণ", en: "Letter (Borno)" },
+                    { id: "b7", bn: "শব্দ", en: "Word (Shobdo)" },
+                    { id: "b8", bn: "পদ", en: "Parts of Speech (Pod)" },
+                    { id: "b9", bn: "বাক্য", en: "Sentence (Bakkho)" },
+                    { id: "b10", bn: "প্রত্যয়", en: "Suffixes (Prottoy)" },
+                    { id: "b11", bn: "সন্ধি ও সমাস", en: "Sandhi & Samas" }
+                ]
+            },
+            {
+                id: "b_lit", title: { bn: "২. সাহিত্য [১৫ নম্বর]", en: "2. Bangla Literature [15 Marks]" },
+                topics: [
+                    { id: "b12", bn: "প্রাচীন ও মধ্যযুগ", en: "Ancient & Medieval Period" },
+                    { id: "b13", bn: "আধুনিক যুগ (১৮০০-বর্তমান পর্যন্ত)", en: "Modern Period (1800-Present)" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "english",
+        title: { bn: "English Language & Literature", en: "English Language & Literature" },
+        marks: 30, icon: "fa-language",
+        chapters: [
+            {
+                id: "e_pos", title: { bn: "A. Parts of Speech", en: "A. Parts of Speech" },
+                topics: [
+                    { id: "e1_1", bn: "The Noun: The Determiner", en: "The Noun: The Determiner" },
+                    { id: "e1_2", bn: "The Noun: The Gender", en: "The Noun: The Gender" },
+                    { id: "e1_3", bn: "The Noun: The Number", en: "The Noun: The Number" },
+                    { id: "e1_4", bn: "The Pronoun", en: "The Pronoun" },
+                    { id: "e1_5", bn: "The Verb: The Finite (Transitive & Intransitive)", en: "The Verb: The Finite" },
+                    { id: "e1_6", bn: "The Verb: The Non-finite (Participles, Infinitives, Gerund)", en: "The Verb: The Non-finite" },
+                    { id: "e1_7", bn: "The Verb: The Linking Verb", en: "The Verb: The Linking Verb" },
+                    { id: "e1_8", bn: "The Verb: The Phrasal Verb", en: "The Verb: The Phrasal Verb" },
+                    { id: "e1_9", bn: "The Verb: Modals", en: "The Verb: Modals" },
+                    { id: "e1_10", bn: "The Adjective", en: "The Adjective" },
+                    { id: "e1_11", bn: "The Adverb", en: "The Adverb" },
+                    { id: "e1_12", bn: "The Preposition", en: "The Preposition" },
+                    { id: "e1_13", bn: "The Conjunction", en: "The Conjunction" }
+                ]
+            },
+            {
+                id: "e_idioms", title: { bn: "B. Idioms & Phrases", en: "B. Idioms & Phrases" },
+                topics: [
+                    { id: "e2_1", bn: "Meanings of Phrases", en: "Meanings of Phrases" },
+                    { id: "e2_2", bn: "Kinds of Phrases", en: "Kinds of Phrases" },
+                    { id: "e2_3", bn: "Identifying Phrases", en: "Identifying Phrases" }
+                ]
+            },
+            {
+                id: "e_clauses", title: { bn: "C. Clauses", en: "C. Clauses" },
+                topics: [
+                    { id: "e3_1", bn: "The Principal Clause", en: "The Principal Clause" },
+                    { id: "e3_2", bn: "Subordinate Clause: The Noun Clause", en: "Subordinate Clause: The Noun Clause" },
+                    { id: "e3_3", bn: "Subordinate Clause: The Adjective Clause", en: "Subordinate Clause: The Adjective Clause" },
+                    { id: "e3_4", bn: "Subordinate Clause: The Adverbial Clause & Its types", en: "Subordinate Clause: The Adverbial Clause" }
+                ]
+            },
+            {
+                id: "e_corrections", title: { bn: "D. Corrections", en: "D. Corrections" },
+                topics: [
+                    { id: "e4_1", bn: "The Tense Correction", en: "The Tense Correction" },
+                    { id: "e4_2", bn: "The Verb Correction", en: "The Verb Correction" },
+                    { id: "e4_3", bn: "The Preposition Correction", en: "The Preposition Correction" },
+                    { id: "e4_4", bn: "The Determiner Correction", en: "The Determiner Correction" },
+                    { id: "e4_5", bn: "The Gender Correction", en: "The Gender Correction" },
+                    { id: "e4_6", bn: "The Number Correction", en: "The Number Correction" },
+                    { id: "e4_7", bn: "Subject-Verb Agreement", en: "Subject-Verb Agreement" }
+                ]
+            },
+            {
+                id: "e_trans", title: { bn: "E. Sentences & Transformations", en: "E. Sentences & Transformations" },
+                topics: [
+                    { id: "e5_1", bn: "The Simple Sentence", en: "The Simple Sentence" },
+                    { id: "e5_2", bn: "The Compound Sentence", en: "The Compound Sentence" },
+                    { id: "e5_3", bn: "The Complex Sentence", en: "The Complex Sentence" },
+                    { id: "e5_4", bn: "Voice: Active & Passive Voice", en: "Active & Passive Voice" },
+                    { id: "e5_5", bn: "Degree: Positive, Comparative & Superlative", en: "Positive, Comparative & Superlative Degree" }
+                ]
+            },
+            {
+                id: "e_words", title: { bn: "F. Words & G. Composition", en: "F. Words & G. Composition" },
+                topics: [
+                    { id: "e6_1", bn: "Word Meanings & Usage", en: "Word Meanings & Usage" },
+                    { id: "e6_2", bn: "Synonyms & Antonyms", en: "Synonyms & Antonyms" },
+                    { id: "e6_3", bn: "Spellings & Parts of Speech Conversion", en: "Spellings & Conversion" },
+                    { id: "e6_4", bn: "Prefixes and Suffixes Word Formation", en: "Prefixes and Suffixes" },
+                    { id: "e6_5", bn: "Composition: Paragraphs, Letters & Applications", en: "Paragraphs, Letters & Applications" }
+                ]
+            },
+            {
+                id: "e_lit", title: { bn: "PART-II: English Literature [15 Marks]", en: "PART-II: English Literature [15 Marks]" },
+                topics: [
+                    { id: "e7_1", bn: "Famous Writers (Elizabethan period to 21st Century)", en: "Writers from Elizabethan to 21st Century" },
+                    { id: "e7_2", bn: "Quotations from drama & poetry of different ages", en: "Quotations from drama & poetry" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "bangladesh",
+        title: { bn: "বাংলাদেশ বিষয়াবলী", en: "Bangladesh Affairs" },
+        marks: 25, icon: "fa-flag",
+        chapters: [
+            {
+                id: "bd_nat", title: { bn: "১. বাংলাদেশের জাতীয় বিষয়াবলী [৩ নম্বর]", en: "1. National Affairs [3 Marks]" },
+                topics: [
+                    { id: "bd1_1", bn: "প্রাচীনকাল হতে সম-সাময়িক কালের ইতিহাস কৃষ্টি ও সংস্কৃতি", en: "Ancient to Contemporary History" },
+                    { id: "bd1_2", bn: "ভাষা আন্দোলন", en: "Language Movement" },
+                    { id: "bd1_3", bn: "১৯৫৪ সালের নির্বাচন", en: "1954 Election" },
+                    { id: "bd1_4", bn: "গণঅভ্যুত্থান ১৯৬৯", en: "1969 Mass Uprising" },
+                    { id: "bd1_5", bn: "১৯৭১ সালের স্বাধীনতা সংগ্রাম ও মহান মুক্তিযুদ্ধের ইতিহাস", en: "1971 Liberation War History" },
+                    { id: "bd1_6", bn: "মুক্তিযুদ্ধের রণকৌশল", en: "Liberation War Strategy" },
+                    { id: "bd1_7", bn: "মুক্তিযুদ্ধে বৃহৎ শক্তিবর্গের ভূমিকা", en: "Role of Major Powers in 1971" },
+                    { id: "bd1_8", bn: "পাকিস্তানি বাহিনীর আত্মসমর্পণ এবং বাংলাদেশের অভ্যুদয়", en: "Pakistani Surrender & Rise of Bangladesh" }
+                ]
+            },
+            {
+                id: "bd_agri", title: { bn: "২. বাংলাদেশের কৃষিজ সম্পদ [২ নম্বর]", en: "2. Agricultural Resources [2 Marks]" },
+                topics: [
+                    { id: "bd2_1", bn: "শস্য উৎপাদন এবং এর বহুমুখীকরণ", en: "Crop Production & Diversification" },
+                    { id: "bd2_2", bn: "খাদ্য উৎপাদন ও ব্যবস্থাপনা", en: "Food Production & Management" }
+                ]
+            },
+            {
+                id: "bd_pop", title: { bn: "৩. বাংলাদেশের জনসংখ্যা [২ নম্বর]", en: "3. Demographics [2 Marks]" },
+                topics: [
+                    { id: "bd3_1", bn: "জনসংখ্যা ও জনশুমারি", en: "Population & Census" },
+                    { id: "bd3_2", bn: "জাতি, গোষ্ঠী ও ক্ষুদ্র নৃগোষ্ঠী সংক্রান্ত বিষয়াদি", en: "Ethnic Groups & Tribes" }
+                ]
+            },
+            {
+                id: "bd_econ", title: { bn: "৪. বাংলাদেশের অর্থনীতি [২ নম্বর]", en: "4. Economy [2 Marks]" },
+                topics: [
+                    { id: "bd4_1", bn: "উন্নয়ন পরিকল্পনা প্রেক্ষিত", en: "Development Planning" },
+                    { id: "bd4_2", bn: "জাতীয় আয়-ব্যয়", en: "National Income & Expenditure" },
+                    { id: "bd4_3", bn: "রাজস্বনীতি ও বার্ষিক উন্নয়ন কর্মসূচি", en: "Fiscal Policy & ADP" },
+                    { id: "bd4_4", bn: "দারিদ্র্য বিমোচন", en: "Poverty Alleviation" }
+                ]
+            },
+            {
+                id: "bd_ind", title: { bn: "৫. বাংলাদেশের শিল্প ও বাণিজ্য [২ নম্বর]", en: "5. Industry & Trade [2 Marks]" },
+                topics: [
+                    { id: "bd5_1", bn: "শিল্প উৎপাদন", en: "Industrial Production" },
+                    { id: "bd5_2", bn: "পণ্য আমদানি ও রপ্তানিকরণ", en: "Import & Export" },
+                    { id: "bd5_3", bn: "গার্মেন্টস শিল্প ও এর সার্বিক ব্যবস্থাপনা", en: "Garments Industry" },
+                    { id: "bd5_4", bn: "বৈদেশিক লেনদেন ও অর্থ প্রেরণ (Remittance)", en: "Foreign Remittance" },
+                    { id: "bd5_5", bn: "ব্যাংক ও বীমা ব্যবস্থাপনা", en: "Banking & Insurance Management" }
+                ]
+            },
+            {
+                id: "bd_const", title: { bn: "৬. বাংলাদেশের সংবিধান [৩ নম্বর]", en: "6. Constitution [3 Marks]" },
+                topics: [
+                    { id: "bd6_1", bn: "সংবিধানের প্রস্তাবনা ও বৈশিষ্ট্য", en: "Preamble & Features" },
+                    { id: "bd6_2", bn: "মৌলিক অধিকারসহ রাষ্ট্রের পরিচালনামূলক মূলনীতিসমূহ", en: "Fundamental Rights & Principles" },
+                    { id: "bd6_3", bn: "সংবিধানের সংশোধনীসমূহ", en: "Constitutional Amendments" }
+                ]
+            },
+            {
+                id: "bd_pol", title: { bn: "৭. বাংলাদেশের রাজনৈতিক ব্যবস্থা [৩ নম্বর]", en: "7. Political System [3 Marks]" },
+                topics: [
+                    { id: "bd7_1", bn: "রাজনৈতিক দলসমূহের গঠন, ভূমিকা ও কার্যক্রম", en: "Political Parties & Activities" },
+                    { id: "bd7_2", bn: "ক্ষমতাসীন ও বিরোধী দলের পারস্পরিক সম্পর্কাদি", en: "Ruling & Opposition Relations" },
+                    { id: "bd7_3", bn: "সুশীল সমাজ ও চাপ সৃষ্টিকারী গোষ্ঠীসমূহ", en: "Civil Society & Pressure Groups" }
+                ]
+            },
+            {
+                id: "bd_gov", title: { bn: "৮. বাংলাদেশের সরকার ব্যবস্থা [৩ নম্বর]", en: "8. Government System [3 Marks]" },
+                topics: [
+                    { id: "bd8_1", bn: "আইন, শাসন ও বিচার বিভাগ সমূহ", en: "Legislative, Executive & Judiciary" },
+                    { id: "bd8_2", bn: "আইন প্রণয়ন ও নীতি নির্ধারণ", en: "Legislation & Policy Making" },
+                    { id: "bd8_3", bn: "জাতীয় ও স্থানীয় পর্যায়ের প্রশাসনিক কাঠামো", en: "Administrative Structure" },
+                    { id: "bd8_4", bn: "প্রশাসনিক পুনর্বিন্যাস, সংস্কার ও স্মার্ট সরকার", en: "Administrative Reform & Smart Gov" }
+                ]
+            },
+            {
+                id: "bd_achieve", title: { bn: "৯. বাংলাদেশের জাতীয় অর্জন [২ নম্বর]", en: "9. National Achievements [2 Marks]" },
+                topics: [
+                    { id: "bd9_1", bn: "বাংলাদেশের জাতীয় অর্জন ও বিশিষ্ট ব্যক্তিত্ব", en: "National Achievements & Figures" },
+                    { id: "bd9_2", bn: "গুরুত্বপূর্ণ প্রতিষ্ঠানসমূহ ও জাতীয় পুরস্কার", en: "Important Institutions & Awards" },
+                    { id: "bd9_3", bn: "বাংলাদেশের খেলাধুলা, চলচ্চিত্র ও গণমাধ্যম", en: "Sports, Cinema & Mass Media" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "international",
+        title: { bn: "আন্তর্জাতিক বিষয়াবলী", en: "International Affairs" },
+        marks: 25, icon: "fa-globe",
+        chapters: [
+            {
+                id: "int_all", title: { bn: "আন্তর্জাতিক বিষয়াবলির টপিকসমূহ [২৫ নম্বর]", en: "International Affairs Topics [25 Marks]" },
+                topics: [
+                    { id: "int1", bn: "বৈশ্বিক ইতিহাস, আঞ্চলিক ও আন্তর্জাতিক ব্যবস্থা", en: "Global History & Regional Systems" },
+                    { id: "int2", bn: "ভূ-রাজনীতি (Geopolitics)", en: "Geopolitics" },
+                    { id: "int3", bn: "আন্তর্জাতিক নিরাপত্তা ও আন্তঃরাষ্ট্রীয় ক্ষমতা সম্পর্ক", en: "International Security & Power Relations" },
+                    { id: "int4", bn: "বিশ্বের সাম্প্রতিক ও চলমান ঘটনাপ্রবাহ", en: "Recent International Events" },
+                    { id: "int5", bn: "আন্তর্জাতিক পরিবেশগত ইস্যু ও কূটনীতি", en: "Environmental Issues & Climate Diplomacy" },
+                    { id: "int6", bn: "আন্তর্জাতিক সংগঠনসমূহ ও বৈশ্বিক অর্থনৈতিক প্রতিষ্ঠানাদি", en: "International Organizations (UN, WB, IMF)" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "geography",
+        title: { bn: "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা", en: "Geography & Disaster Management" },
+        marks: 10, icon: "fa-mountain-sun",
+        chapters: [
+            {
+                id: "geo_all", title: { bn: "ভূগোল ও দুর্যোগ ব্যবস্থাপনা টপিকসমূহ [১০ নম্বর]", en: "Geography Topics [10 Marks]" },
+                topics: [
+                    { id: "g1", bn: "বাংলাদেশ ও আন্তর্জাতিক ভৌগোলিক অবস্থান ও সীমানা", en: "Geographic Position & Borders" },
+                    { id: "g2", bn: "পরিবেশিক, আর্থ সামাজিক ও ভূ-রাজনৈতিক গুরুত্ব", en: "Environmental & Geopolitical Importance" },
+                    { id: "g3", bn: "অভ্যন্তরীণ ভৌগোলিক অবস্থান (ভূ-প্রকৃতি) ও সম্পদ বণ্টন", en: "Physical Geography & Resources" },
+                    { id: "g4", bn: "বাংলাদেশের পরিবেশ: প্রকৃতি, সম্পদ ও প্রধান চ্যালেঞ্জসমূহ", en: "Environment & Challenges" },
+                    { id: "g5", bn: "আবহাওয়া ও জলবায়ু নিয়ামকসমূহ (স্থানীয় ও বৈশ্বিক প্রভাব)", en: "Weather & Climate Factors" },
+                    { id: "g6", bn: "প্রাকৃতিক দুর্যোগের ধরন, প্রকৃতি ও ব্যবস্থাপনা", en: "Natural Disasters & Management" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "science",
+        title: { bn: "সাধারণ বিজ্ঞান", en: "General Science" },
+        marks: 15, icon: "fa-atom",
+        chapters: [
+            {
+                id: "s_phys", title: { bn: "১. ভৌত বিজ্ঞান [৫ নম্বর]", en: "1. Physical Science [5 Marks]" },
+                topics: [
+                    { id: "sp1", bn: "পদার্থের অবস্থা", en: "States of Matter" },
+                    { id: "sp2", bn: "এটমের গঠন", en: "Atomic Structure" },
+                    { id: "sp3", bn: "কার্বনের বহুমুখী ব্যবহার", en: "Carbon Uses" },
+                    { id: "sp4", bn: "এসিড", en: "Acids" },
+                    { id: "sp5", bn: "ক্ষার", en: "Bases" },
+                    { id: "sp6", bn: "লবণ", en: "Salts" },
+                    { id: "sp7", bn: "পদার্থের ক্ষয়", en: "Corrosion" },
+                    { id: "sp8", bn: "সাবানের কাজ", en: "Soaps & Detergents" },
+                    { id: "sp9", bn: "ভৌত রাশি এবং এর পরিমাপ", en: "Physical Quantities & Measurement" },
+                    { id: "sp10", bn: "ভৌত বিজ্ঞানের উন্নয়ন", en: "Advancement of Physics" },
+                    { id: "sp11", bn: "চুম্বকত্ব", en: "Magnetism" },
+                    { id: "sp12", bn: "তরঙ্গ এবং শব্দ", en: "Waves & Sound" },
+                    { id: "sp13", bn: "তাপ ও তাপগতি বিদ্যা", en: "Heat & Thermodynamics" },
+                    { id: "sp14", bn: "আলোর প্রকৃতি", en: "Nature of Light" },
+                    { id: "sp15", bn: "স্থির এবং চল তড়িৎ", en: "Static & Current Electricity" },
+                    { id: "sp16", bn: "ইলেকট্রনিক্স", en: "Electronics" },
+                    { id: "sp17", bn: "আধুনিক পদার্থবিজ্ঞান", en: "Modern Physics" },
+                    { id: "sp18", bn: "শক্তির উৎস এবং এর প্রয়োগ", en: "Energy Sources & Application" },
+                    { id: "sp19", bn: "নবায়নযোগ্য শক্তির উৎস", en: "Renewable Energy Sources" },
+                    { id: "sp20", bn: "পারমাণবিক শক্তি", en: "Nuclear Power" },
+                    { id: "sp21", bn: "খনিজ উৎস", en: "Mineral Sources" },
+                    { id: "sp22", bn: "শক্তির রূপান্তর", en: "Energy Conversion" },
+                    { id: "sp23", bn: "আলোক যন্ত্রপাতি", en: "Optical Instruments" },
+                    { id: "sp24", bn: "মৌলিক কণা", en: "Fundamental Particles" },
+                    { id: "sp25", bn: "অজৈব পদার্থ ও যৌগ", en: "Inorganic Substances & Compounds" },
+                    { id: "sp26", bn: "জৈব যৌগ ও জৈব-বিজারণ", en: "Organic Compounds & Reduction" },
+                    { id: "sp27", bn: "তড়িৎ কোষ ও তড়িৎ চুম্বক", en: "Galvanic Cells & Electromagnet" },
+                    { id: "sp28", bn: "ট্রান্সফরমার", en: "Transformer" },
+                    { id: "sp29", bn: "এক্স-রে", en: "X-Ray" },
+                    { id: "sp30", bn: "তেজস্ক্রিয়তা", en: "Radioactivity" }
+                ]
+            },
+            {
+                id: "s_bio", title: { bn: "২. জীব বিজ্ঞান [৫ নম্বর]", en: "2. Biological Science [5 Marks]" },
+                topics: [
+                    { id: "sb1", bn: "পদার্থের জীববিজ্ঞান-বিষয়ক ধর্ম", en: "Biological Properties of Matter" },
+                    { id: "sb2", bn: "টিস্যু ও এনিম্যাল টিস্যু", en: "Tissues" },
+                    { id: "sb3", bn: "জেনেটিক্স (Genetics)", en: "Genetics" },
+                    { id: "sb4", bn: "জীববৈচিত্র্য (এনিম্যাল ও প্ল্যান্ট ডাইভারসিটি)", en: "Biodiversity" },
+                    { id: "sb5", bn: "অর্গান এবং অর্গান সিস্টেম", en: "Organs & Organ Systems" },
+                    { id: "sb6", bn: "সালোক সংশ্লেষণ", en: "Photosynthesis" },
+                    { id: "sb7", bn: "ভাইরাস ও ব্যাকটেরিয়া", en: "Viruses & Bacteria" },
+                    { id: "sb8", bn: "জুওলজিক্যাল ও বোটানিক্যাল নমেনক্লেচার", en: "Biological Nomenclature" },
+                    { id: "sb9", bn: "প্রাণিজগৎ ও উদ্ভিদ", en: "Flora & Fauna" },
+                    { id: "sb10", bn: "ফুল, ফল ও পরাগায়ন", en: "Flowers, Fruits & Pollination" },
+                    { id: "sb11", bn: "রক্ত, রক্ত সঞ্চালন ও রক্তচাপ", en: "Blood & Blood Pressure" },
+                    { id: "sb12", bn: "হৃদপিণ্ড এবং হৃদরোগ", en: "Heart & Cardiovascular Diseases" },
+                    { id: "sb13", bn: "স্নায়ু এবং স্নায়ুরোগ", en: "Nervous System & Disorders" },
+                    { id: "sb14", bn: "খাদ্য, পুষ্টি ও ভিটামিন", en: "Food, Nutrition & Vitamins" },
+                    { id: "sb15", bn: "মাইক্রোবায়োলজি ও প্ল্যান্ট নিউট্রিশন", en: "Microbiology & Plant Nutrition" }
+                ]
+            },
+            {
+                id: "s_mod", title: { bn: "৩. আধুনিক বিজ্ঞান [৫ নম্বর]", en: "3. Modern Science [5 Marks]" },
+                topics: [
+                    { id: "sm1", bn: "পৃথিবীর সৃষ্টি ইতিহাস", en: "History of Earth Formation" },
+                    { id: "sm2", bn: "কসমিক রে, ব্ল্যাক হোল ও হিগেল কণা", en: "Cosmic Rays, Black Holes" },
+                    { id: "sm3", bn: "বারিমণ্ডল, টাইট, বায়ুমণ্ডল ও টেকটোনিক প্লেট", en: "Atmosphere & Tectonic Plates" },
+                    { id: "sm4", bn: "সাইক্লোন ও সুনামি", en: "Cyclones & Tsunami" },
+                    { id: "sm5", bn: "বিবর্তন ও সামুদ্রিক জীবন", en: "Evolution & Marine Life" },
+                    { id: "sm6", bn: "মানবদেহ ও রোগের কারণ ও প্রতিকার", en: "Human Body & Diseases" },
+                    { id: "sm7", bn: "সংক্রামক রোগ ও রোগ জীবাণুর জীবনধারণ", en: "Infectious Pathogens" },
+                    { id: "sm8", bn: "মা ও শিশু স্বাস্থ্য, ইমিউনাইজেশন ও ভ্যাকসিনেশন", en: "Maternal Health & Vaccination" },
+                    { id: "sm9", bn: "এইচআইভি/এইডস, টিবি ও পোলিও", en: "HIV, AIDS, TB, Polio" },
+                    { id: "sm10", bn: "এপিকালচার, সেরিকালচার, পিসিকালচার, হর্টিকালচার", en: "Agricultural Cultures (Api, Seri, Pisci, Horti)" },
+                    { id: "sm11", bn: "ডায়োড, ট্রানজিস্টর ও আইসি (IC)", en: "Diodes, Transistors & IC" },
+                    { id: "sm12", bn: "আপেক্ষিক তত্ত্ব ও ফোটন কণা", en: "Theory of Relativity & Photons" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "computer",
+        title: { bn: "কম্পিউটার ও তথ্য প্রযুক্তি", en: "Computer & Information Tech" },
+        marks: 15, icon: "fa-laptop-code",
+        chapters: [
+            {
+                id: "comp_1", title: { bn: "১. কম্পিউটার [১০ নম্বর]", en: "1. Computer [10 Marks]" },
+                topics: [
+                    { id: "c1", bn: "Computer Peripherals (Keyboard, Mouse, OCR)", en: "Computer Peripherals" },
+                    { id: "c2", bn: "Computer Architecture (CPU, Hard Disk, ALU)", en: "Computer Architecture" },
+                    { id: "c3", bn: "Computer Performance", en: "Computer Performance" },
+                    { id: "c4", bn: "Computer in Practical Fields (কৃষি, শিক্ষা, স্বাস্থ্য)", en: "Computer in Practical Fields" },
+                    { id: "c5", bn: "Number Systems of Computer", en: "Number Systems" },
+                    { id: "c6", bn: "Operating Systems", en: "Operating Systems" },
+                    { id: "c7", bn: "Embedded Computer", en: "Embedded Computer" },
+                    { id: "c8", bn: "History of Computer", en: "History of Computer" },
+                    { id: "c9", bn: "Types of Computers", en: "Types of Computers" },
+                    { id: "c10", bn: "Computer Program (VIRUS, Firewall)", en: "VIRUS & Firewall" },
+                    { id: "c11", bn: "Database System", en: "Database System" }
+                ]
+            },
+            {
+                id: "comp_2", title: { bn: "২. তথ্যপ্রযুক্তি [০৫ নম্বর]", en: "2. Information Tech [5 Marks]" },
+                topics: [
+                    { id: "c12", bn: "E-Commerce", en: "E-Commerce" },
+                    { id: "c13", bn: "Cellular Data Network (2G, 3G, 4G)", en: "Cellular Data Networks" },
+                    { id: "c14", bn: "Computer Network (LAN, MAN, Wi-Fi, Wimax)", en: "Computer Networks" },
+                    { id: "c15", bn: "Information Technologies in Practical Fields", en: "IT in Practical Fields" },
+                    { id: "c16", bn: "Smartphone & Mobile Features", en: "Smartphones & Mobile Features" },
+                    { id: "c17", bn: "World Wide Web (WWW) & Internet", en: "WWW & Internet" },
+                    { id: "c18", bn: "Daily-Use Computing Technology (E-mail, Fax)", en: "Daily-Use Computing Tech" },
+                    { id: "c19", bn: "Client-Server Management", en: "Client-Server Management" },
+                    { id: "c20", bn: "Tech Giants Services & News (Google, Microsoft, IBM)", en: "Tech Giants Services" },
+                    { id: "c21", bn: "Cloud Computing", en: "Cloud Computing" },
+                    { id: "c22", bn: "Social Networking (Facebook, Instagram, Twitter)", en: "Social Networking" },
+                    { id: "c23", bn: "Robotics & Cyber Crime", en: "Robotics & Cyber Crime" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "math",
+        title: { bn: "গাণিতিক যুক্তি", en: "Mathematical Reasoning" },
+        marks: 20, icon: "fa-calculator",
+        chapters: [
+            {
+                id: "m_arith", title: { bn: "১. পাটিগণিত ও সংখ্যা [৪ নম্বর]", en: "1. Arithmetic & Numbers [4 Marks]" },
+                topics: [
+                    { id: "m1", bn: "বাস্তব সংখ্যা", en: "Real Numbers" },
+                    { id: "m2", bn: "ল.সা.গু ও গ.সা.গু", en: "LCM & GCD" },
+                    { id: "m3", bn: "শতকরা", en: "Percentage" },
+                    { id: "m4", bn: "সরল ও যৌগিক মুনাফা", en: "Simple & Compound Interest" },
+                    { id: "m5", bn: "অনুপাত ও সমানুপাত", en: "Ratio & Proportion" },
+                    { id: "m6", bn: "লাভ ও ক্ষতি", en: "Profit & Loss" }
+                ]
+            },
+            {
+                id: "m_alg", title: { bn: "২. বীজগণিত [৪ নম্বর]", en: "2. Algebra [4 Marks]" },
+                topics: [
+                    { id: "m7", bn: "বীজগণিতীয় সূত্রাবলী", en: "Algebraic Formulas" },
+                    { id: "m8", bn: "বহুপদী উৎপাদক", en: "Polynomial Factors" },
+                    { id: "m9", bn: "সরল ও দ্বিঘাত সমীকরণ", en: "Linear & Quadratic Equations" },
+                    { id: "m10", bn: "সরল ও দ্বিঘাত অসমতা", en: "Linear & Quadratic Inequalities" },
+                    { id: "m11", bn: "সরল সহসমীকরণ", en: "Simultaneous Equations" }
+                ]
+            },
+            {
+                id: "m_exp", title: { bn: "৩. সূচক ও ধারা [৪ নম্বর]", en: "3. Exponents & Series [4 Marks]" },
+                topics: [
+                    { id: "m12", bn: "সূচক ও লগারিদম", en: "Exponents & Logarithm" },
+                    { id: "m13", bn: "সমান্তর ও গুণোত্তর অনুক্রম ও ধারা", en: "Arithmetic & Geometric Series" }
+                ]
+            },
+            {
+                id: "m_geo", title: { bn: "৪. জ্যামিতি ও পরিমিতি [৪ নম্বর]", en: "4. Geometry & Mensuration [4 Marks]" },
+                topics: [
+                    { id: "m14", bn: "রেখা ও কোণ", en: "Lines & Angles" },
+                    { id: "m15", bn: "ত্রিভুজ ও চতুর্ভুজ সংক্রান্ত উপপাদ্য", en: "Triangles & Quadrilaterals" },
+                    { id: "m16", bn: "পিথাগোরাসের উপপাদ্য", en: "Pythagoras Theorem" },
+                    { id: "m17", bn: "বৃত্ত সংক্রান্ত উপপাদ্য", en: "Circle Theorems" },
+                    { id: "m18", bn: "পরিমিতি (সরলক্ষেত্র ও ঘনবস্তু)", en: "Mensuration & 3D Objects" }
+                ]
+            },
+            {
+                id: "m_set", title: { bn: "৫. সেট ও সম্ভাব্যতা [৪ নম্বর]", en: "5. Sets & Probability [4 Marks]" },
+                topics: [
+                    { id: "m19", bn: "সেট (Set)", en: "Sets" },
+                    { id: "m20", bn: "বিন্যাস ও সমাবেশ", en: "Permutation & Combination" },
+                    { id: "m21", bn: "পরিসংখ্যান ও সম্ভাব্যতা", en: "Statistics & Probability" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "mental",
+        title: { bn: "মানসিক দক্ষতা", en: "Mental Ability" },
+        marks: 15, icon: "fa-brain",
+        chapters: [
+            {
+                id: "ma_all", title: { bn: "মানসিক দক্ষতা বিভাগসমূহ [১৫ নম্বর]", en: "Mental Ability Categories [15 Marks]" },
+                topics: [
+                    { id: "ma1", bn: "ভাষাগত যৌক্তিক বিচার (Verbal Reasoning)", en: "Verbal Reasoning" },
+                    { id: "ma2", bn: "সমস্যা সমাধান (Problem Solving)", en: "Problem Solving" },
+                    { id: "ma3", bn: "বানান ও ভাষা (Spelling and Language)", en: "Spelling and Language" },
+                    { id: "ma4", bn: "যান্ত্রিক দক্ষতা (Mechanical Reasoning)", en: "Mechanical Reasoning" },
+                    { id: "ma5", bn: "স্থানিক সম্পর্ক (Space Relation)", en: "Space Relation" },
+                    { id: "ma6", bn: "সংখ্যাগত দক্ষতা (Numerical Ability)", en: "Numerical Ability" }
+                ]
+            }
+        ]
+    },
+    {
+        id: "ethics",
+        title: { bn: "নৈতিকতা, মূল্যবোধ ও সু-শাসন", en: "Ethics, Values & Governance" },
+        marks: 15, icon: "fa-scale-balanced",
+        chapters: [
+            {
+                id: "eth_all", title: { bn: "নৈতিকতা ও সু-শাসন টপিকসমূহ [১৫ নম্বর]", en: "Ethics & Governance Topics [15 Marks]" },
+                topics: [
+                    { id: "eth1", bn: "Definition of Values and Good Governance", en: "Definition of Values & Governance" },
+                    { id: "eth2", bn: "Relation between Values and Good Governance", en: "Relation between Values & Governance" },
+                    { id: "eth3", bn: "General Perception of Values and Good Governance", en: "General Perception" },
+                    { id: "eth4", bn: "Importance of Values & Governance in Individual & Society", en: "Importance in Individual & Society" },
+                    { id: "eth5", bn: "Impact of Values and Good Governance in National Development", en: "Impact in National Development" },
+                    { id: "eth6", bn: "How Good Governance & Values can be established in society", en: "Establishing Governance in Society" },
+                    { id: "eth7", bn: "Benefits of Values & Governance & Cost of Absence", en: "Benefits & Cost of Absence" }
+                ]
+            }
+        ]
+    }
+];
+
+const STORAGE_KEY = "codestitcher_bcs_os_v7";
+const USER_PROFILE_KEY = "codestitcher_bcs_user_profile";
+const DISCORD_WEBHOOK = "https://discordapp.com/api/webhooks/1449983510709407967/Fy4x4qBvHhdrUepZx6sZtqIHMtqt72nImmXC6Dnue10pI_mFaxumk7m5gGhhvfIUBn-S";
+
+let activeNoteTopicId = null;
+let radarChartInstance = null;
+let reviewList = [];
+let reviewIndex = 0;
+
+/* USER PROFILE LOGIC */
+function getUserProfile() {
+    return JSON.parse(localStorage.getItem(USER_PROFILE_KEY)) || null;
+}
+
+function checkOnboarding() {
+    const profile = getUserProfile();
+    if(!profile) {
+        document.getElementById('onboarding-modal').classList.add('active');
+    } else {
+        document.getElementById('user-display-badge').innerHTML = `<i class="fa-solid fa-user-check"></i> Candidate: <b>${profile.name}</b> (${profile.uni})`;
+        trackDiscordAnalytics();
+    }
+}
+
+function submitUserProfile() {
+    const name = document.getElementById('user-name-input').value.trim();
+    const uni = document.getElementById('user-uni-input').value.trim();
+
+    if(!name || !uni) {
+        alert("অনুগ্রহ করে আপনার নাম এবং বিশ্ববিদ্যালয়ের নাম সঠিকভাবে লিখুন!");
+        return;
+    }
+
+    const profile = { name: name, uni: uni, createdAt: new Date().toISOString() };
+    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(profile));
+    document.getElementById('onboarding-modal').classList.remove('active');
+    playSound('click');
+    checkOnboarding();
+}
+
+/* STATE MANAGEMENT */
+function defaultState() {
+    const today = new Date().toDateString();
+    return {
+        lang: 'bn', streak: 1, lastVisit: today,
+        examDate: getDefaultExamDate(), todayFocusMinutes: 0, todayFocusDate: today,
+        topics: {}
+    };
+}
+
+function getDefaultExamDate() {
+    const d = new Date(); d.setMonth(d.getMonth() + 6);
+    return d.toISOString().slice(0, 10);
+}
+
+function getAppState() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    try {
+        const parsed = JSON.parse(raw);
+        return Object.assign(defaultState(), parsed, { topics: parsed.topics || {} });
+    } catch (e) { return defaultState(); }
+}
+
+function saveAppState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateDashboard();
+}
+
+function reconcileDailyState(state) {
+    const today = new Date().toDateString();
+    if (state.lastVisit !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toDateString();
+        state.streak = (state.lastVisit === yesterday) ? (state.streak || 0) + 1 : 1;
+        state.lastVisit = today;
+    }
+    if (state.todayFocusDate !== today) {
+        state.todayFocusDate = today; state.todayFocusMinutes = 0;
+    }
+    return state;
+}
+
+function toggleLanguage() {
+    const state = getAppState();
+    state.lang = state.lang === 'bn' ? 'en' : 'bn';
+    saveAppState(state); applyLanguageUI(); renderSyllabus();
+}
+
+function applyLanguageUI() {
+    const state = getAppState(); const l = I18N[state.lang];
+    document.getElementById('lang-bn').classList.toggle('active', state.lang === 'bn');
+    document.getElementById('lang-en').classList.toggle('active', state.lang === 'en');
+
+    document.getElementById('t-page-title').innerHTML = `BCS Study Tracker <span class="line-2">(Preli)</span>`;
+    document.getElementById('t-page-sub').textContent = l.pageSub;
+    document.getElementById('t-w1').textContent = l.w1;
+    document.getElementById('t-w2').textContent = l.w2;
+    document.getElementById('t-w4').textContent = l.w4;
+    document.getElementById('t-pomo-title').textContent = l.pomoTitle;
+    document.getElementById('t-btn-suggest').textContent = l.btnSuggest;
+    document.getElementById('t-btn-review').textContent = l.btnReview;
+    document.getElementById('t-chart-title').textContent = l.chartTitle;
+    document.getElementById('search-input').placeholder = l.searchPlaceholder;
+    document.getElementById('t-suggest-head').textContent = l.suggestHead;
+    document.getElementById('t-suggest-note').textContent = l.suggestNote;
+
+    const w3 = document.getElementById('t-w3');
+    w3.childNodes[0].nodeValue = l.w3 + ' ';
+}
+
+/* RENDER NESTED SYLLABUS */
+function renderSyllabus() {
+    const state = getAppState();
+    const container = document.getElementById('syllabus-app');
+    container.innerHTML = '';
+
+    const subjectStats = computeSubjectStats(state);
+
+    SYLLABUS_DATA.forEach(sub => {
+        const card = document.createElement('div');
+        card.className = 'glass-card subject-card collapsed';
+        card.id = `sub-card-${sub.id}`;
+
+        let chaptersHTML = '';
+
+        sub.chapters.forEach(chap => {
+            let topicsHTML = '';
+            chap.topics.forEach(top => {
+                const topData = state.topics[top.id] || { status: 0, note: '' };
+                const statusText = I18N[state.lang].statusList[topData.status];
+                const hasNote = topData.note && topData.note.trim().length > 0;
+
+                topicsHTML += `
+                    <div class="topic-item">
+                        <span class="topic-title-text">${top[state.lang]}</span>
+                        <i class="fa-solid fa-sticky-note note-btn ${hasNote ? 'has-note' : ''}" onclick="openNoteModal('${top.id}', '${top[state.lang].replace(/'/g, "\\'")}', event)"></i>
+                        <span class="status-badge status-${topData.status}" id="badge-${top.id}" onclick="cycleStatus('${top.id}', event);">${statusText}</span>
+                    </div>
+                `;
+            });
+
+            chaptersHTML += `
+                <div class="chapter-card collapsed" id="chap-card-${chap.id}">
+                    <div class="chapter-header" onclick="toggleChapterAccordion('${chap.id}');">
+                        <div class="chapter-title"><i class="fa-solid fa-folder-open" style="color:var(--cyan); font-size:0.85rem;"></i> ${chap.title[state.lang]}</div>
+                        <i class="fa-solid fa-chevron-down chap-chevron"></i>
+                    </div>
+                    <div class="subtopic-list">${topicsHTML}</div>
+                </div>
+            `;
+        });
+
+        const pct = subjectStats[sub.id] || 0;
+
+        card.innerHTML = `
+            <div class="subject-header" onclick="toggleSubjectAccordion('${sub.id}');">
+                <div class="subject-title-area">
+                    <div class="subject-icon"><i class="fa-solid ${sub.icon}"></i></div>
+                    <div style="min-width:0;">
+                        <div style="font-weight:700; font-size:1.05rem; color:#fff;">${sub.title[state.lang]}</div>
+                        <div class="subject-meta-row">
+                            <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--amber);">Marks: ${sub.marks}</span>
+                            <div class="subject-mini-bar"><div class="subject-mini-fill" id="sub-fill-${sub.id}" style="width:${pct}%;"></div></div>
+                            <span class="subject-pct" id="sub-pct-${sub.id}">${pct}%</span>
+                        </div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-down subject-chevron"></i>
+            </div>
+            <div class="chapter-container">${chaptersHTML}</div>
+        `;
+        container.appendChild(card);
+    });
+
+    bindCardGlow();
+    if (typeof bindCursorHover === 'function') bindCursorHover();
+}
+
+/* ACCORDION TOGGLERS */
+function toggleSubjectAccordion(subId) {
+    document.getElementById(`sub-card-${subId}`).classList.toggle('collapsed');
+    playSound('click');
+}
+
+function toggleChapterAccordion(chapId) {
+    document.getElementById(`chap-card-${chapId}`).classList.toggle('collapsed');
+    playSound('click');
+}
+
+/* CYCLE STATUS WITHOUT COLLAPSING ACCORDION (100% PRESERVES OPEN DROPDOWN) */
+function cycleStatus(topicId, event) {
+    if(event) event.stopPropagation(); // STOPS DROPDOWN FROM TOGGLING!
+
+    const state = getAppState();
+    const curr = state.topics[topicId] ? state.topics[topicId].status : 0;
+    const next = (curr + 1) % 3;
+
+    if (!state.topics[topicId]) state.topics[topicId] = { status: 0, note: '' };
+    state.topics[topicId].status = next;
+    if (next === 1) state.topics[topicId].revisedAt = Date.now();
+
+    saveAppState(state);
+
+    // Instant DOM update (Menu stays 100% open and static)
+    const badge = document.getElementById(`badge-${topicId}`);
+    if(badge) {
+        badge.className = `status-badge status-${next}`;
+        badge.textContent = I18N[state.lang].statusList[next];
+    }
+
+    updateSubjectBarsDOM();
+}
+
+function updateSubjectBarsDOM() {
+    const state = getAppState();
+    const subjectStats = computeSubjectStats(state);
+    SYLLABUS_DATA.forEach(sub => {
+        const pct = subjectStats[sub.id] || 0;
+        const fill = document.getElementById(`sub-fill-${sub.id}`);
+        const pctText = document.getElementById(`sub-pct-${sub.id}`);
+        if(fill) fill.style.width = `${pct}%`;
+        if(pctText) pctText.textContent = `${pct}%`;
+    });
+}
+
+function computeSubjectStats(state) {
+    const subjectStats = {};
+    SYLLABUS_DATA.forEach(sub => {
+        let totalSubTopics = 0;
+        let subDone = 0;
+
+        sub.chapters.forEach(chap => {
+            chap.topics.forEach(t => {
+                totalSubTopics++;
+                const st = state.topics[t.id] ? state.topics[t.id].status : 0;
+                if (st === 2) subDone += 1;
+                else if (st === 1) subDone += 0.5;
+            });
+        });
+
+        subjectStats[sub.id] = totalSubTopics === 0 ? 0 : Math.round((subDone / totalSubTopics) * 100);
+    });
+    return subjectStats;
+}
+
+function updateDashboard() {
+    const state = getAppState();
+    let totalMarks = 0, weightedDone = 0;
+    const subjectStats = computeSubjectStats(state);
+
+    SYLLABUS_DATA.forEach(sub => {
+        totalMarks += sub.marks;
+        weightedDone += sub.marks * (subjectStats[sub.id] / 100);
+    });
+
+    const pct = totalMarks === 0 ? 0 : Math.round((weightedDone / totalMarks) * 100);
+    document.getElementById('val-progress').textContent = `${pct}%`;
+    document.getElementById('bar-progress').style.width = `${pct}%`;
+
+    document.getElementById('val-streak').textContent = `${state.streak} ${I18N[state.lang].days}`;
+    document.getElementById('val-streak-sub').textContent = state.streak > 0 ? I18N[state.lang].streakActive : I18N[state.lang].streakStart;
+
+    const target = new Date(state.examDate + "T00:00:00");
+    const diff = Math.ceil((target - new Date()) / (1000 * 60 * 60 * 24));
+    document.getElementById('val-countdown').textContent = diff > 0 ? `${diff} ${I18N[state.lang].days}` : (diff === 0 ? "Today!" : "Passed");
+    document.getElementById('val-exam-date').textContent = state.examDate;
+
+    document.getElementById('val-focus').textContent = `${state.todayFocusMinutes || 0} ${I18N[state.lang].minutes}`;
+
+    renderRadarChart(subjectStats, state.lang);
+}
+
+function renderRadarChart(stats, lang) {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    const labels = SYLLABUS_DATA.map(s => s.title[lang]);
+    const dataVals = SYLLABUS_DATA.map(s => stats[s.id] || 0);
+
+    if (radarChartInstance) radarChartInstance.destroy();
+
+    radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Mastery %',
+                data: dataVals,
+                backgroundColor: 'rgba(90, 200, 250, 0.15)',
+                borderColor: '#5AC8FA',
+                pointBackgroundColor: '#B57BF2',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { angleLines: { color: 'rgba(255,255,255,0.08)' }, grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { display: false }, pointLabels: { color: '#8a93a6', font: { size: 8 } } } },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+/* NOTE MODAL */
+function openNoteModal(topicId, titleText, event) {
+    if(event) event.stopPropagation();
+    activeNoteTopicId = topicId;
+    const state = getAppState();
+    document.getElementById('modal-topic-title').textContent = titleText;
+    document.getElementById('note-text').value = state.topics[topicId] ? (state.topics[topicId].note || '') : '';
+    document.getElementById('note-modal').classList.add('active');
+}
+function closeNoteModal() { document.getElementById('note-modal').classList.remove('active'); }
+function saveNote() {
+    if (!activeNoteTopicId) return;
+    const state = getAppState();
+    if (!state.topics[activeNoteTopicId]) state.topics[activeNoteTopicId] = { status: 0, note: '' };
+    state.topics[activeNoteTopicId].note = document.getElementById('note-text').value;
+    saveAppState(state);
+    closeNoteModal();
+    renderSyllabus();
+}
+
+/* GAMIFIED SPINNING WHEEL ENGINE */
+let wheelCandidates = [];
+let wheelAngle = 0;
+let isSpinning = false;
+const sliceColors = ['#5AC8FA', '#7C7CF9', '#B57BF2', '#FFB454', '#63E6BE', '#FF7A7A'];
+
+function openSpinnerModal() {
+    const state = getAppState();
+    wheelCandidates = [];
+
+    SYLLABUS_DATA.forEach(sub => {
+        sub.chapters.forEach(chap => {
+            chap.topics.forEach(t => {
+                const topData = state.topics[t.id] || { status: 0 };
+                if (topData.status !== 2) {
+                    wheelCandidates.push({
+                        id: t.id,
+                        text: t[state.lang],
+                        sub: sub.title[state.lang]
+                    });
+                }
+            });
+        });
+    });
+
+    if (wheelCandidates.length === 0) {
+        alert("🎉 অভিনন্দন! আপনি সমস্ত টপিক মাস্টার করে ফেলেছেন!");
+        return;
+    }
+
+    wheelCandidates = wheelCandidates.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+    document.getElementById('spin-result-card').style.display = 'none';
+    document.getElementById('spin-trigger-btn').disabled = false;
+    document.getElementById('suggest-modal').classList.add('active');
+    
+    drawWheel();
+}
+
+function drawWheel() {
+    const canvas = document.getElementById('wheel-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const numSlices = wheelCandidates.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+    const radius = canvas.width / 2;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < numSlices; i++) {
+        const angle = wheelAngle + i * sliceAngle;
+        
+        ctx.beginPath();
+        ctx.fillStyle = sliceColors[i % sliceColors.length];
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius - 6, angle, angle + sliceAngle);
+        ctx.lineTo(radius, radius);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(7, 8, 13, 0.45)';
+        ctx.fill();
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px 'Hind Siliguri', sans-serif";
+        
+        let label = wheelCandidates[i].text;
+        if (label.length > 14) label = label.substring(0, 12) + "..";
+        ctx.fillText(label, radius - 20, 4);
+        ctx.restore();
+    }
+}
+
+function spinTheWheel() {
+    if (isSpinning) return;
+    isSpinning = true;
+
+    document.getElementById('spin-trigger-btn').disabled = true;
+    document.getElementById('spin-result-card').style.display = 'none';
+
+    let velocity = Math.random() * 0.25 + 0.35;
+    let deceleration = 0.982;
+    let lastTickAngle = wheelAngle;
+
+    function animateSpin() {
+        velocity *= deceleration;
+        wheelAngle += velocity;
+
+        const sliceArc = (2 * Math.PI) / wheelCandidates.length;
+        if (Math.floor(wheelAngle / sliceArc) !== Math.floor(lastTickAngle / sliceArc)) {
+            playSound('tick');
+            lastTickAngle = wheelAngle;
+        }
+
+        drawWheel();
+
+        if (velocity > 0.002) {
+            requestAnimationFrame(animateSpin);
+        } else {
+            isSpinning = false;
+            playSound('win');
+            calculateWheelWinner();
+        }
+    }
+
+    animateSpin();
+}
+
+function calculateWheelWinner() {
+    const numSlices = wheelCandidates.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+    
+    let normalizedAngle = (1.5 * Math.PI - (wheelAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    let winningIndex = Math.floor(normalizedAngle / sliceAngle) % numSlices;
+
+    const winner = wheelCandidates[winningIndex];
+
+    document.getElementById('res-subject-text').textContent = winner.sub;
+    document.getElementById('res-topic-text').textContent = winner.text;
+    document.getElementById('spin-result-card').style.display = 'block';
+    document.getElementById('spin-trigger-btn').disabled = false;
+}
+
+function closeSuggestModal() { 
+    document.getElementById('suggest-modal').classList.remove('active'); 
+}
+
+/* NOTES REVIEW */
+function openReviewModal() {
+    const state = getAppState();
+    reviewList = [];
+    SYLLABUS_DATA.forEach(sub => {
+        sub.chapters.forEach(chap => {
+            chap.topics.forEach(t => {
+                const topData = state.topics[t.id];
+                if (topData && topData.note && topData.note.trim().length > 0) {
+                    reviewList.push({ subject: sub.title[state.lang], title: t[state.lang], note: topData.note });
+                }
+            });
+        });
+    });
+    reviewIndex = 0;
+    renderReviewCard();
+    document.getElementById('review-modal').classList.add('active');
+}
+function renderReviewCard() {
+    const state = getAppState();
+    if (reviewList.length === 0) {
+        document.getElementById('review-subject-name').textContent = '—';
+        document.getElementById('review-topic-name').textContent = I18N[state.lang].noNotes;
+        document.getElementById('review-note-text').value = '';
+        document.getElementById('review-counter').textContent = '0 / 0';
+        return;
+    }
+    const item = reviewList[reviewIndex];
+    document.getElementById('review-subject-name').textContent = item.subject;
+    document.getElementById('review-topic-name').textContent = item.title;
+    document.getElementById('review-note-text').value = item.note;
+    document.getElementById('review-counter').textContent = `${reviewIndex + 1} / ${reviewList.length}`;
+}
+function reviewNext() {
+    if (reviewList.length === 0) return;
+    reviewIndex = (reviewIndex + 1) % reviewList.length;
+    renderReviewCard();
+}
+function reviewPrev() {
+    if (reviewList.length === 0) return;
+    reviewIndex = (reviewIndex - 1 + reviewList.length) % reviewList.length;
+    renderReviewCard();
+}
+function closeReviewModal() { document.getElementById('review-modal').classList.remove('active'); }
+
+/* EXAM DATE MODAL */
+function openDateModal() {
+    const state = getAppState();
+    document.getElementById('exam-date-input').value = state.examDate;
+    document.getElementById('date-modal').classList.add('active');
+}
+function closeDateModal() { document.getElementById('date-modal').classList.remove('active'); }
+function saveExamDate() {
+    const val = document.getElementById('exam-date-input').value;
+    if (!val) return;
+    const state = getAppState();
+    state.examDate = val;
+    saveAppState(state);
+    closeDateModal();
+}
+
+/* POMODORO TIMER */
+let pomoSecs = 25 * 60, pomoTimer = null;
+const POMO_WORK_SECS = 25 * 60;
+
+function startPomodoro() {
+    if (pomoTimer) return;
+    pomoTimer = setInterval(() => {
+        if (pomoSecs > 0) {
+            pomoSecs--;
+            const m = String(Math.floor(pomoSecs / 60)).padStart(2, '0');
+            const s = String(pomoSecs % 60).padStart(2, '0');
+            document.getElementById('pomo-timer').textContent = `${m}:${s}`;
+        } else {
+            clearInterval(pomoTimer); pomoTimer = null;
+            logFocusMinutes(25);
+            alert("Pomodoro Complete! Take a 5-minute break.");
+        }
+    }, 1000);
+}
+function pausePomodoro() { clearInterval(pomoTimer); pomoTimer = null; }
+function resetPomodoro() {
+    const elapsedMin = Math.floor((POMO_WORK_SECS - pomoSecs) / 60);
+    if (elapsedMin > 0) logFocusMinutes(elapsedMin);
+    pausePomodoro();
+    pomoSecs = POMO_WORK_SECS;
+    document.getElementById('pomo-timer').textContent = "25:00";
+}
+function logFocusMinutes(mins) {
+    const state = getAppState();
+    reconcileDailyState(state);
+    state.todayFocusMinutes = (state.todayFocusMinutes || 0) + mins;
+    saveAppState(state);
+}
+
+/* DATA EXPORT & IMPORT */
+function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getAppState()));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", "bcs_study_tracker_backup.json");
+    dlAnchor.click();
+}
+function importData() { document.getElementById('import-file').click(); }
+function processImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (evt) {
+        try {
+            const data = JSON.parse(evt.target.result);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            applyLanguageUI(); renderSyllabus(); updateDashboard();
+            alert("Backup Restored Successfully!");
+        } catch (err) { alert("Invalid File Format!"); }
+    };
+    reader.readAsText(file);
+}
+
+/* SEARCH FILTER */
+function filterTopics(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('.chapter-card').forEach(chapCard => {
+        let hasVisibleSubtopic = false;
+        chapCard.querySelectorAll('.topic-item').forEach(item => {
+            const isMatch = item.textContent.toLowerCase().includes(q);
+            item.style.display = isMatch ? 'flex' : 'none';
+            if (isMatch) hasVisibleSubtopic = true;
+        });
+
+        if (q === '') {
+            chapCard.style.display = 'block';
+            chapCard.classList.add('collapsed');
+        } else {
+            chapCard.style.display = hasVisibleSubtopic ? 'block' : 'none';
+            if (hasVisibleSubtopic) {
+                chapCard.classList.remove('collapsed');
+                chapCard.closest('.subject-card').classList.remove('collapsed');
+            }
+        }
+    });
+}
+
+/* DISCORD ANALYTICS */
+async function trackDiscordAnalytics() {
+    const profile = getUserProfile();
+    if(!profile) return;
+
+    const sessionKey = "bcs_os_tracked_" + new Date().toDateString();
+    if(sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, "true");
+
+    let ipData = {};
+    try {
+        const res = await fetch('https://ipapi.co/json/');
+        if(res.ok) ipData = await res.json();
+    } catch(e) {
+        try {
+            const res2 = await fetch('https://api.db-ip.com/v2/free/self');
+            const fallback = await res2.json();
+            ipData = { ip: fallback.ipAddress, city: fallback.city, country_name: fallback.countryName, org: "ISP Fallback" };
+        } catch(e2) {}
+    }
+
+    const nav = window.navigator;
+    const screen = window.screen;
+    const ua = nav.userAgent;
+    let osName = "Unknown OS";
+    if (ua.includes("Windows")) osName = "Windows";
+    else if (ua.includes("Mac")) osName = "macOS";
+    else if (ua.includes("Android")) osName = "Android";
+    else if (ua.includes("Linux")) osName = "Linux";
+    else if (ua.includes("iOS")) osName = "iOS";
+
+    let gpuModel = "Unknown GPU";
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) gpuModel = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+    } catch(e) {}
+
+    const progressPct = document.getElementById('val-progress').textContent;
+
+    fetch(DISCORD_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: "BCS Study Tracker Analytics",
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/1055/1055661.png",
+            embeds: [{
+                title: `🎓 BCS Tracker Session: ${profile.name}`,
+                color: 11027200,
+                fields: [
+                    { name: "👤 Candidate Details", value: `**Name:** ${profile.name}\n**University:** ${profile.uni}\n**Overall Prep Progress:** ${progressPct}`, inline: false },
+                    { name: "🌍 Location & Network", value: `**City:** ${ipData.city || 'Unknown'}, ${ipData.country_name || 'Unknown'}\n**IP:** ${ipData.ip || 'Hidden'}\n**ISP:** ${ipData.org || 'Unknown'}`, inline: true },
+                    { name: "🖥️ System Info", value: `**OS:** ${osName}\n**Display:** ${screen.width}x${screen.height}\n**GPU:** ${gpuModel}`, inline: true }
+                ],
+                footer: { text: `CodeStitcher BCS Tracker | Time: ${new Date().toLocaleTimeString()}` },
+                timestamp: new Date().toISOString()
+            }]
+        })
+    }).catch(e=>{});
+}
+
+/* NEURAL CANVAS BACKGROUND */
+(function () {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, pts = [];
+    const mouse = { x: null, y: null };
+
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+    class Point {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * W; this.y = Math.random() * H;
+            this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4;
+            this.r = Math.random() * 1.2 + 0.3;
+            this.color = Math.random() > 0.6 ? '#7C7CF9' : (Math.random() > 0.5 ? '#5AC8FA' : '#63E6BE');
+        }
+        tick() {
+            this.x += this.vx; this.y += this.vy;
+            if (this.x < 0 || this.x > W) this.vx *= -1;
+            if (this.y < 0 || this.y > H) this.vy *= -1;
+        }
+        draw() {
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = this.color; ctx.fill();
+        }
+    }
+
+    function init() { resize(); pts = Array.from({ length: 80 }, () => new Point()); }
+
+    function frame() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < pts.length; i++) {
+            pts[i].tick(); pts[i].draw();
+            for (let j = i + 1; j < pts.length; j++) {
+                const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(124,124,249,${(1 - dist / 120) * 0.12})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+                }
+            }
+            if (mouse.x !== null) {
+                const dx = mouse.x - pts[i].x, dy = mouse.y - pts[i].y;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < 160) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(90,200,250,${(1 - d / 160) * 0.35})`;
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', init);
+    init(); frame();
+})();
+
+/* CARD GLOW EFFECT */
+function bindCardGlow() {
+    document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+            card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    let state = getAppState();
+    state = reconcileDailyState(state);
+    saveAppState(state);
+    applyLanguageUI();
+    renderSyllabus();
+    updateDashboard();
+    bindCardGlow();
+    checkOnboarding();
+    if (typeof bindCursorHover === 'function') bindCursorHover();
+});
+</script>
+</body>
+</html>
