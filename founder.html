@@ -546,6 +546,7 @@
     .syn-stats {
         display: flex;
         gap: 24px;
+        flex-wrap: wrap;
     }
     .syn-metric {
         text-align: right;
@@ -584,6 +585,175 @@
     }
     .footer-left span { color: var(--cyan); }
 
+    /* ============================================================
+       INTERACTIVE ENHANCEMENTS
+    ============================================================ */
+
+    /* Card spotlight + 3D tilt surface */
+    .f-card { transform-style: preserve-3d; will-change: transform; }
+    .f-spot {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07), transparent 65%);
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+    .f-card:hover .f-spot { opacity: 1; }
+    .f-card > div, .f-card > .f-actions { position: relative; z-index: 2; }
+
+    /* Clickable avatar */
+    .avatar-wrap { cursor: pointer; transition: transform 0.3s var(--ease-spring); }
+    .avatar-wrap:hover { transform: scale(1.06); }
+    .avatar-wrap:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 4px;
+    }
+
+    /* Name glitch-on-hover */
+    .f-name { position: relative; display: inline-block; }
+    .f-name.glitching::before,
+    .f-name.glitching::after {
+        content: attr(data-text);
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 100%;
+        overflow: hidden;
+        background: var(--deep);
+    }
+    .f-name.glitching::before {
+        color: var(--cyan);
+        clip-path: inset(0 0 55% 0);
+        animation: glitchTop 0.35s linear;
+    }
+    .f-name.glitching::after {
+        color: var(--violet2);
+        clip-path: inset(55% 0 0 0);
+        animation: glitchBot 0.35s linear;
+    }
+    @keyframes glitchTop {
+        0% { transform: translate(0,0); }
+        20% { transform: translate(-3px,-1px); }
+        40% { transform: translate(3px,1px); }
+        60% { transform: translate(-2px,0); }
+        100% { transform: translate(0,0); }
+    }
+    @keyframes glitchBot {
+        0% { transform: translate(0,0); }
+        20% { transform: translate(3px,1px); }
+        40% { transform: translate(-3px,-1px); }
+        60% { transform: translate(2px,0); }
+        100% { transform: translate(0,0); }
+    }
+
+    /* Ripple on action buttons */
+    .btn-action { position: relative; overflow: hidden; }
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.55);
+        transform: scale(0);
+        animation: rippleAnim 0.6s ease-out forwards;
+        pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform: scale(3.5); opacity: 0; } }
+
+    /* Sync connector visual */
+    .sync-visual {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        max-width: 260px;
+    }
+    .sync-node {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+    .sync-node.n-r { color: var(--cyan); border: 1px solid rgba(56,189,248,0.4); background: rgba(56,189,248,0.08); }
+    .sync-node.n-t { color: var(--violet2); border: 1px solid rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+    .sync-line { flex: 1; height: 18px; overflow: visible; }
+    .pulse-dot { fill: var(--green); filter: drop-shadow(0 0 5px var(--green)); }
+
+    .syn-metric .val { transition: color 0.3s; }
+    .syn-metric.counted .val { color: var(--green); }
+
+    /* Terminal / node access panel */
+    .term-overlay {
+        position: fixed; inset: 0;
+        background: rgba(5, 7, 12, 0.82);
+        backdrop-filter: blur(6px);
+        z-index: 20000;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.3s ease;
+        padding: 20px;
+    }
+    .term-overlay.open { opacity: 1; pointer-events: all; }
+    .term-window {
+        width: min(560px, 100%);
+        background: #05070C;
+        border: 1px solid var(--border-hot);
+        border-radius: 14px;
+        box-shadow: var(--glow-cyan), 0 40px 100px rgba(0,0,0,0.7);
+        transform: translateY(16px) scale(0.97);
+        transition: transform 0.35s var(--ease-spring);
+        overflow: hidden;
+    }
+    .term-overlay.open .term-window { transform: translateY(0) scale(1); }
+    .term-titlebar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 14px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+    }
+    .term-dots { display: flex; gap: 6px; }
+    .term-dots span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+    .term-dots span:nth-child(1){ background:#F87171; }
+    .term-dots span:nth-child(2){ background:#FBBF24; }
+    .term-dots span:nth-child(3){ background:#34D399; }
+    .term-title { font-family: var(--font-mono); font-size: 0.72rem; color: #999; }
+    .term-close {
+        background: none; border: none; color: #999; font-size: 1rem;
+        cursor: pointer; padding: 4px 6px;
+    }
+    .term-close:hover { color: var(--white); }
+    .term-body {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.8;
+        padding: 22px 20px;
+        min-height: 220px;
+        color: #A9F0C4;
+        white-space: pre-wrap;
+    }
+    .term-cursor {
+        display: inline-block;
+        width: 8px; height: 1em;
+        background: var(--green);
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* One orchestrated hero reveal on load */
+    .page-title { animation: titleReveal 1s var(--ease-smooth) both; }
+    @keyframes titleReveal {
+        from { clip-path: inset(0 100% 0 0); }
+        to { clip-path: inset(0 0 0 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .page-title { animation: none; }
+        .f-card, .avatar-wrap, .btn-action { transition: none; }
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
         .mobile-toggle { display: block; }
@@ -607,6 +777,8 @@
         .f-card { padding: 32px 24px; }
         .synergy-box { flex-direction: column; text-align: center; }
         .syn-metric { text-align: center; }
+        .sync-visual { max-width: 100%; justify-content: center; margin-left: auto; margin-right: auto; }
+        .syn-stats { justify-content: center; }
     }
     </style>
 </head>
@@ -687,14 +859,15 @@
 
         <!-- FOUNDER 1: RATUL -->
         <article class="f-card ratul" data-aos="fade-up" data-aos-delay="100">
+            <div class="f-spot" aria-hidden="true"></div>
             <div>
                 <div class="f-header">
-                    <div class="avatar-wrap">
+                    <div class="avatar-wrap" data-founder="ratul" tabindex="0" role="button" aria-label="Open Ratul's system access panel">
                         <i class="fa-solid fa-terminal"></i>
                     </div>
                     <div class="f-meta">
                         <span class="f-codename">ARCHITECT_01 // SYSTEM LEAD</span>
-                        <h2 class="f-name">Mustafij Ratul</h2>
+                        <h2 class="f-name" data-text="Mustafij Ratul">Mustafij Ratul</h2>
                         <span class="f-role">Founder & Chief Architect</span>
                     </div>
                 </div>
@@ -725,14 +898,15 @@
 
         <!-- FOUNDER 2: TAMIM -->
         <article class="f-card tamim" data-aos="fade-up" data-aos-delay="200">
+            <div class="f-spot" aria-hidden="true"></div>
             <div>
                 <div class="f-header">
-                    <div class="avatar-wrap">
+                    <div class="avatar-wrap" data-founder="tamim" tabindex="0" role="button" aria-label="Open Tamim's system access panel">
                         <i class="fa-solid fa-brain"></i>
                     </div>
                     <div class="f-meta">
                         <span class="f-codename">VISION_02 // STRATEGIST</span>
-                        <h2 class="f-name">Tamim</h2>
+                        <h2 class="f-name" data-text="Tamim">Tamim</h2>
                         <span class="f-role">Co-Founder & Creative Director</span>
                     </div>
                 </div>
@@ -768,15 +942,30 @@
         <div>
             <div class="syn-title">Brotherhood Synchronization // <span>ACTIVE</span></div>
             <div class="syn-desc">Decentralized collaboration matrix: Ratul × Tamim</div>
+
+            <div class="sync-visual" aria-hidden="true">
+                <span class="sync-node n-r">R</span>
+                <svg class="sync-line" viewBox="0 0 200 20" preserveAspectRatio="none">
+                    <line x1="10" y1="10" x2="190" y2="10" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                    <circle class="pulse-dot" r="3" cx="10" cy="10">
+                        <animate attributeName="cx" values="10;190;10" dur="3.2s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <span class="sync-node n-t">T</span>
+            </div>
         </div>
         <div class="syn-stats">
-            <div class="syn-metric">
-                <div class="val">100%</div>
+            <div class="syn-metric" id="metric-sync" data-target="100">
+                <div class="val">0%</div>
                 <div class="lbl">Synergy Matrix</div>
             </div>
             <div class="syn-metric">
                 <div class="val">2 Nodes</div>
                 <div class="lbl">Unified Core</div>
+            </div>
+            <div class="syn-metric">
+                <div class="val" id="live-packets">0</div>
+                <div class="lbl">Packets Synced</div>
             </div>
         </div>
     </div>
@@ -790,6 +979,18 @@
         &copy; 2025 <span>CodeStitcher</span> — Engineered by Ratul & Tamim
     </div>
 </footer>
+
+<!-- SYSTEM ACCESS PANEL (opens from clicking a founder avatar) -->
+<div class="term-overlay" id="term-overlay">
+    <div class="term-window" role="dialog" aria-modal="true" aria-labelledby="term-title-label">
+        <div class="term-titlebar">
+            <div class="term-dots"><span></span><span></span><span></span></div>
+            <span class="term-title" id="term-title-label">SYSTEM ACCESS // NODE PANEL</span>
+            <button class="term-close" id="term-close" aria-label="Close panel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="term-body" id="term-body"></div>
+    </div>
+</div>
 
 <!-- Scripts -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -933,6 +1134,200 @@ if (window.matchMedia('(pointer: fine)').matches) {
 document.addEventListener('DOMContentLoaded', () => {
     AOS.init({ duration: 800, once: true, offset: 40 });
 });
+
+/* ============================================================
+   INTERACTIVE ENHANCEMENTS
+   (card tilt/spotlight, node access panel, sync visuals,
+   magnetic buttons, count-up stats — nav & cursor untouched)
+============================================================ */
+(function() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = window.matchMedia('(pointer: fine)').matches;
+
+    /* ---- Tiny synth "blip" — no extra audio asset needed ---- */
+    let actx;
+    function blip(freq, dur, vol) {
+        if (prefersReduced) return;
+        try {
+            actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+            if (actx.state === 'suspended') actx.resume();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(vol, actx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+            osc.connect(gain).connect(actx.destination);
+            osc.start();
+            osc.stop(actx.currentTime + dur);
+        } catch (e) { /* audio not available, fail silently */ }
+    }
+
+    /* ---- Card 3D tilt + cursor-follow spotlight ---- */
+    if (fine && !prefersReduced) {
+        document.querySelectorAll('.f-card').forEach(card => {
+            card.addEventListener('mouseenter', () => blip(680, 0.04, 0.02));
+            card.addEventListener('mousemove', e => {
+                const r = card.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width;
+                const py = (e.clientY - r.top) / r.height;
+                const rx = (py - 0.5) * -6;
+                const ry = (px - 0.5) * 8;
+                card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-8px)`;
+                card.style.setProperty('--mx', (px * 100) + '%');
+                card.style.setProperty('--my', (py * 100) + '%');
+            });
+            card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+        });
+    }
+
+    /* ---- Name glitch flicker on hover ---- */
+    document.querySelectorAll('.f-name').forEach(name => {
+        name.addEventListener('mouseenter', () => {
+            name.classList.remove('glitching');
+            void name.offsetWidth; /* restart animation */
+            name.classList.add('glitching');
+        });
+        name.addEventListener('animationend', () => name.classList.remove('glitching'));
+    });
+
+    /* ---- Magnetic pull + ripple on action buttons ---- */
+    document.querySelectorAll('.btn-action').forEach(btn => {
+        if (fine && !prefersReduced) {
+            btn.addEventListener('mousemove', e => {
+                const r = btn.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                btn.style.transform = `translate(${x * 0.22}px, ${y * 0.32}px)`;
+            });
+            btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+        }
+        btn.addEventListener('click', e => {
+            const r = btn.getBoundingClientRect();
+            const size = Math.max(r.width, r.height);
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - r.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - r.top - size / 2) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 650);
+        });
+    });
+
+    /* ---- System access / terminal panel ---- */
+    const overlay = document.getElementById('term-overlay');
+    const term = document.getElementById('term-body');
+    const closeBtn = document.getElementById('term-close');
+    let typing = false;
+
+    const dossiers = {
+        ratul: [
+            '$ whoami',
+            '> mustafij_ratul',
+            '$ access core --user=ratul',
+            '[OK] Authenticating architect credentials...',
+            '[OK] Loading subsystems: runtime-engine, wasm-pipeline, desktop-utils',
+            '> 247 commits this quarter, 12 repositories, uptime 99.98%',
+            '> "I do not just write code, I stitch systems together."',
+            '$ _'
+        ],
+        tamim: [
+            '$ whoami',
+            '> tamim',
+            '$ access core --user=tamim',
+            '[OK] Authenticating strategist credentials...',
+            '[OK] Loading subsystems: product-vision, game-logic, ux-dynamics',
+            '> 3 shipped concepts, 40+ QA passes, 0 unresolved paper cuts',
+            '> "Great tools disappear, you just feel the flow."',
+            '$ _'
+        ]
+    };
+
+    function typeLines(lines) {
+        term.textContent = '';
+        typing = true;
+        let li = 0, ci = 0;
+        function step() {
+            if (!typing) return;
+            if (li >= lines.length) {
+                const cur = document.createElement('span');
+                cur.className = 'term-cursor';
+                term.appendChild(cur);
+                return;
+            }
+            const line = lines[li];
+            if (ci === 0 && li > 0) term.appendChild(document.createTextNode('\n'));
+            if (ci < line.length) {
+                term.appendChild(document.createTextNode(line[ci]));
+                ci++;
+                setTimeout(step, line.startsWith('$') ? 26 : 10);
+            } else {
+                li++; ci = 0;
+                setTimeout(step, 130);
+            }
+        }
+        step();
+    }
+
+    function openPanel(id) {
+        overlay.classList.add('open');
+        typeLines(dossiers[id] || []);
+        blip(900, 0.06, 0.03);
+        closeBtn.focus();
+    }
+    function closePanel() {
+        overlay.classList.remove('open');
+        typing = false;
+    }
+
+    document.querySelectorAll('.avatar-wrap[data-founder]').forEach(el => {
+        el.addEventListener('click', () => openPanel(el.dataset.founder));
+        el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPanel(el.dataset.founder); }
+        });
+    });
+    closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+    /* ---- Count-up synergy stat + live "packets synced" ticker ---- */
+    const metricEl = document.getElementById('metric-sync');
+    const packetsEl = document.getElementById('live-packets');
+    let packetVal = 1428;
+    let liveStarted = false;
+
+    function countUp(el, target, suffix, duration) {
+        const start = performance.now();
+        function frame(now) {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(eased * target) + suffix;
+            if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    function tickPackets() {
+        packetVal += Math.floor(Math.random() * 9) + 1;
+        if (packetsEl) packetsEl.textContent = packetVal.toLocaleString();
+        setTimeout(tickPackets, 1400 + Math.random() * 900);
+    }
+
+    if (metricEl) {
+        const valEl = metricEl.querySelector('.val');
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !metricEl.classList.contains('counted')) {
+                    metricEl.classList.add('counted');
+                    countUp(valEl, parseInt(metricEl.dataset.target, 10), '%', 1200);
+                    if (!liveStarted) { liveStarted = true; tickPackets(); }
+                }
+            });
+        }, { threshold: 0.5 });
+        obs.observe(metricEl);
+    }
+})();
 </script>
 </body>
 </html>
