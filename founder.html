@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Founders | CodeStitcher Core Leadership</title>
+    <meta name="description" content="Meet the architects behind CodeStitcher: Ratul and Tamim.">
+    <meta name="theme-color" content="#0B0F19">
+    <link rel="icon" type="image/png" href="codestitcher.png">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+    /* ============================================================
+       DESIGN TOKENS & RESET (Matches index.html)
+    ============================================================ */
+    :root {
+        --void:       #0B0F19;
+        --deep:       #111827;
+        --surface:    #1F2937;
+        --elevated:   #374151;
+        --glass:      rgba(31, 41, 55, 0.65);
+        --border:     rgba(255, 255, 255, 0.08);
+        --border-hot: rgba(56, 189, 248, 0.4);
+
+        --cyan:       #38BDF8;
+        --violet:     #6366F1;
+        --violet2:    #A855F7;
+        --green:      #34D399;
+        --amber:      #FBBF24;
+        --red:        #F87171;
+        --white:      #F3F4F6;
+
+        --glow-cyan:   0 0 35px rgba(56, 189, 248, 0.25);
+        --glow-violet: 0 0 35px rgba(99, 102, 241, 0.25);
+        --glow-amber:  0 0 35px rgba(251, 191, 36, 0.25);
+        --glow-green:  0 0 35px rgba(52, 211, 153, 0.2);
+
+        --font-display: 'Sora', sans-serif;
+        --font-body:    'Inter', sans-serif;
+        --font-mono:    'JetBrains Mono', monospace;
+
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: var(--void);
+        color: var(--white);
+        font-family: var(--font-body);
+        overflow-x: hidden;
+        min-height: 100vh;
+        cursor: none;
+    }
+
+    /* Scroll progress bar */
+    #scroll-progress {
+        position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+        background: linear-gradient(90deg, var(--cyan), var(--violet2), var(--amber));
+        z-index: 99999;
+        box-shadow: 0 0 12px var(--cyan);
+        transition: width 0.1s linear;
+    }
+
+    /* ============================================================
+       QUANTUM X-RAY CURSOR
+    ============================================================ */
+    @media (pointer: fine) {
+        *, body, a, button { cursor: none !important; }
+        input, textarea { cursor: text !important; }
+
+        .cursor-core {
+            width: 5px; height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 2147483647; 
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.1s;
+        }
+        
+        .cursor-ring {
+            width: 32px; height: 32px;
+            border: 1.5px solid rgba(0, 245, 255, 0.8);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 2147483646;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: width 0.35s var(--ease-spring), 
+                        height 0.35s var(--ease-spring), 
+                        border-color 0.2s, background 0.2s;
+        }
+
+        .cursor-ring::after {
+            content: '';
+            position: absolute;
+            inset: -7px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: spinRing 6s linear infinite;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        @keyframes spinRing { 100% { transform: rotate(360deg); } }
+        
+        .cursor-ring.hovering {
+            width: 55px; height: 55px;
+            background: #fff;
+            border-color: transparent;
+        }
+        .cursor-ring.hovering::after {
+            opacity: 0;
+            transform: scale(1.4) rotate(90deg);
+        }
+    }
+
+    @media (pointer: coarse) {
+        .cursor-core, .cursor-ring { display: none !important; }
+    }
+
+    /* Background canvas & Noise */
+    #bg-canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-2; }
+    .noise-layer {
+        position: fixed; inset:0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.028;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Ambient orbs */
+    .orb {
+        position: fixed; border-radius: 50%;
+        pointer-events: none; z-index: -1;
+        filter: blur(90px);
+        opacity: 0.12;
+    }
+    .orb-1 { width: 550px; height: 550px; background: var(--cyan); top: -100px; right: -80px; }
+    .orb-2 { width: 600px; height: 600px; background: var(--violet2); bottom: -120px; left: -100px; }
+
+    /* ============================================================
+       NAVIGATION
+    ============================================================ */
+    nav {
+        position: fixed; top: 0; left: 0; width: 100%;
+        z-index: 1000;
+        padding: 0 4%;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(11, 15, 25, 0.75);
+        backdrop-filter: blur(24px) saturate(180%);
+        border-bottom: 1px solid var(--border);
+        transition: background 0.4s;
+    }
+    nav.scrolled {
+        background: rgba(11, 15, 25, 0.95);
+        border-bottom-color: rgba(56, 189, 248, 0.25);
+    }
+    .nav-logo {
+        display: flex; align-items: center; gap: 12px;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .nav-logo img {
+        height: 40px; width: auto;
+        border-radius: 4px;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        transition: 0.4s var(--ease-spring);
+    }
+    .nav-logo:hover img {
+        transform: scale(1.1) rotate(-3deg);
+        border-color: var(--cyan);
+        filter: drop-shadow(0 0 16px var(--cyan));
+    }
+    .nav-wordmark {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.5px;
+        color: var(--white);
+    }
+    .nav-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        padding: 2px 7px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+    }
+
+    .mobile-toggle {
+        display: none;
+        color: var(--white);
+        font-size: 1.3rem;
+        padding: 8px;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .nav-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.25s var(--ease-spring);
+        white-space: nowrap;
+    }
+    .btn-python   { color: var(--green);   background: rgba(52, 211, 153, 0.08);  border-color: rgba(52, 211, 153, 0.2); }
+    .btn-python:hover { background: var(--green); color: #000; box-shadow: var(--glow-green); transform: translateY(-2px); }
+    .btn-founder  { color: var(--cyan);    background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); box-shadow: var(--glow-cyan); }
+    .btn-game     { color: var(--violet2); background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); }
+    .btn-game:hover { background: var(--violet2); color: #fff; box-shadow: var(--glow-violet); transform: translateY(-2px); }
+    .btn-products { color: var(--amber);   background: rgba(251, 191, 36, 0.08);  border-color: rgba(251, 191, 36, 0.2); }
+    .btn-products:hover { background: var(--amber); color: #000; box-shadow: var(--glow-amber); transform: translateY(-2px); }
+
+    /* ============================================================
+       OS PILL TOGGLE
+    ============================================================ */
+    .os-toggle-pill {
+        position: fixed; bottom: 28px; right: 24px; z-index: 10000;
+        display: flex; align-items: center;
+        background: rgba(11, 15, 25, 0.88);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-hot);
+        border-radius: 50px;
+        padding: 5px;
+        box-shadow: var(--glow-cyan), 0 4px 30px rgba(0,0,0,0.6);
+    }
+    .toggle-option {
+        padding: 8px 18px;
+        border-radius: 40px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        text-decoration: none;
+        color: #888;
+        border: none;
+        background: transparent;
+        transition: 0.3s;
+    }
+    .toggle-option.active {
+        background: linear-gradient(135deg, var(--cyan), var(--violet));
+        color: #000;
+        font-weight: 800;
+    }
+    .toggle-divider { width: 1px; height: 18px; background: var(--border-hot); }
+
+    /* ============================================================
+       HERO HEADER
+    ============================================================ */
+    .header-section {
+        padding: 140px 5% 50px;
+        text-align: center;
+        position: relative;
+    }
+    .badge-label {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        padding: 6px 14px;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    
+    .page-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 800;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 18px;
+    }
+    .page-title span {
+        background: linear-gradient(135deg, var(--cyan), var(--violet2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .page-sub {
+        font-size: 1.05rem;
+        color: rgba(243, 244, 246, 0.6);
+        max-width: 620px;
+        margin: 0 auto;
+        line-height: 1.7;
+        font-weight: 300;
+    }
+
+    /* ============================================================
+       FOUNDER CARDS GRID
+    ============================================================ */
+    .founders-wrap {
+        padding: 20px 5% 90px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .founders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+        gap: 36px;
+    }
+
+    .f-card {
+        background: linear-gradient(145deg, rgba(31, 41, 55, 0.6), rgba(17, 24, 39, 0.85));
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 44px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        transition: all 0.4s var(--ease-spring);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .f-card:hover {
+        transform: translateY(-8px);
+    }
+    .f-card.ratul:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: var(--glow-cyan), 0 30px 60px rgba(0,0,0,0.5);
+    }
+    .f-card.tamim:hover {
+        border-color: rgba(168, 85, 247, 0.45);
+        box-shadow: var(--glow-violet), 0 30px 60px rgba(0,0,0,0.5);
+    }
+
+    .f-card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        opacity: 0; transition: opacity 0.4s;
+    }
+    .f-card.ratul::before {
+        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+    .f-card.tamim::before {
+        background: linear-gradient(90deg, transparent, var(--violet2), transparent);
+    }
+    .f-card:hover::before { opacity: 1; }
+
+    /* Header inside card */
+    .f-header {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 24px;
+    }
+    .avatar-wrap {
+        width: 84px; height: 84px;
+        border-radius: 20px;
+        position: relative;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        background: var(--deep);
+        border: 1px solid var(--border);
+    }
+    .f-card.ratul .avatar-wrap {
+        color: var(--cyan);
+        box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 0.3);
+    }
+    .f-card.tamim .avatar-wrap {
+        color: var(--violet2);
+        box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.15);
+        border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    .f-meta { display: flex; flex-direction: column; }
+    .f-codename {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .f-card.ratul .f-codename { color: var(--cyan); }
+    .f-card.tamim .f-codename { color: var(--violet2); }
+
+    .f-name {
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+        color: var(--white);
+    }
+    .f-role {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: rgba(243, 244, 246, 0.5);
+        margin-top: 4px;
+    }
+
+    /* Card body */
+    .f-desc {
+        color: rgba(243, 244, 246, 0.7);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 28px;
+        font-weight: 300;
+    }
+
+    /* Skills / Tags */
+    .f-spec-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #777;
+        margin-bottom: 12px;
+    }
+    .f-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+    .f-tag {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(243, 244, 246, 0.8);
+    }
+    .f-card.ratul .f-tag:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.08);
+    }
+    .f-card.tamim .f-tag:hover {
+        border-color: var(--violet2);
+        color: var(--violet2);
+        background: rgba(168, 85, 247, 0.08);
+    }
+
+    /* Buttons row inside card */
+    .f-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+    }
+    .btn-action {
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s var(--ease-spring);
+    }
+    .btn-ratul {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--cyan);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .btn-ratul:hover {
+        background: var(--cyan);
+        color: #000;
+        box-shadow: var(--glow-cyan);
+        transform: translateY(-2px);
+    }
+    .btn-tamim {
+        background: rgba(168, 85, 247, 0.12);
+        color: var(--violet2);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .btn-tamim:hover {
+        background: var(--violet2);
+        color: #fff;
+        box-shadow: var(--glow-violet);
+        transform: translateY(-2px);
+    }
+
+    /* Synergy Section */
+    .synergy-box {
+        margin-top: 40px;
+        background: rgba(17, 24, 39, 0.6);
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 28px 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .syn-title {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+    .syn-title span { color: var(--green); }
+    .syn-desc {
+        font-size: 0.88rem;
+        color: rgba(243, 244, 246, 0.5);
+        font-family: var(--font-mono);
+        margin-top: 4px;
+    }
+    .syn-stats {
+        display: flex;
+        gap: 24px;
+    }
+    .syn-metric {
+        text-align: right;
+    }
+    .syn-metric .val {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--cyan);
+    }
+    .syn-metric .lbl {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: #666;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Footer */
+    footer {
+        padding: 50px 5%;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .footer-left {
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: rgba(240,240,255,0.3);
+        font-size: 0.9rem;
+        text-align: center;
+        flex: 1;
+    }
+    .footer-left span { color: var(--cyan); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .mobile-toggle { display: block; }
+        .nav-actions {
+            position: absolute; top: 100%; left: 0; width: 100%;
+            background: rgba(11, 15, 25, 0.98);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0; transform: translateY(-10px);
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .nav-actions.open {
+            opacity: 1; transform: translateY(0);
+            pointer-events: all;
+        }
+        .nav-btn { width: 100%; justify-content: center; padding: 12px; }
+        .founders-grid { grid-template-columns: 1fr; }
+        .f-card { padding: 32px 24px; }
+        .synergy-box { flex-direction: column; text-align: center; }
+        .syn-metric { text-align: center; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- AMBIENT GLOWS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="noise-layer"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="scroll-progress"></div>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor-core" id="cursor-core"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- OS TOGGLE PILL -->
+<div class="os-toggle-pill">
+    <span class="toggle-option active" onclick="playSound('click')">WEB</span>
+    <div class="toggle-divider"></div>
+    <a href="os.html" class="toggle-option" onclick="playSound('click')">OS</a>
+</div>
+
+<!-- ============================================================
+     NAVIGATION
+============================================================ -->
+<nav id="navbar">
+    <a href="index.html" class="nav-logo" onclick="playSound('click')">
+        <img src="codestitcher.png" alt="CodeStitcher">
+        <span class="nav-wordmark">Code<span style="color: var(--violet2);">Stitcher</span></span>
+        <span class="nav-tag">// FOUNDERS</span>
+    </a>
+
+    <div class="mobile-toggle" id="mob-toggle" onclick="toggleMenu()">
+        <i class="fa-solid fa-bars" id="menu-icon"></i>
+    </div>
+
+    <div class="nav-actions" id="nav-menu">
+        <a href="javascript:void(0)" onclick="delayedNav('index.html')" class="nav-btn btn-founder">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="javascript:void(0)" onclick="delayedNav('learn-python.html')" class="nav-btn btn-python">
+            <i class="fa-brands fa-python"></i> Learn Python
+        </a>
+        <a href="javascript:void(0)" onclick="delayedNav('python-lab.html')" class="nav-btn btn-python">
+            <i class="fa-solid fa-microchip"></i> Python IDE
+        </a>
+        <a href="javascript:void(0)" onclick="delayedNav('game.html')" class="nav-btn btn-game">
+            <i class="fa-solid fa-gamepad"></i> Play Game
+        </a>
+        <a href="javascript:void(0)" onclick="delayedNav('products/index.html')" class="nav-btn btn-products">
+            <i class="fa-solid fa-download"></i> Products
+        </a>
+    </div>
+</nav>
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header class="header-section" data-aos="fade-down">
+    <div class="badge-label">
+        <span class="badge-dot"></span>
+        CORE DIRECTORY // BI-NODE ARCHITECTURE
+    </div>
+    <h1 class="page-title">
+        The Minds Behind <span>CodeStitcher</span>
+    </h1>
+    <p class="page-sub">
+        Two brothers uniting systems-level engineering with high-velocity creative direction to build cutting-edge developer tools.
+    </p>
+</header>
+
+<!-- ============================================================
+     FOUNDERS DIRECTORY
+============================================================ -->
+<main class="founders-wrap">
+    <div class="founders-grid">
+
+        <!-- FOUNDER 1: RATUL -->
+        <article class="f-card ratul" data-aos="fade-up" data-aos-delay="100">
+            <div>
+                <div class="f-header">
+                    <div class="avatar-wrap">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <div class="f-meta">
+                        <span class="f-codename">ARCHITECT_01 // SYSTEM LEAD</span>
+                        <h2 class="f-name">Mustafij Ratul</h2>
+                        <span class="f-role">Founder & Chief Architect</span>
+                    </div>
+                </div>
+
+                <p class="f-desc">
+                    Creator of CodeStitcher's core runtime engines, web assembly pipelines, and precision desktop utilities. Leading low-latency browser architectures and algorithm design.
+                </p>
+
+                <div class="f-spec-label">CORE DOMAINS & STACK</div>
+                <div class="f-tags">
+                    <span class="f-tag">Systems Engineering</span>
+                    <span class="f-tag">Python & Pyodide</span>
+                    <span class="f-tag">WebAssembly</span>
+                    <span class="f-tag">Desktop Utilities</span>
+                    <span class="f-tag">Algorithm Design</span>
+                </div>
+            </div>
+
+            <div class="f-actions">
+                <a href="https://mustafijratul.github.io" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
+                    <i class="fa-solid fa-globe"></i> Portfolio
+                </a>
+                <a href="https://github.com/MustafijRatul" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+            </div>
+        </article>
+
+        <!-- FOUNDER 2: TAMIM -->
+        <article class="f-card tamim" data-aos="fade-up" data-aos-delay="200">
+            <div>
+                <div class="f-header">
+                    <div class="avatar-wrap">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div class="f-meta">
+                        <span class="f-codename">VISION_02 // STRATEGIST</span>
+                        <h2 class="f-name">Tamim</h2>
+                        <span class="f-role">Co-Founder & Creative Director</span>
+                    </div>
+                </div>
+
+                <p class="f-desc">
+                    The creative compass and product strategist behind CodeStitcher. Directing user experience dynamics, interactive game concepts, and testing next-gen productivity paradigms.
+                </p>
+
+                <div class="f-spec-label">CORE DOMAINS & STACK</div>
+                <div class="f-tags">
+                    <span class="f-tag">Creative Direction</span>
+                    <span class="f-tag">Game Logic & Flow</span>
+                    <span class="f-tag">Product Vision</span>
+                    <span class="f-tag">Quality Assurance</span>
+                    <span class="f-tag">UX Dynamics</span>
+                </div>
+            </div>
+
+            <div class="f-actions">
+                <span class="btn-action btn-tamim">
+                    <i class="fa-solid fa-shield-halved"></i> Co-Founder
+                </span>
+                <span class="btn-action btn-tamim">
+                    <i class="fa-solid fa-sparkles"></i> Innovation Lead
+                </span>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- BROTHERHOOD SYNERGY STATUS -->
+    <div class="synergy-box" data-aos="fade-up" data-aos-delay="300">
+        <div>
+            <div class="syn-title">Brotherhood Synchronization // <span>ACTIVE</span></div>
+            <div class="syn-desc">Decentralized collaboration matrix: Ratul × Tamim</div>
+        </div>
+        <div class="syn-stats">
+            <div class="syn-metric">
+                <div class="val">100%</div>
+                <div class="lbl">Synergy Matrix</div>
+            </div>
+            <div class="syn-metric">
+                <div class="val">2 Nodes</div>
+                <div class="lbl">Unified Core</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+<footer>
+    <div class="footer-left">
+        &copy; 2025 <span>CodeStitcher</span> — Engineered by Ratul & Tamim
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+/* Audio Engine */
+const clickAudio = new Audio('click.wav');
+clickAudio.preload = 'auto';
+
+function playSound(type) {
+    if (type === 'click') {
+        const c = clickAudio.cloneNode();
+        c.volume = 0.4;
+        c.play().catch(()=>{});
+    }
+}
+
+function delayedNav(url) {
+    playSound('click');
+    setTimeout(() => { window.location.href = url; }, 250);
+}
+
+/* Mobile Nav Toggle */
+function toggleMenu() {
+    const m = document.getElementById('nav-menu');
+    const ic = document.getElementById('menu-icon');
+    m.classList.toggle('open');
+    if (m.classList.contains('open')) {
+        ic.className = 'fa-solid fa-xmark';
+        playSound('click');
+    } else {
+        ic.className = 'fa-solid fa-bars';
+    }
+}
+
+/* Scroll progress */
+window.addEventListener('scroll', () => {
+    const nb = document.getElementById('navbar');
+    if (nb) nb.classList.toggle('scrolled', window.scrollY > 40);
+
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    const bar = document.getElementById('scroll-progress');
+    if (bar) bar.style.width = pct + '%';
+});
+
+/* Custom Quantum Cursor */
+const cursorCore = document.getElementById('cursor-core');
+const cursorRing = document.getElementById('cursor-ring');
+let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+
+if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        cursorCore.style.left = mouseX + 'px';
+        cursorCore.style.top  = mouseY + 'px';
+    });
+
+    (function animRing() {
+        ringX += (mouseX - ringX) * 0.12;
+        ringY += (mouseY - ringY) * 0.12;
+        cursorRing.style.left = ringX + 'px';
+        cursorRing.style.top  = ringY + 'px';
+        requestAnimationFrame(animRing);
+    })();
+
+    document.querySelectorAll('a, button, .f-card, .btn-action, .toggle-option').forEach(el => {
+        el.addEventListener('mouseenter', () => cursorRing.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovering'));
+    });
+}
+
+/* Canvas Neural Background */
+(function() {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, pts = [];
+    const mouse = { x: null, y: null };
+
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+
+    class Point {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * W;
+            this.y = Math.random() * H;
+            this.vx = (Math.random() - 0.5) * 0.35;
+            this.vy = (Math.random() - 0.5) * 0.35;
+            this.r = Math.random() * 1.2 + 0.4;
+            this.color = Math.random() > 0.5 ? '#38BDF8' : '#A855F7';
+        }
+        tick() {
+            this.x += this.vx; this.y += this.vy;
+            if (this.x < 0 || this.x > W) this.vx *= -1;
+            if (this.y < 0 || this.y > H) this.vy *= -1;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        resize();
+        pts = Array.from({ length: 80 }, () => new Point());
+    }
+
+    function frame() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < pts.length; i++) {
+            pts[i].tick();
+            pts[i].draw();
+            for (let j = i+1; j < pts.length; j++) {
+                const dx = pts[i].x - pts[j].x;
+                const dy = pts[i].y - pts[j].y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 110) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(99, 102, 241, ${(1 - dist/110) * 0.12})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.moveTo(pts[i].x, pts[i].y);
+                    ctx.lineTo(pts[j].x, pts[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(frame);
+    }
+
+    window.addEventListener('resize', init);
+    init(); frame();
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+    AOS.init({ duration: 800, once: true, offset: 40 });
+});
+</script>
+</body>
+</html>
