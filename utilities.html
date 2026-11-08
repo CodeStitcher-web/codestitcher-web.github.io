@@ -1161,6 +1161,13 @@ footer {
 
 </head>
 <body>
+    <!-- Official Three.js Particle Background -->
+    <div class="particles-bg-fixed" data-hero-particles>
+        <div class="main-particles-component-section" data-main-particles-component data-theme="light" data-ring-width="0.006" data-ring-width2="0.107" data-ring-displacement="0.62" data-density="230" data-particles-scale="0.59">
+            <div class="main-particles-container" data-container></div>
+        </div>
+    </div>
+
     <!-- Google Antigravity Unified Header -->
     <header class="agy-header">
         <a href="index.html" class="agy-nav-left" aria-label="CodeStitcher Home">
@@ -1474,9 +1481,7 @@ footer {
     
 
     <!-- Particle canvas (shared across all pages) -->
-    <canvas id="antigravity-canvas"></canvas>
-
-<div class="page-flash"></div>
+    <div class="page-flash"></div>
 <div class="overload-overlay" id="overload-overlay"></div>
 <div class="overload-hud" id="overload-hud">
     <div class="hud-title">⚠ CRITICAL OVERLOAD</div>
@@ -3166,5 +3171,6 @@ function updateMatSlider(el, labelId) {
     })();
 </script>
     <script src="script.js"></script>
+<script src="antigravity-particles.bundle.js"></script>
 </body>
 </html>

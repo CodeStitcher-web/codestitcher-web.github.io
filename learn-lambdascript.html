@@ -195,6 +195,13 @@
     </style>
 </head>
 <body>
+    <!-- Official Three.js Particle Background -->
+    <div class="particles-bg-fixed" data-hero-particles>
+        <div class="main-particles-component-section" data-main-particles-component data-theme="light" data-ring-width="0.006" data-ring-width2="0.107" data-ring-displacement="0.62" data-density="230" data-particles-scale="0.59">
+            <div class="main-particles-container" data-container></div>
+        </div>
+    </div>
+
     <!-- Google Antigravity Unified Header -->
     <header class="agy-header">
         <a href="index.html" class="agy-nav-left" aria-label="CodeStitcher Home">
@@ -508,10 +515,6 @@
     
 
     <!-- Particle canvas (shared across all pages) -->
-    <canvas id="antigravity-canvas"></canvas>
-
-      
-    <canvas id="neural-canvas"></canvas>
     <div class="noise-overlay"></div>
     <div id="scroll-progress" style="position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg, #bd00ff, #00F0FF); z-index:9999;"></div>
 
@@ -1209,5 +1212,6 @@ def execute_lambda(code):
     })();
 
     </script>
+<script src="antigravity-particles.bundle.js"></script>
 </body>
 </html>
