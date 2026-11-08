@@ -85,65 +85,7 @@
         .module-header { font-size: 2.5rem; margin-bottom: 20px; color: #111111; display: flex; align-items: center; gap: 15px; }
         .module-header i { color: #bd00ff; font-size: 2rem; }
         
-        /* CODE BLOCKS */
-        .code-block {
-            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; padding: 20px; margin: 20px 0;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
-            position: relative; overflow: hidden;
-        }
-        .code-header {
-            position: absolute; top: 0; left: 0; width: 100%; height: 30px;
-            background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; padding: 0 15px; font-size: 0.75rem; color: #666;
-        }
-        .code-content { margin-top: 20px; color: #d4d4d4; line-height: 1.6; white-space: pre; overflow-x: auto;}
-        
-        /* LAMBDASCRIPT SYNTAX HIGHLIGHTING */
-        .c-kw { color: #D500F9; font-weight: bold; } /* Keywords: func, int, if */
-        .c-fn { color: #00F0FF; } /* Functions: print, main */
-        .c-str { color: #ff5e57; } /* Strings */
-        .c-cm { color: #21855A; font-style: italic; } /* Comments */
-        .c-num { color: #00D26A; } /* Numbers */
-        .c-op { color: #111111; } /* Operators */
 
-        /* RUN BUTTON */
-        .btn-exec {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: rgba(189, 0, 255, 0.1); border: 1px solid #bd00ff;
-            color: #bd00ff; padding: 10px 25px; border-radius: 50px;
-            font-size: 0.9rem; font-weight: 700; text-decoration: none;
-            margin-top: 5px; transition: 0.3s; cursor: pointer;
-            font-family: 'JetBrains Mono';
-        }
-        .btn-exec:hover { background: #bd00ff; color: #111111; box-shadow: 0 0 25px rgba(189, 0, 255, 0.5); transform: translateY(-2px); }
-
-        /* OUTPUT TERMINAL */
-        .output-terminal {
-            margin-top: 20px;
-            background: rgba(10, 10, 15, 0.9);
-            border: 1px solid #bd00ff; border-left: 3px solid #bd00ff;
-            border-radius: 8px; padding: 15px;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #e0e0e0;
-            display: none; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .output-terminal::before {
-            content: "Neural Output";
-            position: absolute; top: 0; right: 0;
-            background: #bd00ff; color: #111111;
-            font-size: 0.7rem; padding: 2px 8px;
-            border-bottom-left-radius: 8px; font-weight: bold;
-        }
-        .term-line { opacity: 0; animation: typeLine 0.3s forwards; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0; }
-        @keyframes typeLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* LOADING ANIMATION */
-        .loading-pulse {
-            display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #bd00ff;
-            animation: pulse 1s infinite; margin-right: 8px;
-        }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
 
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 900px) {
@@ -192,6 +134,271 @@
         #antigravity-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
         /* Page content above canvas */
         .agy-header, main, section, article, aside, footer, .page-wrapper, .content-wrap { position: relative; z-index: 10; }
+
+        /* ==============================================================================
+           GOOGLE ANTIGRAVITY / CODESTITCHER IDE ENGINE STYLES (PRO DARK THEME)
+           ============================================================================== */
+        .glass-card .code-block,
+        .code-block {
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+            margin: 22px 0 16px !important;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace !important;
+            box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+        }
+        .code-block:hover {
+            border-color: #58a6ff !important;
+            box-shadow: 0 20px 42px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(88, 166, 255, 0.25) !important;
+        }
+
+        .code-block .code-header {
+            height: 40px !important;
+            background: #161b22 !important;
+            border-bottom: 1px solid #30363d !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 14px !important;
+            user-select: none !important;
+            position: static !important;
+            box-sizing: border-box !important;
+        }
+
+        .code-header .editor-dots {
+            display: flex !important;
+            align-items: center !important;
+            gap: 7px !important;
+        }
+        .editor-dots .dot {
+            width: 11px !important;
+            height: 11px !important;
+            border-radius: 50% !important;
+            display: inline-block !important;
+        }
+        .dot-red { background: #ff5f56 !important; box-shadow: 0 0 5px rgba(255, 95, 86, 0.45) !important; }
+        .dot-yellow { background: #ffbd2e !important; box-shadow: 0 0 5px rgba(255, 189, 46, 0.45) !important; }
+        .dot-green { background: #27c93f !important; box-shadow: 0 0 5px rgba(39, 201, 63, 0.45) !important; }
+
+        .code-header .editor-tab {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background: #0d1117 !important;
+            border-top: 2px solid #58a6ff !important;
+            border-left: 1px solid #30363d !important;
+            border-right: 1px solid #30363d !important;
+            border-bottom: 1px solid #0d1117 !important;
+            padding: 6px 14px !important;
+            border-radius: 6px 6px 0 0 !important;
+            margin-bottom: -1px !important;
+            color: #f0f6fc !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+        }
+        .editor-tab .file-icon {
+            color: #58a6ff !important;
+        }
+        .editor-tab .file-title {
+            color: #f0f6fc !important;
+        }
+
+        .code-header .editor-meta {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .editor-meta .lang-tag {
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 11px !important;
+            color: #8b949e !important;
+            background: rgba(110, 118, 129, 0.15) !important;
+            border: 1px solid #30363d !important;
+            padding: 2px 8px !important;
+            border-radius: 4px !important;
+            letter-spacing: 0.3px !important;
+        }
+
+        .editor-meta .btn-copy {
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+            font-size: 11px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            padding: 3px 10px !important;
+            border-radius: 5px !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+        }
+        .editor-meta .btn-copy * {
+            color: inherit !important;
+        }
+        .editor-meta .btn-copy:hover {
+            color: #ffffff !important;
+            border-color: #58a6ff !important;
+            background: rgba(88, 166, 255, 0.18) !important;
+        }
+
+        .code-block .code-editor-body {
+            display: flex !important;
+            background: #0d1117 !important;
+            padding: 16px 0 !important;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace !important;
+            font-size: 13.5px !important;
+            line-height: 1.75 !important;
+            overflow-x: auto !important;
+            box-sizing: border-box !important;
+        }
+
+        .code-editor-body .line-numbers {
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0 14px 0 16px !important;
+            border-right: 1px solid #21262d !important;
+            user-select: none !important;
+            pointer-events: none !important;
+            color: #6e7681 !important;
+            text-align: right !important;
+            font-size: 12.5px !important;
+            line-height: 1.75 !important;
+            min-width: 44px !important;
+            box-sizing: border-box !important;
+            font-family: inherit !important;
+        }
+        .code-editor-body .line-numbers span {
+            display: block !important;
+            color: #6e7681 !important;
+            font-size: 12px !important;
+            line-height: 1.75 !important;
+        }
+
+        .code-editor-body .code-content {
+            margin: 0 !important;
+            padding: 0 20px !important;
+            color: #e6edf3 !important;
+            background: transparent !important;
+            white-space: pre !important;
+            overflow-x: auto !important;
+            font-family: inherit !important;
+            font-size: inherit !important;
+            line-height: 1.75 !important;
+            flex: 1 !important;
+            box-sizing: border-box !important;
+        }
+
+        /* VIBRANT ONE DARK / TOKYO NIGHT SYNTAX PALETTE */
+        .code-content .c-kw {
+            color: #ff7b72 !important; /* Keywords: func, if, int, etc. */
+            font-weight: 600 !important;
+        }
+        .code-content .c-fn {
+            color: #79c0ff !important; /* Functions: print, factorial */
+            font-weight: 500 !important;
+        }
+        .code-content .c-str {
+            color: #7ee787 !important; /* Emerald Strings */
+        }
+        .code-content .c-cm {
+            color: #8b949e !important; /* Comments */
+            font-style: italic !important;
+            opacity: 0.9 !important;
+        }
+        .code-content .c-num {
+            color: #ffa657 !important; /* Numbers: 100, 2026 */
+            font-weight: 500 !important;
+        }
+        .code-content .c-op {
+            color: #56b6c2 !important; /* Operators: <<, ->, =, +, etc. */
+            font-weight: 600 !important;
+        }
+        .code-content .c-type {
+            color: #d2a8ff !important; /* Types / Structs */
+            font-weight: 600 !important;
+        }
+
+        /* EXECUTE BUTTON */
+        .glass-card .btn-exec,
+        .btn-exec {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background: #000000 !important;
+            color: #ffffff !important;
+            border: 1px solid #000000 !important;
+            padding: 10px 24px !important;
+            border-radius: 9999px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            letter-spacing: 0.3px !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .btn-exec:hover {
+            background: #24292f !important;
+            border-color: #24292f !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+        }
+        .btn-exec i {
+            font-size: 11px !important;
+            color: #7ee787 !important;
+        }
+
+        /* OUTPUT TERMINAL */
+        .glass-card .output-terminal,
+        .output-terminal {
+            margin-top: 16px !important;
+            background: #090d16 !important;
+            border: 1px solid #21262d !important;
+            border-left: 3px solid #238636 !important;
+            border-radius: 8px !important;
+            padding: 14px 18px !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 13px !important;
+            color: #c9d1d9 !important;
+            display: none;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+        }
+        .output-terminal::before {
+            content: "TERMINAL" !important;
+            position: absolute !important;
+            top: 0 !important;
+            right: 0 !important;
+            background: #21262d !important;
+            color: #8b949e !important;
+            font-size: 10px !important;
+            letter-spacing: 1px !important;
+            padding: 2px 10px !important;
+            border-bottom-left-radius: 6px !important;
+            font-weight: 600 !important;
+        }
+        .term-line {
+            opacity: 0;
+            animation: typeLine 0.25s forwards;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 4px 0;
+            color: #58a6ff;
+        }
+        @keyframes typeLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+
+        .loading-pulse {
+            display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #238636;
+            animation: pulse 1s infinite; margin-right: 8px;
+        }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+
     </style>
 </head>
 <body>
@@ -526,13 +733,31 @@
                     <li><i class="fa-solid fa-check" style="color:#00D26A; margin-right:10px;"></i> Comments use double slashes <code>//</code></li>
                 </ul>
 
-                <div class="code-block">
-                    <div class="code-header">hello_world.ls</div>
-                    <div class="code-content">
-<span class="c-cm">// This is a LambdaScript comment</span>
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Neural Link Established."</span>;
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-num">2026</span>;
-</div>
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">hello_world.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-cm">// This is a LambdaScript comment</span>
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Neural Link Established."</span>;
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-num">2026</span>;</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -545,17 +770,35 @@
                 <h2 class="module-header"><i class="fa-solid fa-cube"></i> Variables & Types</h2>
                 <p style="color:#888;">LambdaScript is statically typed. You must declare the type.</p>
                 
-                <div class="code-block">
-                    <div class="code-header">data_types.ls</div>
-                    <div class="code-content">
-<span class="c-kw">int</span> score <span class="c-op">=</span> <span class="c-num">100</span>;
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">data_types.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-kw">int</span> score <span class="c-op">=</span> <span class="c-num">100</span>;
 <span class="c-kw">float</span> pi <span class="c-op">=</span> <span class="c-num">3.14159</span>;
 <span class="c-kw">string</span> status <span class="c-op">=</span> <span class="c-str">"Active"</span>;
 <span class="c-kw">boolean</span> isOnline <span class="c-op">=</span> <span class="c-kw">true</span>;
 
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Status: "</span> <span class="c-op">+</span> status;
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Score: "</span> <span class="c-op">+</span> score;
-</div>
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Status: "</span> <span class="c-op">+</span> status;
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Score: "</span> <span class="c-op">+</span> score;</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -568,23 +811,41 @@
                 <h2 class="module-header"><i class="fa-solid fa-code-branch"></i> Control Flow</h2>
                 <p style="color:#888;">Supports <code>if</code>, <code>else</code>, <code>while</code>, and standard logical operators.</p>
 
-                <div class="code-block">
-                    <div class="code-header">logic_gate.ls</div>
-                    <div class="code-content">
-<span class="c-kw">int</span> power <span class="c-op">=</span> <span class="c-num">85</span>;
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">logic_gate.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-kw">int</span> power <span class="c-op">=</span> <span class="c-num">85</span>;
 
 <span class="c-kw">if</span> (power <span class="c-op">&gt;</span> <span class="c-num">90</span>) {
-    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Critical Mass!"</span>;
+    <span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Critical Mass!"</span>;
 } <span class="c-kw">else</span> {
-    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Systems Nominal."</span>;
+    <span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Systems Nominal."</span>;
 }
 
 <span class="c-kw">int</span> count <span class="c-op">=</span> <span class="c-num">3</span>;
 <span class="c-kw">while</span> (count <span class="c-op">&gt;</span> <span class="c-num">0</span>) {
-    <span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Countdown: "</span> <span class="c-op">+</span> count;
+    <span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Countdown: "</span> <span class="c-op">+</span> count;
     count <span class="c-op">=</span> count <span class="c-op">-</span> <span class="c-num">1</span>;
-}
-</div>
+}</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -597,17 +858,35 @@
                 <h2 class="module-header"><i class="fa-solid fa-microchip"></i> Functions</h2>
                 <p style="color:#888;">Functions define logic blocks. Use the arrow <code>-&gt;</code> to specify return types.</p>
 
-                <div class="code-block">
-                    <div class="code-header">recursion.ls</div>
-                    <div class="code-content">
-<span class="c-kw">func</span> factorial(<span class="c-kw">int</span> n) <span class="c-op">-&gt;</span> <span class="c-kw">int</span> {
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">recursion.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-kw">func</span> <span class="c-fn">factorial</span>(<span class="c-kw">int</span> n) <span class="c-op">-&gt;</span> <span class="c-kw">int</span> {
     <span class="c-kw">if</span> (n <span class="c-op">==</span> <span class="c-num">1</span>) { <span class="c-kw">return</span> <span class="c-num">1</span>; }
     <span class="c-kw">return</span> n <span class="c-op">*</span> factorial(n <span class="c-op">-</span> <span class="c-num">1</span>);
 }
 
 <span class="c-kw">int</span> result <span class="c-op">=</span> factorial(<span class="c-num">5</span>);
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Factorial of 5 is: "</span> <span class="c-op">+</span> result;
-</div>
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Factorial of 5 is: "</span> <span class="c-op">+</span> result;</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -620,18 +899,36 @@
                 <h2 class="module-header"><i class="fa-solid fa-list-ol"></i> Arrays</h2>
                 <p style="color:#888;">Store lists of data using square brackets <code>[]</code>.</p>
 
-                <div class="code-block">
-                    <div class="code-header">arrays.ls</div>
-                    <div class="code-content">
-<span class="c-kw">int</span>[] data <span class="c-op">=</span> [<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>, <span class="c-num">40</span>];
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">arrays.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-kw">int</span>[] data <span class="c-op">=</span> [<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>, <span class="c-num">40</span>];
 
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Original: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Original: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];
 
 <span class="c-cm">// Update Value</span>
 data[<span class="c-num">1</span>] <span class="c-op">=</span> <span class="c-num">999</span>;
 
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Updated: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];
-</div>
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Updated: "</span> <span class="c-op">+</span> data[<span class="c-num">1</span>];</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -644,19 +941,37 @@ data[<span class="c-num">1</span>] <span class="c-op">=</span> <span class="c-nu
                 <h2 class="module-header"><i class="fa-solid fa-sitemap"></i> Structures</h2>
                 <p style="color:#888;">Define custom data types using <code>struct</code>.</p>
 
-                <div class="code-block">
-                    <div class="code-header">structs.ls</div>
-                    <div class="code-content">
-<span class="c-kw">struct</span> Point {
+                <div class="code-block code-editor">
+                    <div class="code-header">
+                        <div class="editor-dots">
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <div class="editor-tab">
+                            <svg class="file-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                            <span class="file-title">structs.ls</span>
+                        </div>
+                        <div class="editor-meta">
+                            <span class="lang-tag">LambdaScript</span>
+                            <button class="btn-copy" onclick="copySnippet(this)" type="button" aria-label="Copy snippet">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span class="copy-text">Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="code-editor-body">
+                        <div class="line-numbers" aria-hidden="true"></div>
+                        <pre class="code-content" spellcheck="false"><span class="c-kw">struct</span> Point {
     <span class="c-kw">int</span> x;
     <span class="c-kw">int</span> y;
 }
 
-<span class="c-kw">Point</span> p <span class="c-op">=</span> <span class="c-fn">Point</span>(<span class="c-num">10</span>, <span class="c-num">20</span>);
+<span class="c-type">Point</span> p <span class="c-op">=</span> <span class="c-fn">Point</span>(<span class="c-num">10</span>, <span class="c-num">20</span>);
 
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"X Coordinate: "</span> <span class="c-op">+</span> p.x;
-<span class="c-fn">print</span> <span class="c-kw">&lt;&lt;</span> <span class="c-str">"Y Coordinate: "</span> <span class="c-op">+</span> p.y;
-</div>
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"X Coordinate: "</span> <span class="c-op">+</span> p.x;
+<span class="c-fn">print</span> <span class="c-op">&lt;&lt;</span> <span class="c-str">"Y Coordinate: "</span> <span class="c-op">+</span> p.y;</pre>
+                    </div>
                 </div>
                 <button class="btn-exec" onclick="runLocalCode(this)">
                     <i class="fa-solid fa-play"></i> RUN CODE
@@ -1184,5 +1499,50 @@ def execute_lambda(code):
 
     </script>
 <script src="antigravity-particles.bundle.js"></script>
+
+<script>
+        // 7. IDE EDITOR UTILITIES (GUTTER & CLIPBOARD)
+        function initCodeEditorGutter() {
+            document.querySelectorAll('.code-block').forEach(block => {
+                const content = block.querySelector('.code-content');
+                const gutter = block.querySelector('.line-numbers');
+                if (!content || !gutter) return;
+                const lines = content.innerText.trim().split('\n').length;
+                let numbers = '';
+                for (let i = 1; i <= lines; i++) {
+                    numbers += '<span>' + i + '</span>';
+                }
+                gutter.innerHTML = numbers;
+            });
+        }
+
+        function copySnippet(btn) {
+            const block = btn.closest('.code-block');
+            const content = block ? block.querySelector('.code-content') : null;
+            if (!content) return;
+            const text = content.innerText.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const textSpan = btn.querySelector('.copy-text');
+                const orig = textSpan ? textSpan.innerText : 'Copy';
+                if (textSpan) textSpan.innerText = 'Copied!';
+                btn.style.color = '#7ee787';
+                btn.style.borderColor = '#7ee787';
+                setTimeout(() => {
+                    if (textSpan) textSpan.innerText = orig;
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 1800);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCodeEditorGutter);
+        } else {
+            initCodeEditorGutter();
+        }
+</script>
+
 </body>
 </html>
