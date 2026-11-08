@@ -2902,3 +2902,11 @@ button[class*="black"] *,
     color: #8b949e !important;
     font-size: 13px;
 }
+
+.cs-app-toast-btn-primary,
+.cs-app-toast-btn-primary *,
+.cs-app-toast-btn-primary span,
+.cs-app-toast-btn-primary svg {
+    color: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
