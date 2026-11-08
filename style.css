@@ -1085,8 +1085,8 @@ li, td, th, label, small, strong, em, b, i,
 
 /* ALL text defaults to deep ink black (excluding code editors, syntax tokens & black pill buttons) */
 p, li, td, th, label, small, strong,
-span:not(.monaco-editor *):not([class*="mtk"]):not(.code-token):not(.token):not(.hljs *):not(code *):not(pre *):not(.code-block *):not(.code-editor *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not([class*="c-"]):not(.agy-btn-download *):not(.agy-hero-cta *):not(.btn-glow *):not(.btn-primary *):not(.btn-black-pill *):not(.btn-run *):not(.btn-exec *):not(.agy-badge-new):not(.cat-tab.active *):not(.filter-tab.active *):not(.btn-python *):not([class*="btn-black"] *):not([class*="black-pill"] *),
-div:not(.monaco-editor *):not(.view-line):not([class*="monaco"]):not(.code-editor *):not(.code-block *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not(pre *):not(code *):not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
+span:not(.monaco-editor *):not([class*="mtk"]):not(.code-token):not(.token):not(.hljs *):not(code *):not(pre *):not(.code-block *):not(.code-editor *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not([class*="c-"]):not(.cs-app-toast *):not(.phone-bezel *):not(.agy-btn-download *):not(.agy-hero-cta *):not(.btn-glow *):not(.btn-primary *):not(.btn-black-pill *):not(.btn-run *):not(.btn-exec *):not(.agy-badge-new):not(.cat-tab.active *):not(.filter-tab.active *):not(.btn-python *):not([class*="btn-black"] *):not([class*="black-pill"] *),
+div:not(.monaco-editor *):not(.view-line):not([class*="monaco"]):not(.code-editor *):not(.code-block *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not(.cs-app-toast *):not(.phone-bezel *):not(pre *):not(code *):not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
     color: #1F1F1F !important;
 }
 
@@ -2588,3 +2588,317 @@ button[class*="black"] *,
     transform: scale(1.02);
 }
 
+
+/* ==============================================================================
+   SMART FLOATING DISMISSIBLE GLASSMORPHIC TOAST CARD (CODESTITCHER APP)
+   ============================================================================== */
+.cs-app-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 99999;
+    max-width: 360px;
+    width: calc(100% - 48px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 22px;
+    padding: 18px 20px 16px;
+    box-shadow: 
+        0 20px 48px rgba(0, 0, 0, 0.14),
+        0 4px 16px rgba(0, 0, 0, 0.06),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    transform: translateY(120%) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    box-sizing: border-box;
+}
+
+.cs-app-toast.active {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cs-app-toast.dismissed {
+    transform: translateY(120%) scale(0.94);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cs-app-toast-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: #9CA3AF !important;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.cs-app-toast-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #111111 !important;
+}
+
+.cs-app-toast-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding-right: 20px;
+}
+
+.cs-app-toast-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000000;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.cs-app-toast-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cs-app-toast-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: #166534 !important;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    padding: 1px 7px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.cs-app-toast-title {
+    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #111111 !important;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.cs-app-toast-desc {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #4B5563 !important;
+    margin: 0 0 14px 0;
+}
+
+.cs-app-toast-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cs-app-toast-btn-primary {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #000000;
+    color: #FFFFFF !important;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.cs-app-toast-btn-primary:hover {
+    transform: translateY(-1px);
+    color: #FFFFFF !important;
+}
+
+.cs-app-toast-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #F3F4F6;
+    color: #1F2937 !important;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    text-decoration: none;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.cs-app-toast-btn-secondary:hover {
+    background: #E5E7EB;
+    color: #111111 !important;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+    .cs-app-toast {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* ==============================================================================
+   SMARTPHONE BEZEL & SCREEN MOCKUP STYLING
+   ============================================================================== */
+.phone-bezel {
+    width: 290px;
+    height: 580px;
+    background: #111215;
+    border-radius: 46px;
+    padding: 11px;
+    box-shadow: 
+        0 32px 70px rgba(0, 0, 0, 0.18),
+        0 6px 20px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+    position: relative;
+    box-sizing: border-box;
+    transition: transform 0.4s ease;
+}
+
+.phone-screen {
+    width: 100%;
+    height: 100%;
+    background: #0d1117;
+    border-radius: 36px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+}
+
+.phone-notch {
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    background: #000000;
+    border-radius: 50%;
+    z-index: 50;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.mock-status-bar {
+    height: 26px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8b949e !important;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding-top: 5px;
+    box-sizing: border-box;
+}
+
+.mock-app-bar {
+    height: 44px;
+    padding: 0 14px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mock-app-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f0f6fc !important;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mock-app-brand img {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.mock-app-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #8b949e !important;
+    font-size: 11px;
+}
+
+.mock-code-canvas {
+    flex: 1;
+    padding: 14px;
+    background: #0d1117;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #c9d1d9 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.mock-code-tokens {
+    flex: 1;
+}
+
+.token-kw { color: #ff7b72 !important; font-weight: 600; }
+.token-fn { color: #79c0ff !important; }
+.token-str { color: #a5d6ff !important; }
+.token-num { color: #ffa657 !important; }
+.token-cm { color: #8b949e !important; font-style: italic; }
+
+.mock-terminal-pill {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 3px solid #38ef7d;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: #7ee787 !important;
+}
+
+.mock-nav-bar {
+    height: 38px;
+    background: #161b22;
+    border-top: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color: #8b949e !important;
+    font-size: 13px;
+}

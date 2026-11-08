@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeStitcher for Android | Official Mobile Client &amp; Wasm IDE</title>
+    <meta name="description" content="CodeStitcher for Android - The official hardware-accelerated Kotlin & WebAssembly runtime. Execute Python offline with zero latency, toggle desktop layouts, and code anywhere.">
+    <meta name="theme-color" content="#FFFFFF">
+    <link rel="icon" type="image/png" href="../../codestitcher.png">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Antigravity Universal Design System -->
+    <link rel="stylesheet" href="../../style.css">
+
+    <style>
+        /* ==============================================================================
+           CODESTITCHER ANDROID DEDICATED SHOWCASE - GOOGLE ANTIGRAVITY AESTHETIC
+           ============================================================================== */
+        body {
+            background: #FFFFFF !important;
+            color: #111111 !important;
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .app-page-wrapper {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 100px 24px 100px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Hero Card */
+        .app-hero-card {
+            background: rgba(255, 255, 255, 0.96) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 36px !important;
+            box-shadow: 0 16px 56px rgba(0, 0, 0, 0.04) !important;
+            padding: 56px 48px !important;
+            display: flex;
+            align-items: center;
+            gap: 52px;
+            margin-bottom: 48px;
+        }
+
+        .app-hero-content {
+            flex: 1.15;
+        }
+
+        .app-hero-visual {
+            flex: 0.85;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #F1F3F4;
+            color: #111111 !important;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .app-hero-title {
+            font-size: clamp(2.4rem, 4.6vw, 3.8rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.12;
+            margin: 0 0 18px 0;
+            color: #111111 !important;
+        }
+
+        .app-hero-desc {
+            font-size: 16.5px;
+            line-height: 1.65;
+            color: #444746 !important;
+            margin: 0 0 32px 0;
+            max-width: 600px;
+        }
+
+        .app-specs-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+            background: #F8F9FA;
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .app-spec-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .app-spec-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111111 !important;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.02em;
+        }
+
+        .app-spec-lbl {
+            font-size: 12px;
+            color: #70757A !important;
+            font-weight: 500;
+        }
+
+        .app-hero-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .btn-black-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            background: #000000;
+            color: #FFFFFF !important;
+            border-radius: 9999px;
+            padding: 13px 28px;
+            font-size: 14.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-black-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+        }
+
+        .btn-outline-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FFFFFF;
+            color: #111111 !important;
+            border: 1px solid rgba(0, 0, 0, 0.14);
+            border-radius: 9999px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-pill:hover {
+            background: #F1F3F4;
+            border-color: rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Smartphone Bezel Mockup */
+        .phone-bezel {
+            width: 290px;
+            height: 580px;
+            background: #111215;
+            border-radius: 46px;
+            padding: 11px;
+            box-shadow: 
+                0 32px 70px rgba(0, 0, 0, 0.18),
+                0 6px 20px rgba(0, 0, 0, 0.08),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+            position: relative;
+            box-sizing: border-box;
+            transition: transform 0.4s ease;
+        }
+
+        .phone-bezel:hover {
+            transform: translateY(-6px) scale(1.01);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #0d1117;
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-sizing: border-box;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 9px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 11px;
+            height: 11px;
+            background: #000000;
+            border-radius: 50%;
+            z-index: 50;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Mockup System Header */
+        .mock-status-bar {
+            height: 26px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            padding-top: 5px;
+            box-sizing: border-box;
+        }
+
+        .mock-app-bar {
+            height: 44px;
+            padding: 0 14px;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mock-app-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f0f6fc;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .mock-app-brand img {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .mock-app-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #8b949e;
+            font-size: 11px;
+        }
+
+        .mock-code-canvas {
+            flex: 1;
+            padding: 14px;
+            background: #0d1117;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #c9d1d9;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mock-code-tokens {
+            flex: 1;
+        }
+
+        .token-kw { color: #ff7b72; font-weight: 600; }
+        .token-fn { color: #79c0ff; }
+        .token-str { color: #a5d6ff; }
+        .token-num { color: #ffa657; }
+        .token-cm { color: #8b949e; font-style: italic; }
+
+        .mock-terminal-pill {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-left: 3px solid #38ef7d;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            font-size: 10px;
+            color: #7ee787;
+        }
+
+        .mock-nav-bar {
+            height: 38px;
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            color: #8b949e;
+            font-size: 13px;
+        }
+
+        /* Features Grid */
+        .features-section-title {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin: 0 0 32px 0;
+            color: #111111 !important;
+        }
+
+        .app-features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 56px;
+        }
+
+        .app-feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .app-feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07);
+        }
+
+        .app-feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #F1F3F4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #111111;
+            margin-bottom: 20px;
+        }
+
+        .app-feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            color: #111111 !important;
+            letter-spacing: -0.01em;
+        }
+
+        .app-feature-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #5F6368 !important;
+            margin: 0;
+        }
+
+        /* Installation Steps */
+        .install-guide-card {
+            background: #F8F9FA;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 32px;
+            padding: 48px;
+            margin-bottom: 60px;
+        }
+
+        .install-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .install-step {
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 20px;
+            padding: 28px 24px;
+            position: relative;
+        }
+
+        .install-step-num {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, 0.15);
+        }
+
+        .install-step-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111111;
+            margin: 0 0 8px 0;
+        }
+
+        .install-step-desc {
+            font-size: 13.5px;
+            color: #5F6368;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 960px) {
+            .app-hero-card {
+                flex-direction: column;
+                padding: 40px 24px !important;
+                gap: 40px;
+            }
+            .app-features-grid,
+            .install-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-specs-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Official Three.js Particle Background -->
+    <div class="particles-bg-fixed" data-hero-particles="true">
+        <div class="main-particles-component-section" data-main-particles-component data-theme="light" data-ring-width="0.006" data-ring-width2="0.107" data-ring-displacement="0.62" data-density="230" data-particles-scale="0.59">
+            <div class="main-particles-container" data-container></div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="agy-header">
+        <a href="../../index.html" class="agy-nav-left" aria-label="CodeStitcher Home">
+            <svg class="cs-anim-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="100%" height="100%" style="background: transparent;">
+                <defs>
+                    <style>
+                        .stitch-outline { stroke: #000000; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+                        .capsule-1, .capsule-2 { stroke-dasharray: 520; stroke-dashoffset: 520; animation: drawCapsule 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+                        .capsule-2 { animation-delay: 0.2s; }
+                        .stitch-cut { stroke: #ffffff; stroke-width: 7.5; stroke-linecap: round; stroke-dasharray: 55; stroke-dashoffset: 55; animation: drawStitch 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; animation-delay: 0.5s; }
+                        .logo-text { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif; font-size: 96px; font-weight: 600; letter-spacing: -2.5px; stroke: #000000; stroke-width: 2.2; stroke-dasharray: 600; stroke-dashoffset: 600; animation: drawText 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; animation-delay: 0.4s; }
+                        @keyframes drawCapsule { 0% { stroke-dashoffset: 520; fill: transparent; } 14% { stroke-dashoffset: 0; fill: transparent; } 22%, 94% { stroke-dashoffset: 0; fill: #000000; } 100% { stroke-dashoffset: 0; fill: transparent; } }
+                        @keyframes drawStitch { 0%, 8% { stroke-dashoffset: 55; } 16%, 94% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
+                        @keyframes drawText { 0% { stroke-dashoffset: 600; fill: transparent; } 16% { stroke-dashoffset: 0; fill: transparent; } 24%, 94% { stroke-dashoffset: 0; fill: #000000; } 100% { stroke-dashoffset: 0; fill: transparent; } }
+                    </style>
+                </defs>
+                <g id="icon-mark" transform="translate(180, 180) rotate(45)">
+                    <rect class="stitch-outline capsule-1" x="-72" y="-95" width="66" height="150" rx="33" />
+                    <rect class="stitch-outline capsule-2" x="6" y="-55" width="66" height="150" rx="33" />
+                    <line class="stitch-cut" x1="-20" y1="0" x2="20" y2="0" />
+                </g>
+                <g id="brand-text">
+                    <text x="320" y="212" class="stitch-outline logo-text">CodeStitcher</text>
+                </g>
+            </svg>
+        </a>
+
+        <ul class="agy-nav-center">
+            <li class="agy-nav-item has-dropdown">
+                <a href="../index.html" class="agy-nav-link">
+                    Products
+                    <svg class="agy-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </a>
+                <div class="agy-dropdown agy-mega-dropdown">
+                    <div class="agy-mega-left">
+                        <div>
+                            <h3 class="agy-mega-title">Explore our next generation products</h3>
+                        </div>
+                        <a href="../index.html" class="agy-mega-overview-btn">See overview</a>
+                    </div>
+                    <div class="agy-mega-right">
+                        <div class="agy-mega-category">Products</div>
+                        <div class="agy-mega-grid">
+                            <a href="../Calculate/index.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Calculate App</span>
+                                    <span class="agy-mega-sub">120 FPS native Compose</span>
+                                </div>
+                            </a>
+                            <a href="index.html" class="agy-mega-item" style="background: rgba(0,0,0,0.03); border-radius: 8px;">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"></rect><path d="M12 18h.01"></path></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">CodeStitcher App</span>
+                                    <span class="agy-mega-sub">Native Android runtime</span>
+                                </div>
+                            </a>
+                            <a href="../../focusguard/index.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">FocusGuard Pro</span>
+                                    <span class="agy-mega-sub">Focus enforcement</span>
+                                </div>
+                            </a>
+                            <a href="../../learn-lambdascript.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">LambdaScript</span>
+                                    <span class="agy-mega-sub">Functional runtime &amp; spec</span>
+                                </div>
+                            </a>
+                            <a href="../../founder.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Founders</span>
+                                    <span class="agy-mega-sub">Engineering &amp; team</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="agy-nav-item"><a href="../../learn-lambdascript.html" class="agy-nav-link">LambdaScript</a></li>
+            <li class="agy-nav-item"><a href="../../founder.html" class="agy-nav-link">Founders</a></li>
+        </ul>
+
+        <div class="agy-nav-right">
+            <a href="https://github.com/MustafijRatul/Codestitcher-App" target="_blank" rel="noopener noreferrer" class="agy-github-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <span>GitHub &#8599;</span>
+            </a>
+            <button id="mobile-menu-toggle" class="agy-mobile-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="app-page-wrapper">
+
+        <!-- Hero Card -->
+        <section class="app-hero-card">
+            <div class="app-hero-content">
+                <span class="app-badge-tag"><i class="fa-brands fa-android" style="color:#3DDC84;"></i> OFFICIAL ANDROID CLIENT &bull; v1.0.0</span>
+                <h1 class="app-hero-title">CodeStitcher for Android</h1>
+                <p class="app-hero-desc">
+                    The hardware-accelerated Kotlin &amp; WebAssembly runtime for developers on the move. Run full Python scripts offline, toggle distraction-free fullscreen code canvas, switch between mobile and desktop viewports, and enjoy sensory haptic feedback.
+                </p>
+
+                <div class="app-specs-row">
+                    <div class="app-spec-item">
+                        <span class="app-spec-val">120 FPS</span>
+                        <span class="app-spec-lbl">Hardware Acceleration</span>
+                    </div>
+                    <div class="app-spec-item">
+                        <span class="app-spec-val">Wasm</span>
+                        <span class="app-spec-lbl">Zero-Install Python</span>
+                    </div>
+                    <div class="app-spec-item">
+                        <span class="app-spec-val">100%</span>
+                        <span class="app-spec-lbl">Offline Session Cache</span>
+                    </div>
+                </div>
+
+                <div class="app-hero-actions">
+                    <a href="https://github.com/MustafijRatul/Codestitcher-App/releases/download/v1.0.0/CodeStitcher-v1.0.0.apk" class="btn-black-pill">
+                        <i class="fa-solid fa-download"></i> Download APK (v1.0.0)
+                    </a>
+                    <a href="https://github.com/MustafijRatul/Codestitcher-App" target="_blank" rel="noopener noreferrer" class="btn-outline-pill">
+                        <i class="fa-brands fa-github"></i> View Repository &#8599;
+                    </a>
+                </div>
+            </div>
+
+            <!-- Visual Smartphone Mockup -->
+            <div class="app-hero-visual">
+                <div class="phone-bezel">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="mock-status-bar">
+                            <span>12:00</span>
+                            <span style="color:#7ee787;">120 FPS</span>
+                            <span>5G <i class="fa-solid fa-battery-full"></i></span>
+                        </div>
+                        <div class="mock-app-bar">
+                            <div class="mock-app-brand">
+                                <img src="../../codestitcher.png" alt="Logo">
+                                <span>CodeStitcher</span>
+                            </div>
+                            <div class="mock-app-actions">
+                                <i class="fa-solid fa-expand" title="Fullscreen IDE"></i>
+                                <i class="fa-solid fa-desktop" title="Desktop Mode"></i>
+                                <i class="fa-solid fa-rotate-right" title="Refresh"></i>
+                            </div>
+                        </div>
+                        <div class="mock-code-canvas">
+                            <div class="mock-code-tokens">
+                                <span class="token-cm"># CodeStitcher Wasm Engine</span><br>
+                                <span class="token-kw">import</span> numpy <span class="token-kw">as</span> np<br><br>
+                                <span class="token-kw">def</span> <span class="token-fn">quantum_render</span>(n):<br>
+                                &nbsp;&nbsp;vec = np.arange(n)<br>
+                                &nbsp;&nbsp;<span class="token-kw">return</span> np.sum(vec ** <span class="token-num">2</span>)<br><br>
+                                <span class="token-fn">print</span>(<span class="token-str">"Result:"</span>, quantum_render(<span class="token-num">1000</span>))
+                            </div>
+                            <div class="mock-terminal-pill">
+                                <strong>&gt; Result: 332833500</strong><br>
+                                <span style="color:#8b949e; font-size:9.5px;">Native compile: 0.04ms</span>
+                            </div>
+                        </div>
+                        <div class="mock-nav-bar">
+                            <i class="fa-solid fa-code" style="color:#58a6ff;"></i>
+                            <i class="fa-solid fa-compass"></i>
+                            <i class="fa-solid fa-folder"></i>
+                            <i class="fa-solid fa-gear"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Bento Grid -->
+        <h2 class="features-section-title">Engineered for Android Precision</h2>
+        <div class="app-features-grid">
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-brands fa-python"></i></div>
+                <h3 class="app-feature-title">WebAssembly Python IDE</h3>
+                <p class="app-feature-desc">Full Pyodide runtime inside native hardware-accelerated WebKit. Compile algorithms, data structures, and math scripts offline with zero server latency.</p>
+            </div>
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                <h3 class="app-feature-title">120 FPS Fluid Scrolling</h3>
+                <p class="app-feature-desc">Engineered with Jetpack Compose Material 3 and hardware canvas rendering to utilize every hertz on 90Hz and 120Hz AMOLED displays without frame drops.</p>
+            </div>
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+                <h3 class="app-feature-title">Tactile Haptic Feedback</h3>
+                <p class="app-feature-desc">Integrated micro-haptic impulses on code runs, compiles, and layout transitions, providing sensory confirmation right under your fingertips.</p>
+            </div>
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-solid fa-expand"></i></div>
+                <h3 class="app-feature-title">Fullscreen Distraction-Free</h3>
+                <p class="app-feature-desc">Hide Android status and navigation bars with a single tap to convert your mobile screen into a distraction-free IDE coding studio.</p>
+            </div>
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-solid fa-desktop"></i></div>
+                <h3 class="app-feature-title">Responsive Desktop Switcher</h3>
+                <p class="app-feature-desc">Toggle between ergonomic mobile touch interface and full multi-pane desktop IDE mode with one tap, perfect for tablets and foldables.</p>
+            </div>
+            <div class="app-feature-card">
+                <div class="app-feature-icon"><i class="fa-solid fa-download"></i></div>
+                <h3 class="app-feature-title">Scoped Storage Export</h3>
+                <p class="app-feature-desc">Seamless integration with Android DownloadManager. Export your Python scripts, outputs, and diagrams directly into your device's Downloads directory.</p>
+            </div>
+        </div>
+
+        <!-- Installation & Setup Guide -->
+        <section class="install-guide-card">
+            <h2 style="font-size: 26px; font-weight: 600; margin: 0 0 10px 0; color: #111111;">Simple 3-Step Installation</h2>
+            <p style="color: #5F6368; margin: 0; font-size: 15px;">No Play Store login required. Clean, direct sideload package.</p>
+
+            <div class="install-grid">
+                <div class="install-step">
+                    <span class="install-step-num">01</span>
+                    <h4 class="install-step-title">Download APK</h4>
+                    <p class="install-step-desc">Click the download button to grab the official <code>CodeStitcher-v1.0.0.apk</code> directly from our verified GitHub Releases.</p>
+                </div>
+                <div class="install-step">
+                    <span class="install-step-num">02</span>
+                    <h4 class="install-step-title">Allow Installation</h4>
+                    <p class="install-step-desc">When prompted by Android, tap "Settings" and toggle "Allow from this source" for your browser to permit sideloading.</p>
+                </div>
+                <div class="install-step">
+                    <span class="install-step-num">03</span>
+                    <h4 class="install-step-title">Launch &amp; Code</h4>
+                    <p class="install-step-desc">Open the app to enjoy the cybernetic boot splash, fullscreen Python IDE, and offline coding capabilities on your Android device.</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 36px; text-align: center;">
+                <a href="https://github.com/MustafijRatul/Codestitcher-App/releases/download/v1.0.0/CodeStitcher-v1.0.0.apk" class="btn-black-pill" style="padding: 14px 36px; font-size: 15.5px;">
+                    <i class="fa-solid fa-download"></i> Download CodeStitcher APK (v1.0.0)
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="agy-footer">
+        <div class="agy-footer-copy">&#169; 2026 CodeStitcher. Engineered with precision.</div>
+        <ul class="agy-footer-links">
+            <li><a href="../index.html">Products</a></li>
+            <li><a href="../../founder.html">Founders</a></li>
+            <li><a href="https://github.com/MustafijRatul/Codestitcher-App" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="../../LICENSE">License</a></li>
+        </ul>
+    </footer>
+
+    <!-- Three.js Interactive Particle Bundle -->
+    <script src="../../antigravity-particles.bundle.js"></script>
+
+    <!-- Mobile Navigation Drawer Handler -->
+    <script>
+    (function() {
+        var toggle = document.getElementById('mobile-menu-toggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', function() {
+            var menu = document.querySelector('.agy-nav-center');
+            if (menu) menu.classList.toggle('active');
+        });
+    })();
+    </script>
+</body>
+</html>
