@@ -23,18 +23,12 @@
             z-index: 999999 !important; 
         }
 
-        /* Download Overlay Cursor Visibility */
-        #download-overlay {
-            cursor: default !important;
-        }
-
         /* Mobile Adjustments */
         @media (max-width: 900px) {
             .fg-hero { flex-direction: column !important; text-align: center; gap: 30px !important; }
             .fg-hero h1 { font-size: 2.8rem !important; }
             .typing-container { justify-content: center !important; }
             .grid-3 { grid-template-columns: 1fr !important; padding: 0 20px; }
-            .success-card { padding: 30px 20px; }
         }
 
         /* Typewriter Color Override */
@@ -533,7 +527,6 @@
     .section,
     .fg-hero,
     .grid-3,
-    .success-card,
     header {
         max-width: 1200px !important;
         margin-left: auto !important;
@@ -633,8 +626,7 @@
     .section,
     .grid-3,
     header,
-    footer,
-    #download-overlay {
+    footer {
         position: relative !important;
         z-index: 10 !important;
     }
@@ -1221,28 +1213,15 @@
         </div>
     </section>
 
-    <!-- DOWNLOAD SUCCESS OVERLAY -->
-    <div id="download-overlay">
-        <canvas id="confetti-canvas"></canvas>
-        <div class="success-card">
-            <div class="icon-wrapper">
-                <div class="ripple"></div><div class="ripple"></div>
-                <div class="success-circle"><i class="fa-solid fa-bolt"></i></div>
-            </div>
-            <h2 style="font-size:2rem; margin-bottom:10px;">Protocol <span class="text-grad">Initiated.</span></h2>
-            <p style="color:#aaa; margin-bottom:30px;">Your download of FocusGuard Pro v12.0 has started.<br>Welcome to the top 1%.</p>
-            <div style="display:flex; gap:15px; justify-content:center;">
-                <button onclick="closeDownloadOverlay()" class="btn-glow" style="padding:10px 25px;">Back to Product</button>
-                
-                <!-- HOME BUTTON (No Transition for safety) -->
-                <a href="../index.html" class="btn-glow no-transition" style="background:transparent; border:1px solid #333; box-shadow:none; text-decoration:none;">Home</a>
-            </div>
-            <p style="margin-top:20px; font-size:0.8rem; color:#666;">Download didn't start? <a href="#" id="retry-link" style="color:var(--accent);">Click here</a></p>
-        </div>
-    </div>
-
-    <footer style="text-align:center; padding:50px; border-top:1px solid var(--glass-border); color:#666;">
-        <p>Powered by <b>CodeStitcher</b></p>
+    <!-- Official Footer -->
+    <footer class="agy-footer">
+        <div class="agy-footer-copy">&#169; 2026 CodeStitcher. Engineered with precision.</div>
+        <ul class="agy-footer-links">
+            <li><a href="../products/index.html">Products</a></li>
+            <li><a href="../founder.html">Founders</a></li>
+            <li><a href="https://github.com/MustafijRatul/FocusGuardRepo" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="../LICENSE">License</a></li>
+        </ul>
     </footer>
 
     <!-- SCRIPTS -->
@@ -1255,73 +1234,32 @@
         VanillaTilt.init(document.querySelector("img[data-tilt]"), { max: 15, speed: 400 });
 
         // --- FETCH GITHUB DOWNLOAD URL ---
-        let downloadUrl = "";
+        let downloadUrl = "https://github.com/MustafijRatul/FocusGuardRepo/releases/latest";
         fetch('https://api.github.com/repos/MustafijRatul/FocusGuardRepo/releases/latest')
             .then(res => res.json())
             .then(data => {
-                const asset = data.assets.find(a => a.name.endsWith('.exe'));
-                if(asset) {
-                    downloadUrl = asset.browser_download_url;
-                    document.getElementById('retry-link').href = downloadUrl;
+                if (data && data.assets) {
+                    const asset = data.assets.find(a => a.name.endsWith('.exe'));
+                    if(asset) {
+                        downloadUrl = asset.browser_download_url;
+                    }
                 }
-            });
+            }).catch(function() {});
 
         // --- DOWNLOAD FLOW ---
         function startDownloadFlow() {
-            if(!downloadUrl) { alert("Fetching latest version... please wait."); return; }
+            if(!downloadUrl) {
+                window.location.href = "https://github.com/MustafijRatul/FocusGuardRepo/releases/latest";
+                return;
+            }
             
-            // Trigger Download
+            // Trigger Direct Download
             const link = document.createElement('a'); 
             link.href = downloadUrl; 
             link.setAttribute('download', '');
             document.body.appendChild(link); 
             link.click(); 
             document.body.removeChild(link);
-
-            // Show Overlay
-            const overlay = document.getElementById('download-overlay'); 
-            overlay.classList.add('active');
-            initConfetti();
-        }
-
-        function closeDownloadOverlay() { 
-            document.getElementById('download-overlay').classList.remove('active'); 
-        }
-
-        // --- CONFETTI LOGIC ---
-        function initConfetti() {
-            const canvas = document.getElementById('confetti-canvas'); 
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth; 
-            canvas.height = window.innerHeight;
-            
-            let confetti = []; 
-            const colors = ['#5D5FEF', '#FF4DFF', '#00D26A', '#ffffff'];
-
-            for (let i = 0; i < 150; i++) {
-                confetti.push({ 
-                    x: canvas.width/2, y: canvas.height/2, 
-                    w: Math.random()*8+4, h: Math.random()*8+4, 
-                    color: colors[Math.floor(Math.random()*colors.length)], 
-                    vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, 
-                    gravity: 0.15, rotation: Math.random()*360, 
-                    rotationSpeed: (Math.random()-0.5)*0.2 
-                });
-            }
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                let active = false;
-                confetti.forEach((c, i) => {
-                    c.x += c.vx; c.y += c.vy; c.vy += c.gravity; 
-                    c.rotation += c.rotationSpeed; c.w *= 0.96; c.h *= 0.96;
-                    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rotation); 
-                    ctx.fillStyle = c.color; ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h); 
-                    ctx.restore();
-                    if(c.w > 0.2 && c.y < canvas.height) active = true;
-                });
-                if(active && document.getElementById('download-overlay').classList.contains('active')) requestAnimationFrame(animate);
-            }
-            animate();
         }
 
         // --- TYPEWRITER ---
