@@ -14044,11 +14044,17 @@ void main() {
   var F2 = class {
     constructor(t2) {
       this.scene = t2, this.renderer = t2.renderer, this.gl = this.gl, this.camera = t2.camera, this.lastTime = 0, this.everRendered = false, this.ringPos = new W(0, 0), this.cursorPos = new W(0, 0), this.colorScheme = t2.theme === `dark` ? 0 : 1; let _isMobCtor = typeof window !== 'undefined' && (window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024));
-this.particleScale = _isMobCtor ? (Math.max(0.92, (1200 / 2e3)) * this.scene.particlesScale * 1.55) : (this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale);
+/* >>> USER EDITABLE: MOBILE PARTICLE SIZE SCALE (1.12 = slightly smaller than 1.55) <<< */
+let _mobScaleFactor = 1.12;
+this.particleScale = _isMobCtor ? (Math.max(0.85, (1200 / 2e3)) * this.scene.particlesScale * _mobScaleFactor) : (this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale);
 this.createPoints(), this.init();
     }
     createPoints() {
-      let e17 = !!(this.scene.isSlowConnection || this.scene.prefersReducedMotion || typeof window < `u` && (typeof window.__agyIsSlowConnection == `function` && window.__agyIsSlowConnection() || window.matchMedia && window.matchMedia(`(prefers-reduced-motion: reduce)`).matches)), t2 = e17 ? Math.min(this.scene.density, 110) : this.scene.density, n2 = new N2.default({ shape: [500, 500], minDistance: P2(t2, 0, 300, 10, 2), maxDistance: P2(t2, 0, 300, 11, 3), tries: e17 ? 12 : 20 }).fill();
+      let _isMobPoints = typeof window !== 'undefined' && (window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024));
+/* >>> USER EDITABLE: MOBILE DENSITY FACTOR (0.75 = 25% fewer particles on mobile) <<< */
+let _mobDensityFactor = 0.75;
+let _targetDensity = _isMobPoints ? Math.round(this.scene.density * _mobDensityFactor) : this.scene.density;
+let e17 = !!(this.scene.isSlowConnection || this.scene.prefersReducedMotion || typeof window < `u` && (typeof window.__agyIsSlowConnection == `function` && window.__agyIsSlowConnection() || window.matchMedia && window.matchMedia(`(prefers-reduced-motion: reduce)`).matches)), t2 = e17 ? Math.min(_targetDensity, 110) : _targetDensity, n2 = new N2.default({ shape: [500, 500], minDistance: P2(t2, 0, 300, 10, 2), maxDistance: P2(t2, 0, 300, 11, 3), tries: e17 ? 12 : 20 }).fill();
       this.pointsData = [];
       for (let e18 = 0; e18 < n2.length; e18++)
         this.pointsData.push(n2[e18][0] - 250, n2[e18][1] - 250);
@@ -14203,7 +14209,7 @@ this.createPoints(), this.init();
                     gl_Position = projectionMatrix * viewSpace;
                     vScreenPos = gl_Position.xy;
 
-                    gl_PointSize = max(2.6, ((vScale * 7.) * (uPixelRatio * 0.5) * uParticleScale));
+                    gl_PointSize = max(2.1, ((vScale * 7.) * (uPixelRatio * 0.5) * uParticleScale));
 
                 }
             `, fragmentShader: `
@@ -14345,7 +14351,9 @@ if (this.scene.isIntersecting) {
     this.cursorPos.set(n2 * 0.2, r2 * 0.1);
     this.ringPos.set(this.ringPos.x + (this.cursorPos.x - this.ringPos.x) * 0.01, this.ringPos.y + (this.cursorPos.y - this.ringPos.y) * 0.01);
 }
-this.particleScale = _isMobileScene ? (Math.max(0.92, (1200 / 2e3)) * this.scene.particlesScale * 1.55) : (this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale), this.simMaterial.uniforms.uPosition.value = this.everRendered ? this.rt1.texture : this.posTex, this.simMaterial.uniforms.uTime.value = this.scene.time, this.simMaterial.uniforms.uDeltaTime.value = t2, this.simMaterial.uniforms.uRingRadius.value = 0.175 + Math.sin(this.scene.time * 1) * 0.03 + Math.cos(this.scene.time * 3) * 0.02, this.simMaterial.uniforms.uRingPos.value = this.ringPos, this.simMaterial.uniforms.uRingWidth.value = this.scene.ringWidth, this.simMaterial.uniforms.uRingWidth2.value = this.scene.ringWidth2, this.simMaterial.uniforms.uRingDisplacement.value = this.scene.ringDisplacement, this.renderer.setRenderTarget(this.rt2), this.renderer.render(this.simScene, this.simCamera), this.renderer.setRenderTarget(null), this.renderMaterial.uniforms.uPosition.value = this.everRendered ? this.rt2.texture : this.posTex, this.renderMaterial.uniforms.uTime.value = this.scene.time, this.renderMaterial.uniforms.uRingPos.value = this.ringPos, this.renderMaterial.uniforms.uParticleScale.value = this.particleScale;
+/* >>> USER EDITABLE: MOBILE PARTICLE SIZE SCALE IN ANIMATION LOOP <<< */
+let _mobLoopScaleFactor = 1.12;
+this.particleScale = _isMobileScene ? (Math.max(0.85, (1200 / 2e3)) * this.scene.particlesScale * _mobLoopScaleFactor) : (this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale), this.simMaterial.uniforms.uPosition.value = this.everRendered ? this.rt1.texture : this.posTex, this.simMaterial.uniforms.uTime.value = this.scene.time, this.simMaterial.uniforms.uDeltaTime.value = t2, this.simMaterial.uniforms.uRingRadius.value = 0.175 + Math.sin(this.scene.time * 1) * 0.03 + Math.cos(this.scene.time * 3) * 0.02, this.simMaterial.uniforms.uRingPos.value = this.ringPos, this.simMaterial.uniforms.uRingWidth.value = this.scene.ringWidth, this.simMaterial.uniforms.uRingWidth2.value = this.scene.ringWidth2, this.simMaterial.uniforms.uRingDisplacement.value = this.scene.ringDisplacement, this.renderer.setRenderTarget(this.rt2), this.renderer.render(this.simScene, this.simCamera), this.renderer.setRenderTarget(null), this.renderMaterial.uniforms.uPosition.value = this.everRendered ? this.rt2.texture : this.posTex, this.renderMaterial.uniforms.uTime.value = this.scene.time, this.renderMaterial.uniforms.uRingPos.value = this.ringPos, this.renderMaterial.uniforms.uParticleScale.value = this.particleScale;
     }
     postRender() {
       if (this.skippedFrame || this.didUpdate === false)
