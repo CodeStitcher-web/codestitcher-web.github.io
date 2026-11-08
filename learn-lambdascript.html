@@ -355,24 +355,24 @@
             color: #7ee787 !important;
         }
 
-        /* OUTPUT TERMINAL */
+        /* OUTPUT TERMINAL - VIBRANT IDE OUTPUT ENGINE */
         .glass-card .output-terminal,
         .output-terminal {
             margin-top: 16px !important;
-            background: #090d16 !important;
-            border: 1px solid #21262d !important;
-            border-left: 3px solid #238636 !important;
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            border-left: 3px solid #38ef7d !important;
             border-radius: 8px !important;
             padding: 14px 18px !important;
-            font-family: 'JetBrains Mono', monospace !important;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
             font-size: 13px !important;
-            color: #c9d1d9 !important;
+            color: #7ee787 !important;
             display: none;
             position: relative;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35) !important;
         }
         .output-terminal::before {
-            content: "TERMINAL" !important;
+            content: "TERMINAL OUTPUT" !important;
             position: absolute !important;
             top: 0 !important;
             right: 0 !important;
@@ -380,16 +380,41 @@
             color: #8b949e !important;
             font-size: 10px !important;
             letter-spacing: 1px !important;
-            padding: 2px 10px !important;
+            padding: 3px 12px !important;
             border-bottom-left-radius: 6px !important;
             font-weight: 600 !important;
+        }
+        .output-terminal * {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
         }
         .term-line {
             opacity: 0;
             animation: typeLine 0.25s forwards;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 4px 0;
-            color: #58a6ff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 6px 0 !important;
+            color: #7ee787 !important;
+            font-family: 'JetBrains Mono', monospace !important;
+            font-size: 13.5px !important;
+            line-height: 1.5 !important;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+        .term-line.term-error {
+            color: #ff7b72 !important;
+        }
+        .term-prompt {
+            color: #58a6ff !important;
+            font-weight: 700;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .term-text {
+            color: #7ee787 !important;
+            word-break: break-all;
+        }
+        .term-line.term-error .term-text {
+            color: #ff7b72 !important;
         }
         @keyframes typeLine { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
 
@@ -1328,12 +1353,15 @@ def execute_lambda(code):
                 
                 if (outputLines.length === 0) outputLines.push(">>> Protocol executed silently.");
                 
+                function safeEscape(str) {
+                    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                }
                 outputLines.forEach((line, index) => {
                     setTimeout(() => {
                         const div = document.createElement('div');
-                        div.className = 'term-line';
-                        div.innerText = "> " + line;
-                        if(line.startsWith("ERROR")) div.style.color = "#ff5e57";
+                        const isErr = line.startsWith("ERROR");
+                        div.className = isErr ? 'term-line term-error' : 'term-line';
+                        div.innerHTML = `<span class="term-prompt" style="color:#58a6ff !important; font-weight:700;">&gt;</span><span class="term-text" style="color:${isErr ? '#ff7b72' : '#7ee787'} !important;">${safeEscape(line)}</span>`;
                         terminal.appendChild(div);
                         playSound('success');
                     }, index * 200);
@@ -1342,9 +1370,8 @@ def execute_lambda(code):
             } catch (err) {
                 playSound('error');
                 const div = document.createElement('div');
-                div.className = 'term-line';
-                div.style.color = '#ff5e57';
-                div.innerText = "SYS ERR: " + err;
+                div.className = 'term-line term-error';
+                div.innerHTML = `<span class="term-prompt" style="color:#ff7b72 !important; font-weight:700;">!</span><span class="term-text" style="color:#ff7b72 !important;">SYS ERR: ${String(err).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>`;
                 terminal.appendChild(div);
             }
 

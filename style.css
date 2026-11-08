@@ -1085,8 +1085,8 @@ li, td, th, label, small, strong, em, b, i,
 
 /* ALL text defaults to deep ink black (excluding code editors, syntax tokens & black pill buttons) */
 p, li, td, th, label, small, strong,
-span:not(.monaco-editor *):not([class*="mtk"]):not(.code-token):not(.token):not(.hljs *):not(code *):not(pre *):not(.code-block *):not(.code-editor *):not([class*="c-"]):not(.agy-btn-download *):not(.agy-hero-cta *):not(.btn-glow *):not(.btn-primary *):not(.btn-black-pill *):not(.btn-run *):not(.btn-exec *):not(.agy-badge-new):not(.cat-tab.active *):not(.filter-tab.active *):not(.btn-python *):not([class*="btn-black"] *):not([class*="black-pill"] *),
-div:not(.monaco-editor *):not(.view-line):not([class*="monaco"]):not(.code-editor *):not(.code-block *):not(pre *):not(code *):not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
+span:not(.monaco-editor *):not([class*="mtk"]):not(.code-token):not(.token):not(.hljs *):not(code *):not(pre *):not(.code-block *):not(.code-editor *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not([class*="c-"]):not(.agy-btn-download *):not(.agy-hero-cta *):not(.btn-glow *):not(.btn-primary *):not(.btn-black-pill *):not(.btn-run *):not(.btn-exec *):not(.agy-badge-new):not(.cat-tab.active *):not(.filter-tab.active *):not(.btn-python *):not([class*="btn-black"] *):not([class*="black-pill"] *),
+div:not(.monaco-editor *):not(.view-line):not([class*="monaco"]):not(.code-editor *):not(.code-block *):not(.output-terminal *):not(.term-line):not([class*="term-"]):not(pre *):not(code *):not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
     color: #1F1F1F !important;
 }
 
