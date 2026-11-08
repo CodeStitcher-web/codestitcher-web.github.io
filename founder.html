@@ -928,6 +928,77 @@
         .f-card .f-btn:hover {
             opacity: 0.88;
         }
+    
+        /* Founder Cards Action Buttons & Pills */
+        .f-actions {
+            display: flex !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+            margin-top: 28px !important;
+            padding-top: 24px !important;
+            border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .f-card .btn-black-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background: #000000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #000000 !important;
+            border-radius: 9999px !important;
+            padding: 11px 24px !important;
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .f-card .btn-black-pill:hover {
+            opacity: 0.88 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22) !important;
+        }
+
+        .f-card .btn-black-pill,
+        .f-card .btn-black-pill *,
+        .f-card .btn-black-pill span,
+        .f-card .btn-black-pill i {
+            color: #FFFFFF !important;
+        }
+
+        .f-card .btn-outline-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background: #FFFFFF !important;
+            color: #111111 !important;
+            border: 1px solid rgba(0, 0, 0, 0.14) !important;
+            border-radius: 9999px !important;
+            padding: 10px 22px !important;
+            font-size: 13.5px !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+        }
+
+        .f-card .btn-outline-pill:hover {
+            background: #F1F3F4 !important;
+            border-color: rgba(0, 0, 0, 0.25) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .f-card .btn-outline-pill,
+        .f-card .btn-outline-pill span {
+            color: #111111 !important;
+        }
+
+        /* Completely hide old synergy box if any residue */
+        .synergy-box { display: none !important; }
+
     </style>
 
 </head>
@@ -1308,11 +1379,11 @@
             </div>
 
             <div class="f-actions">
-                <a href="https://mustafijratul.github.io" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
-                    <i class="fa-solid fa-globe"></i> Portfolio
+                <a href="https://mustafijratul.github.io" target="_blank" class="btn-black-pill" onclick="playSound('click')">
+                    <i class="fa-solid fa-globe" style="color:#FFFFFF !important;"></i> <span>Portfolio &#8599;</span>
                 </a>
-                <a href="https://github.com/MustafijRatul" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
-                    <i class="fa-brands fa-github"></i> GitHub
+                <a href="https://github.com/MustafijRatul" target="_blank" class="btn-outline-pill" onclick="playSound('click')">
+                    <i class="fa-brands fa-github" style="color:#111111 !important;"></i> <span>GitHub &#8599;</span>
                 </a>
             </div>
         </article>
@@ -1347,59 +1418,29 @@
             </div>
 
             <div class="f-actions">
-                <span class="btn-action btn-tamim">
-                    <i class="fa-solid fa-shield-halved"></i> Co-Founder
+                <span class="btn-outline-pill" style="cursor:default; background:#F8F9FA !important; border-color:rgba(0,0,0,0.1) !important;">
+                    <i class="fa-solid fa-shield-halved" style="color:#1A73E8 !important;"></i> <span>Co-Founder</span>
                 </span>
-                <span class="btn-action btn-tamim">
-                    <i class="fa-solid fa-sparkles"></i> Innovation Lead
+                <span class="btn-outline-pill" style="cursor:default; background:#F8F9FA !important; border-color:rgba(0,0,0,0.1) !important;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color:#8B5CF6 !important;"></i> <span>Innovation Lead</span>
                 </span>
             </div>
         </article>
 
     </div>
 
-    <!-- BROTHERHOOD SYNERGY STATUS -->
-    <div class="synergy-box" data-aos="fade-up" data-aos-delay="300">
-        <div>
-            <div class="syn-title">Brotherhood Synchronization // <span>ACTIVE</span></div>
-            <div class="syn-desc">Decentralized collaboration matrix: Ratul × Tamim</div>
-
-            <div class="sync-visual" aria-hidden="true">
-                <span class="sync-node n-r">R</span>
-                <svg class="sync-line" viewBox="0 0 200 20" preserveAspectRatio="none">
-                    <line x1="10" y1="10" x2="190" y2="10" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-                    <circle class="pulse-dot" r="3" cx="10" cy="10">
-                        <animate attributeName="cx" values="10;190;10" dur="3.2s" repeatCount="indefinite" />
-                    </circle>
-                </svg>
-                <span class="sync-node n-t">T</span>
-            </div>
-        </div>
-        <div class="syn-stats">
-            <div class="syn-metric" id="metric-sync" data-target="100">
-                <div class="val">0%</div>
-                <div class="lbl">Synergy Matrix</div>
-            </div>
-            <div class="syn-metric">
-                <div class="val">2 Nodes</div>
-                <div class="lbl">Unified Core</div>
-            </div>
-            <div class="syn-metric">
-                <div class="val" id="live-packets">0</div>
-                <div class="lbl">Packets Synced</div>
-            </div>
-        </div>
-    </div>
 </main>
 
-<!-- ============================================================
-     FOOTER
-============================================================ -->
-<footer>
-    <div class="footer-left">
-        &copy; 2025 <span>CodeStitcher</span> — Engineered by Ratul & Tamim
-    </div>
-</footer>
+    <!-- Official CodeStitcher Footer -->
+    <footer class="agy-footer">
+        <div class="agy-footer-copy">&#169; 2026 CodeStitcher. Engineered with precision by Ratul &amp; Tamim.</div>
+        <ul class="agy-footer-links">
+            <li><a href="products/index.html">Products</a></li>
+            <li><a href="founder.html">Founders</a></li>
+            <li><a href="https://github.com/MustafijRatul" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+            <li><a href="LICENSE">License</a></li>
+        </ul>
+    </footer>
 
 <!-- SYSTEM ACCESS PANEL (opens from clicking a founder avatar) -->
 <div class="term-overlay" id="term-overlay">

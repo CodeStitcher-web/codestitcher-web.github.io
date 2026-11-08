@@ -1385,7 +1385,7 @@ a, button, [role="button"], .cat-tab, .clickable {
 }
 
 /* Action buttons across all pages */
-.btn-glow, .btn-primary, .cta-btn, .action-btn, .btn-action, .btn-exec, .btn-learn, .btn-download {
+.btn-glow, .btn-primary, .cta-btn, .action-btn, .btn-exec, .btn-learn, .btn-download {
     background: #000000 !important;
     color: #FFFFFF !important;
     border: 1px solid #000000 !important;
@@ -1396,7 +1396,7 @@ a, button, [role="button"], .cat-tab, .clickable {
     font-weight: 500 !important;
     transition: opacity 0.2s ease, transform 0.15s ease !important;
 }
-.btn-glow *, .btn-primary *, .cta-btn *, .action-btn *, .btn-action * {
+.btn-glow *, .btn-primary *, .cta-btn *, .action-btn * {
     color: #FFFFFF !important;
 }
 .btn-glow:hover, .btn-primary:hover, .cta-btn:hover, .action-btn:hover {
