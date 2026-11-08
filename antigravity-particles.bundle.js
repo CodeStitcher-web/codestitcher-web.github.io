@@ -13980,11 +13980,23 @@ void main() {
       this.cursor = new W(), this.hasMoved = false, this.screenWidth = window.innerWidth, this.screenHeight = window.innerHeight, this.initEvents(), window.__debugMouse = this;
     }
     initEvents() {
-      window.matchMedia(`(hover: hover) and (pointer: fine)`).matches ? window.addEventListener(`mousemove`, (e17) => {
-        this.onMouve(e17);
-      }, { passive: true }) : window.addEventListener(`pointerdown`, (e17) => {
-        e17.pointerType !== `mouse` && this.onMouve(e17);
-      }, { passive: true, capture: true }), window.addEventListener(`resize`, () => {
+      const updateCoords = (e17) => {
+        if (e17.touches && e17.touches.length > 0) {
+          this.cursor.x = e17.touches[0].clientX;
+          this.cursor.y = e17.touches[0].clientY;
+          this.hasMoved = true;
+        } else if (e17.clientX !== undefined) {
+          this.cursor.x = e17.clientX;
+          this.cursor.y = e17.clientY;
+          this.hasMoved = true;
+        }
+      };
+      window.addEventListener(`mousemove`, updateCoords, { passive: true });
+      window.addEventListener(`touchmove`, updateCoords, { passive: true, capture: true });
+      window.addEventListener(`touchstart`, updateCoords, { passive: true, capture: true });
+      window.addEventListener(`pointermove`, updateCoords, { passive: true, capture: true });
+      window.addEventListener(`pointerdown`, updateCoords, { passive: true, capture: true });
+      window.addEventListener(`resize`, () => {
         this.screenWidth = window.innerWidth, this.screenHeight = window.innerHeight;
       }, { passive: true });
     }
@@ -14317,7 +14329,7 @@ void main() {
       let t2 = jl(this.scene.clock.getElapsedTime() - this.lastTime);
       this.lastTime = this.scene.clock.getElapsedTime();
       let n2 = (this.noise.getVal(this.scene.time * 0.66 + 94.234) - 0.5) * 2, r2 = (this.noise.getVal(this.scene.time * 0.75 + 21.028) - 0.5) * 2;
-      this.cursorPos.set(n2 * 0.2, r2 * 0.1), this.scene.isIntersecting ? (this.cursorPos.set(this.scene.intersectionPoint.x * 0.175 + n2 * 0.1, this.scene.intersectionPoint.y * 0.175 + r2 * 0.1), this.ringPos.set(this.ringPos.x + (this.cursorPos.x - this.ringPos.x) * 0.02, this.ringPos.y + (this.cursorPos.y - this.ringPos.y) * 0.02)) : (this.cursorPos.set(n2 * 0.2, r2 * 0.1), this.ringPos.set(this.ringPos.x + (this.cursorPos.x - this.ringPos.x) * 0.01, this.ringPos.y + (this.cursorPos.y - this.ringPos.y) * 0.01)), this.particleScale = this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale, this.simMaterial.uniforms.uPosition.value = this.everRendered ? this.rt1.texture : this.posTex, this.simMaterial.uniforms.uTime.value = this.scene.time, this.simMaterial.uniforms.uDeltaTime.value = t2, this.simMaterial.uniforms.uRingRadius.value = 0.175 + Math.sin(this.scene.time * 1) * 0.03 + Math.cos(this.scene.time * 3) * 0.02, this.simMaterial.uniforms.uRingPos.value = this.ringPos, this.simMaterial.uniforms.uRingWidth.value = this.scene.ringWidth, this.simMaterial.uniforms.uRingWidth2.value = this.scene.ringWidth2, this.simMaterial.uniforms.uRingDisplacement.value = this.scene.ringDisplacement, this.renderer.setRenderTarget(this.rt2), this.renderer.render(this.simScene, this.simCamera), this.renderer.setRenderTarget(null), this.renderMaterial.uniforms.uPosition.value = this.everRendered ? this.rt2.texture : this.posTex, this.renderMaterial.uniforms.uTime.value = this.scene.time, this.renderMaterial.uniforms.uRingPos.value = this.ringPos, this.renderMaterial.uniforms.uParticleScale.value = this.particleScale;
+      this.cursorPos.set(n2 * 0.2, r2 * 0.1), this.scene.isIntersecting ? (this.cursorPos.set(this.scene.intersectionPoint.x * 0.175 + n2 * 0.1, this.scene.intersectionPoint.y * 0.175 + r2 * 0.1), this.ringPos.set(this.ringPos.x + (this.cursorPos.x - this.ringPos.x) * 0.045, this.ringPos.y + (this.cursorPos.y - this.ringPos.y) * 0.045)) : (this.cursorPos.set(n2 * 0.2, r2 * 0.1), this.ringPos.set(this.ringPos.x + (this.cursorPos.x - this.ringPos.x) * 0.01, this.ringPos.y + (this.cursorPos.y - this.ringPos.y) * 0.01)), this.particleScale = this.scene.renderer.domElement.width / this.scene.pixelRatio / 2e3 * this.scene.particlesScale, this.simMaterial.uniforms.uPosition.value = this.everRendered ? this.rt1.texture : this.posTex, this.simMaterial.uniforms.uTime.value = this.scene.time, this.simMaterial.uniforms.uDeltaTime.value = t2, this.simMaterial.uniforms.uRingRadius.value = 0.175 + Math.sin(this.scene.time * 1) * 0.03 + Math.cos(this.scene.time * 3) * 0.02, this.simMaterial.uniforms.uRingPos.value = this.ringPos, this.simMaterial.uniforms.uRingWidth.value = this.scene.ringWidth, this.simMaterial.uniforms.uRingWidth2.value = this.scene.ringWidth2, this.simMaterial.uniforms.uRingDisplacement.value = this.scene.ringDisplacement, this.renderer.setRenderTarget(this.rt2), this.renderer.render(this.simScene, this.simCamera), this.renderer.setRenderTarget(null), this.renderMaterial.uniforms.uPosition.value = this.everRendered ? this.rt2.texture : this.posTex, this.renderMaterial.uniforms.uTime.value = this.scene.time, this.renderMaterial.uniforms.uRingPos.value = this.ringPos, this.renderMaterial.uniforms.uParticleScale.value = this.particleScale;
     }
     postRender() {
       if (this.skippedFrame || this.didUpdate === false)
