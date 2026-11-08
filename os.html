@@ -987,9 +987,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Ubuntu',sans-serif
         <div class="ddot"></div>
         <div class="dlabel">CodeStitcher IDE</div>
       </div>
-      <div class="ditem" onclick="goExternal('game.html')">
-        <div class="dico ic-game"><i class="fa-solid fa-gamepad"></i></div>
-        <div class="ddot"></div>
+      <div class="ddot"></div>
         <div class="dlabel">Neural Game</div>
       </div>
       <div class="ditem" onclick="goExternal('learn-python.html')">
@@ -1777,11 +1775,6 @@ function execCmd(raw) {
       setTimeout(() => goExternal('python-lab.html'), 800);
       break;
 
-    case 'game':
-      tPrint('Loading Neural Simulation…', 'ts');
-      setTimeout(() => goExternal('game.html'), 800);
-      break;
-
     case 'open': {
       const apps = { terminal:'terminal', files:'files', settings:'settings', monitor:'monitor', about:'about', codepad:'codepad' };
       if (apps[arg]) { openWin(apps[arg]); tPrint(`Opening ${arg}…`, 'ts'); }
@@ -2226,7 +2219,6 @@ const SP_APPS = [
   {t:'Files',s:'File Manager — VFS',ic:'<div class="sp-res-ico ic-files"><i class="fa-solid fa-folder"></i></div>',fn:()=>openWin('files')},
   {t:'CodePad',s:'Text Editor',ic:'<div class="sp-res-ico ic-pad"><i class="fa-solid fa-pen-to-square"></i></div>',fn:()=>{openWin('codepad');}},
   {t:'Python IDE',s:'Neural Uplink — WebAssembly',ic:'<div class="sp-res-ico ic-py"><i class="fa-brands fa-python"></i></div>',fn:()=>goExternal('python-lab.html')},
-  {t:'Neural Game',s:'Training Simulation',ic:'<div class="sp-res-ico ic-game"><i class="fa-solid fa-gamepad"></i></div>',fn:()=>goExternal('game.html')},
   {t:'Learn Python',s:'Interactive Tutorials',ic:'<div class="sp-res-ico ic-read"><i class="fa-solid fa-book-open"></i></div>',fn:()=>goExternal('learn-python.html')},
   {t:'Settings',s:'System Preferences — Live Theming',ic:'<div class="sp-res-ico ic-sett"><i class="fa-solid fa-gear"></i></div>',fn:()=>openWin('settings')},
   {t:'System Monitor',s:'Resource Usage',ic:'<div class="sp-res-ico ic-mon"><i class="fa-solid fa-chart-line"></i></div>',fn:()=>openWin('monitor')},
