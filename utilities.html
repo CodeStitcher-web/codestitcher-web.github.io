@@ -1482,18 +1482,6 @@ footer {
 
     <!-- Particle canvas (shared across all pages) -->
     <div class="page-flash"></div>
-<div class="overload-overlay" id="overload-overlay"></div>
-<div class="overload-hud" id="overload-hud">
-    <div class="hud-title">⚠ CRITICAL OVERLOAD</div>
-    <div class="hud-sub">NEURAL SYSTEMS COMPROMISED</div>
-    <div class="hud-bar-wrap"><div class="hud-bar" id="hud-bar" style="width:0%"></div></div>
-</div>
-
-
-
-
-
-
 <div id="scroll-progress"></div>
 
 
@@ -1513,13 +1501,12 @@ footer {
         <span class="pt-top">Micro</span>
         <span class="pt-bot">Utilities</span>
     </h1>
-    <p class="page-sub">Seven precision-engineered developer instruments. Click any module to initialize it.</p>
+    <p class="page-sub">Five precision-engineered developer instruments. Click any module to initialize it.</p>
     <div class="cat-tabs">
         <button class="cat-tab active" data-cat="all" onclick="filterCat(this,'all')">ALL MODULES</button>
         <button class="cat-tab" data-cat="essentials" onclick="filterCat(this,'essentials')">ESSENTIALS</button>
         <button class="cat-tab" data-cat="dev" onclick="filterCat(this,'dev')">DEV TOOLS</button>
-        <button class="cat-tab" data-cat="fun" onclick="filterCat(this,'fun')">MIND-BENDING</button>
-    </div>
+        </div>
 </section>
 
 <!-- UTILITY GRID -->
@@ -1589,33 +1576,7 @@ footer {
             <div class="card-launch">INITIALIZE <i class="fa-solid fa-arrow-right"></i></div>
         </div>
 
-        <!-- 6: NEURAL OVERLOAD -->
-        <div class="util-card c-red" data-cat="fun" data-aos="fade-up" data-aos-delay="300" onclick="openModal('overload')">
-            <div class="card-top-bar"></div>
-            <div class="card-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <div class="card-cat-badge">MIND-BENDING // 06</div>
-            <div class="card-title">Neural Overload</div>
-            <div class="card-preview" style="color:var(--red);">
-                ⚠ CRITICAL SYSTEM ALERT — DO NOT ENGAGE
-            </div>
-            <div class="card-desc">Press the big red button. Triggers a full-screen warning, screen shake, and alarm for 3 seconds. Completely harmless — just chaotic.</div>
-            <div class="card-launch">INITIALIZE <i class="fa-solid fa-arrow-right"></i></div>
         </div>
-
-        <!-- 7: MATRIX -->
-        <div class="util-card c-green" data-cat="fun" data-aos="fade-up" data-aos-delay="360" onclick="openModal('matrix')">
-            <div class="card-top-bar"></div>
-            <div class="card-icon-wrap"><i class="fa-solid fa-terminal"></i></div>
-            <div class="card-cat-badge">MIND-BENDING // 07</div>
-            <div class="card-title">Matrix Visualizer</div>
-            <div class="card-preview">
-                <span style="color:var(--green); font-size:0.7rem; letter-spacing:1px">ﾊ ﾐ ﾋ ｰ ｳ ｼ ﾅ ﾓ ﾆ ｻ ﾜ ﾂ ｵ ﾘ</span>
-            </div>
-            <div class="card-desc">A live animated "Matrix rain" canvas. Adjust the speed, density, and font size. Pick a color. Just watch it run.</div>
-            <div class="card-launch">INITIALIZE <i class="fa-solid fa-arrow-right"></i></div>
-        </div>
-
-    </div>
 </section>
 
 <footer>
@@ -2018,83 +1979,6 @@ footer {
         </div>
     </div>
 
-    <!-- ── NEURAL OVERLOAD ─────────────────── -->
-    <div id="modal-overload" class="modal-content" style="display:none; --modal-border:rgba(255,77,109,0.35); --modal-shadow:var(--glow-red); --modal-accent:var(--red);">
-        <div class="modal-header">
-            <div class="modal-title-row">
-                <div class="modal-icon" style="color:var(--red); border-color:rgba(255,77,109,0.25)"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div>
-                    <div class="modal-title">Neural Overload</div>
-                    <div class="modal-subtitle">WARNING // PROCEED AT YOUR OWN RISK</div>
-                </div>
-            </div>
-            <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="overload-arena">
-                <div class="overload-warning">
-                    ⚠ ENGAGING THIS MODULE WILL COMPROMISE<br>YOUR VISUAL CORTEX FOR 3 SECONDS
-                </div>
-                <button class="big-red-btn" id="big-red-btn" onclick="triggerOverload()">
-                    <i class="fa-solid fa-power-off"></i>
-                    <span>ENGAGE</span>
-                </button>
-                <div class="overload-status" id="overload-status">SYSTEM ARMED // AWAITING TRIGGER</div>
-                <div class="divider" style="width:100%; margin:24px 0"></div>
-                <div style="font-family:var(--font-mono); font-size:0.72rem; color:#333; text-align:center; line-height:2; letter-spacing:1px;">
-                    <div>EFFECT DURATION: <span style="color:var(--red)">3 SECONDS</span></div>
-                    <div>SCREEN SHAKE: <span style="color:var(--red)">ACTIVE</span></div>
-                    <div>AUDIO THREAT: <span style="color:var(--green)">NONE (SAFE)</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── MATRIX VISUALIZER ──────────────── -->
-    <div id="modal-matrix" class="modal-content" style="display:none; --modal-border:rgba(0,255,136,0.3); --modal-shadow:var(--glow-green); --modal-accent:var(--green);">
-        <div class="modal-header">
-            <div class="modal-title-row">
-                <div class="modal-icon" style="color:var(--green); border-color:rgba(0,255,136,0.2)"><i class="fa-solid fa-terminal"></i></div>
-                <div>
-                    <div class="modal-title">Matrix Visualizer</div>
-                    <div class="modal-subtitle">CANVAS // DIGITAL RAIN // LIVE</div>
-                </div>
-            </div>
-            <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="matrix-arena">
-                <canvas id="matrix-canvas" width="580" height="320"></canvas>
-                <div class="matrix-controls">
-                    <div class="mat-ctrl">
-                        <span>SPEED</span>
-                        <input type="range" class="w-slider" min="1" max="10" value="4" id="mat-speed" oninput="updateMatSlider(this,'mat-speed-val')" style="width:120px">
-                        <span id="mat-speed-val" style="color:var(--green)">4</span>
-                    </div>
-                    <div class="mat-ctrl">
-                        <span>DENSITY</span>
-                        <input type="range" class="w-slider" min="5" max="40" value="16" id="mat-density" oninput="updateMatSlider(this,'mat-density-val')" style="width:120px">
-                        <span id="mat-density-val" style="color:var(--green)">16</span>
-                    </div>
-                    <div class="mat-ctrl">
-                        <span>FONT SIZE</span>
-                        <input type="range" class="w-slider" min="8" max="24" value="14" id="mat-fsize" oninput="updateMatSlider(this,'mat-fsize-val')" style="width:120px">
-                        <span id="mat-fsize-val" style="color:var(--green)">14</span>
-                    </div>
-                </div>
-                <div class="matrix-controls mt-16">
-                    <button class="w-btn" style="color:var(--green); border-color:rgba(0,255,136,0.3)" onclick="setMatColor('#00FF88')" id="mat-col-green">GREEN</button>
-                    <button class="w-btn" style="color:var(--cyan); border-color:rgba(0,245,255,0.3)" onclick="setMatColor('#00F5FF')" id="mat-col-cyan">CYAN</button>
-                    <button class="w-btn" style="color:var(--violet2); border-color:rgba(124,58,237,0.3)" onclick="setMatColor('#A855F7')" id="mat-col-violet">VIOLET</button>
-                    <button class="w-btn" style="color:var(--amber); border-color:rgba(255,184,0,0.3)" onclick="setMatColor('#FFB800')" id="mat-col-amber">AMBER</button>
-                </div>
-                <div class="matrix-stats">
-                    <div class="mstat"><div class="mstat-val" id="mat-fps">—</div><div class="mstat-label">FPS</div></div>
-                    <div class="mstat"><div class="mstat-val" id="mat-drops">—</div><div class="mstat-label">DROPS</div></div>
-                    <div class="mstat"><div class="mstat-val" id="mat-chars">カナ</div><div class="mstat-label">CHARSET</div></div>
-                </div>
-            </div>
-        </div>
     </div>
 
 </div><!-- /.modal-box -->
@@ -2310,7 +2194,7 @@ function openModal(id) {
     // Init specific tools
     if (id === 'chronos') initChronos();
     if (id === 'scratch') initScratch();
-    if (id === 'matrix') { setTimeout(initMatrix, 100); }
+    
     if (id === 'passgen') { updatePassSlider(document.getElementById('pass-slider')); }
     if (id === 'calc') { initCalc(); }
 }
@@ -2319,9 +2203,7 @@ function closeModal() {
     playSound('close');
     document.getElementById('modal-backdrop').classList.remove('open');
     document.body.style.overflow = '';
-    if (activeModal === 'matrix' && matrixAnim) {
-        cancelAnimationFrame(matrixAnim); matrixAnim = null;
-    }
+    
     activeModal = null;
 }
 
