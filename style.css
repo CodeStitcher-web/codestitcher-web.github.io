@@ -1,0 +1,2496 @@
+/* ==============================================================================
+   GOOGLE ANTIGRAVITY (antigravity.google) 1:1 AUTHENTIC DESIGN SYSTEM
+   ============================================================================== */
+
+@font-face {
+    font-family: 'Google Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/googlesans/v45/4UaGrENHsxJlGDuGo1OIlL3Kwp5MKg.woff2) format('woff2');
+}
+
+@font-face {
+    font-family: 'Google Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLU94Yt3CwZ-Pw.woff2) format('woff2');
+}
+
+@font-face {
+    font-family: 'Google Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLV154t3CwZ-Pw.woff2) format('woff2');
+}
+
+@font-face {
+    font-family: 'Google Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/googlesans/v45/4UabrENHsxJlGDuGo1OIlLV154t3CwZ-Pw.woff2) format('woff2');
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --bg-page: #FFFFFF;
+    --text-primary: #1F1F1F;
+    --text-headline: #111111;
+    --text-secondary: #5E5E5E;
+    --text-muted: #757575;
+    
+    --border-light: rgba(0, 0, 0, 0.08);
+    --border-subtle: rgba(0, 0, 0, 0.12);
+    
+    --pill-black: #000000;
+    --pill-text: #FFFFFF;
+    
+    --google-blue: #1A73E8;
+    --google-blue-hover: #1557B0;
+    
+    --font-google: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Legacy Color Overrides for Subpages */
+    --void: #FFFFFF !important;
+    --deep: #FAFAFC !important;
+    --surface: #FFFFFF !important;
+    --elevated: #F8F9FA !important;
+    --glass: rgba(255, 255, 255, 0.96) !important;
+    --border: rgba(0, 0, 0, 0.08) !important;
+    --border-hot: rgba(26, 115, 232, 0.3) !important;
+    --white: #111111 !important;
+    --cyan: #1A73E8 !important;
+    --violet: #1F2937 !important;
+    --violet2: #374151 !important;
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-page) !important;
+    background: #FFFFFF !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-google);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+    cursor: auto !important;
+}
+
+/* Ensure clean standard OS mouse pointer everywhere - NO RINGS */
+*, body, a, button, input, select, textarea {
+    cursor: auto;
+}
+a, button, [role="button"], .clickable {
+    cursor: pointer !important;
+}
+
+/* Completely remove and disable all legacy custom cursor elements & rings */
+.cursor-core,
+.cursor-ring,
+.cursor-dot,
+.cursor-outline,
+#cursor,
+#custom-cursor,
+.custom-cursor {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ==============================================================================
+   ANTIGRAVITY CONFETTI PARTICLE CANVAS (scattered dashes, mouse bubble repulsion)
+   ============================================================================== */
+#antigravity-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    display: block;
+}
+
+/* ==============================================================================
+   TOP HEADER / NAVIGATION (antigravity.google)
+   ============================================================================== */
+.agy-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 1000;
+}
+
+.agy-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-headline);
+}
+
+.agy-brand-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agy-brand-title {
+    font-family: var(--font-google);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-headline);
+}
+
+.agy-nav-center {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+}
+
+.agy-nav-item {
+    position: relative;
+    padding: 12px 0;
+}
+
+.agy-nav-link {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14.5px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.15s ease;
+    cursor: pointer;
+}
+
+.agy-nav-link:hover,
+.agy-nav-item:hover > .agy-nav-link {
+    color: var(--text-headline);
+}
+
+.agy-chevron {
+    transition: transform 0.2s ease;
+}
+
+.agy-nav-item:hover .agy-chevron {
+    transform: rotate(180deg);
+}
+
+/* Authentic Google-style Dropdown Menus */
+.agy-dropdown {
+    position: absolute;
+    top: calc(100% - 4px);
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+    padding: 10px;
+    min-width: 290px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 1002;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.agy-nav-item:hover .agy-dropdown {
+    display: flex;
+}
+
+.agy-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background 0.15s ease;
+}
+
+.agy-dropdown-item:hover {
+    background: #F8F9FA;
+}
+
+.agy-drop-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.agy-drop-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.agy-drop-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-headline);
+}
+
+.agy-drop-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Nav Right */
+.agy-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.agy-rocket-icon {
+    font-size: 16px;
+    cursor: default;
+}
+
+.agy-btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--pill-black);
+    color: var(--pill-text);
+    padding: 9px 20px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.agy-btn-download:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.agy-github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 9999px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-headline);
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.agy-github-btn:hover {
+    border-color: rgba(0, 0, 0, 0.3);
+    background: #F8F9FA;
+}
+
+/* ==============================================================================
+   RESPONSIVE MOBILE NAVIGATION & DRAWER SYSTEM
+   ============================================================================== */
+.agy-mobile-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #111111;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.15s ease, transform 0.15s ease;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.agy-mobile-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.agy-mobile-btn:active {
+    transform: scale(0.94);
+}
+
+.agy-mobile-btn svg {
+    display: block;
+    pointer-events: none;
+}
+
+.mobile-drawer {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 20px 24px 28px;
+    z-index: 999;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+}
+
+.mobile-drawer.open,
+.mobile-drawer.active {
+    display: block !important;
+    animation: drawerSlideDown 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes drawerSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mobile-nav-list li {
+    margin: 0;
+    padding: 0;
+}
+
+.mobile-nav-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none !important;
+    color: #111111 !important;
+    font-family: 'Google Sans', -apple-system, sans-serif !important;
+    font-size: 15.5px !important;
+    font-weight: 500 !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    transition: background 0.15s ease !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.mobile-nav-list a:hover {
+    background: #F1F3F4 !important;
+}
+
+.mobile-nav-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+    margin: 8px 0;
+}
+
+.mobile-nav-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    background: #E8F0FE;
+    color: #1A73E8;
+}
+
+/* ==============================================================================
+   ANNOUNCEMENT PILL BANNER
+   ============================================================================== */
+.agy-banner-wrapper {
+    position: relative;
+    z-index: 10;
+    margin-top: 84px;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.agy-banner-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 9999px;
+    padding: 6px 14px 6px 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    font-size: 13.5px;
+    color: var(--text-primary);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.agy-badge-new {
+    background: #000000;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.04em;
+}
+
+.agy-banner-text {
+    color: var(--text-secondary);
+    font-size: 13.5px;
+}
+
+.agy-banner-link {
+    color: var(--text-headline);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.agy-banner-link:hover {
+    text-decoration: underline;
+}
+
+.agy-banner-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 8px;
+    line-height: 1;
+}
+
+/* ==============================================================================
+   HERO SECTION (antigravity.google monumental typography)
+   ============================================================================== */
+.agy-hero {
+    position: relative;
+    z-index: 10;
+    min-height: calc(85vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px 60px 24px;
+    max-width: 1180px;
+    margin: 0 auto;
+    background: transparent;
+}
+
+.agy-hero-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.agy-hero-mark-text {
+    font-family: var(--font-google);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-headline);
+}
+
+.agy-hero-headline {
+    font-family: var(--font-google);
+    font-size: clamp(2.8rem, 6.2vw, 5.5rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    color: var(--text-headline);
+    max-width: 960px;
+    margin-bottom: 38px;
+}
+
+.agy-hero-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+    color: #FFFFFF;
+    font-family: var(--font-google);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 13px 36px;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.agy-hero-cta:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+/* ==============================================================================
+   PRODUCT BENTO SHOWCASE (Clean Google Grid)
+   ============================================================================== */
+.agy-showcase {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 24px 100px 24px;
+    background: transparent;
+}
+
+.agy-showcase-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.agy-showcase-title {
+    font-family: var(--font-google);
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--text-headline);
+}
+
+.agy-bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+}
+
+.agy-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-light);
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.agy-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.16);
+}
+
+/* Featured Card: Calculate ⚡ */
+.agy-card-featured {
+    grid-column: span 12;
+    background: #FAFAFC;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 40px;
+    align-items: center;
+    padding: 48px;
+}
+
+@media (max-width: 900px) {
+    .agy-card-featured {
+        grid-template-columns: 1fr;
+        padding: 32px;
+    }
+}
+
+.agy-badge-tag {
+    display: inline-block;
+    font-family: var(--font-google);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--google-blue);
+    background: rgba(26, 115, 232, 0.08);
+    padding: 5px 12px;
+    border-radius: 9999px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+}
+
+.agy-card-heading {
+    font-family: var(--font-google);
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--text-headline);
+    margin-bottom: 12px;
+}
+
+.agy-card-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.agy-specs-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.agy-spec-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.agy-spec-val {
+    font-family: var(--font-google);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-headline);
+}
+
+.agy-spec-lbl {
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.agy-card-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-black-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #000000;
+    color: #FFFFFF;
+    padding: 10px 22px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.btn-black-pill:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.btn-outline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-headline);
+    padding: 10px 22px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-outline-pill:hover {
+    background: #FFFFFF;
+    border-color: rgba(0, 0, 0, 0.28);
+}
+
+/* Device Preview */
+.device-preview {
+    background: #000000;
+    border: 5px solid #222222;
+    border-radius: 40px;
+    padding: 24px 20px 28px 20px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+    width: 100%;
+    max-width: 330px;
+    margin: 0 auto;
+    color: #FFFFFF;
+    position: relative;
+}
+
+.device-notch {
+    width: 60px;
+    height: 6px;
+    background: #222222;
+    border-radius: 3px;
+    margin: 0 auto 20px auto;
+}
+
+.device-display {
+    text-align: right;
+    padding: 16px 12px;
+    background: #111111;
+    border-radius: 18px;
+    margin-bottom: 20px;
+}
+
+.device-expr {
+    font-size: 14px;
+    color: #888888;
+    min-height: 20px;
+}
+
+.device-result {
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+}
+
+.device-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.mini-key {
+    background: #1E1E1E;
+    border: none;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    color: #FFFFFF;
+    font-family: var(--font-google);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-key:hover {
+    background: #333333;
+}
+
+.mini-key:active {
+    transform: scale(0.92);
+}
+
+.mini-key.op {
+    background: #2D2D2D;
+    color: #8AB4F8;
+}
+
+.mini-key.eq {
+    background: #1A73E8;
+    color: #FFFFFF;
+}
+
+/* Bento Half and Third */
+.agy-card-half {
+    grid-column: span 6;
+}
+
+.agy-card-third {
+    grid-column: span 4;
+}
+
+@media (max-width: 900px) {
+    .agy-card-half,
+    .agy-card-third {
+        grid-column: span 12;
+    }
+}
+
+.agy-card-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+
+/* ==============================================================================
+   FOOTER
+   ============================================================================== */
+.agy-footer {
+    position: relative;
+    z-index: 10;
+    border-top: 1px solid var(--border-light);
+    background: #FFFFFF;
+    padding: 40px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.agy-footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+}
+
+.agy-footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.agy-footer-links a:hover {
+    color: var(--text-headline);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1080px) {
+    .agy-nav-center {
+        display: none;
+    }
+    .agy-mobile-btn {
+        display: block;
+    }
+    .agy-header {
+        padding: 0 20px;
+    }
+}
+
+/* ==============================================================================
+   UNIVERSAL ANTIGRAVITY B&W / MINIMAL LIGHT THEME ENGINE (APPLIES TO ALL PAGES)
+   Eliminates all dark void/neon/muddy backgrounds and washes out light-gray fonts.
+   ============================================================================== */
+
+/* 1. Global Page Background & Noise Cleanup */
+body, html {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1F1F1F !important;
+}
+
+#boot-screen, #boot-loader, .noise-layer, .noise-overlay, .noise, .page-transition, .orb, #bg-canvas, #neural-canvas,
+.page-flash, .overload-overlay, .overload-hud,
+.os-toggle-pill, #os-toggle-pill, .toggle-pill, #scroll-progress {
+    display: none !important;
+}
+
+/* Force all data-aos elements to be 100% visible immediately — prevents blank pages */
+[data-aos],
+[data-aos="fade-up"],
+[data-aos="fade-down"],
+[data-aos="fade-right"],
+[data-aos="fade-left"],
+[data-aos="zoom-in"],
+[data-aos="zoom-out"],
+.aos-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+    pointer-events: auto !important;
+}
+
+/* 2. Universal Clean White Cards */
+.glass-card,
+.holo-card,
+.founder-card,
+.f-card,
+.stat-card,
+.timeline-card,
+.module-card,
+.util-card,
+.tool-card,
+.card,
+.profile-card,
+.bcs-card,
+.subject-card,
+.chapter-card,
+.game-card,
+.sync-card,
+.stat-box,
+.tool-box,
+.result-box,
+.editor-card,
+.info-box,
+.step-card {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+    color: #1F1F1F !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.glass-card:hover,
+.holo-card:hover,
+.founder-card:hover,
+.f-card:hover,
+.module-card:hover,
+.util-card:hover {
+    border-color: rgba(0, 0, 0, 0.18) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06) !important;
+    transform: translateY(-2px) !important;
+}
+
+.avatar-wrap {
+    background: #F4F4F6 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #111111 !important;
+}
+
+/* 3. High-Contrast Typography */
+h1, h2, h3, h4, h5, h6,
+.page-title,
+.hero-title,
+.section-title,
+.card-title,
+.founder-name,
+.name,
+.stat-val,
+.nav-title,
+.nav-wordmark,
+.module-title,
+.tool-title {
+    color: #111111 !important;
+    font-family: var(--font-google) !important;
+    text-shadow: none !important;
+    letter-spacing: -0.02em !important;
+}
+
+p,
+.page-sub,
+.hero-sub,
+.desc,
+.bio,
+.card-desc,
+.stat-lbl,
+.subtitle,
+.syn-desc,
+.f-spec-label,
+.info-text,
+li {
+    color: #4B5563 !important;
+    text-shadow: none !important;
+}
+
+/* 4. Tags, Badges & Pills in Clean B&W + Google Blue */
+.badge-label,
+.badge,
+.tag,
+.f-tags span,
+.rank-badge,
+.level-badge,
+.status-badge {
+    background: #F3F4F6 !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 9999px !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    font-weight: 600 !important;
+}
+
+/* 5. Clean Action Buttons */
+.btn-glow,
+.btn-primary,
+.cta-btn,
+.action-btn,
+.btn-learn,
+.btn-python,
+.btn-game,
+.btn-founder,
+.btn-utilities,
+.btn-products {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    text-shadow: none !important;
+    font-weight: 500 !important;
+    transition: opacity 0.2s ease, transform 0.15s ease !important;
+}
+
+.btn-glow:hover,
+.btn-primary:hover,
+.cta-btn:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 6. Form Inputs & Code Blocks in Subpages */
+input, select, textarea {
+    background: #F9FAFB !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    color: #111111 !important;
+    border-radius: 12px !important;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #1A73E8 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12) !important;
+}
+
+/* 7. Remove any glowing neon filters */
+.glow, .neon, [class*="glow"] {
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   8. FORCE ALL TEXT TO BLACK — zero gradient / colored text anywhere
+   Exception: IDE code, buttons with white text, muted secondary text
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Strip gradient fills from ALL text elements */
+span, a, p, div, h1, h2, h3, h4, h5, h6,
+li, td, th, label, small, strong, em, b, i,
+.title, .subtitle, .desc, .name, .label {
+    -webkit-text-fill-color: unset !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    background-image: none !important;
+}
+
+/* ALL text defaults to deep ink black (excluding code editors, syntax tokens & black pill buttons) */
+p, li, td, th, label, small, strong,
+span:not(.monaco-editor *):not([class*="mtk"]):not(.code-token):not(.token):not(.hljs *):not(code *):not(pre *):not(.agy-btn-download *):not(.agy-hero-cta *):not(.btn-glow *):not(.btn-primary *):not(.btn-black-pill *):not(.btn-run *):not(.btn-exec *):not(.agy-badge-new):not(.cat-tab.active *):not(.filter-tab.active *):not(.btn-python *):not([class*="btn-black"] *):not([class*="black-pill"] *),
+div:not(.monaco-editor *):not(.view-line):not([class*="monaco"]):not(.code-editor *):not(pre *):not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
+    color: #1F1F1F !important;
+}
+
+/* Allow Monaco editor tokens and syntax highlighting to display naturally */
+.monaco-editor,
+.monaco-editor *,
+[class*="mtk"],
+.view-lines,
+.view-line {
+    -webkit-text-fill-color: initial !important;
+}
+
+/* Links: dark, clean (exclude black pill buttons and their contents) */
+a:not(.agy-btn-download):not(.agy-hero-cta):not(.btn-glow):not(.btn-primary):not(.btn-black-pill):not(.btn-run):not(.btn-exec):not(.cta-btn):not(.cat-tab.active):not(.filter-tab.active):not(.btn-python):not([class*="btn-black"]):not([class*="black-pill"]) {
+    color: #111111 !important;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* Exceptions — buttons keep white text */
+.btn-black-pill,
+.btn-black-pill *,
+.agy-btn-download,
+.agy-btn-download *,
+.agy-hero-cta,
+.btn-glow,
+.btn-primary,
+.cta-btn,
+.action-btn {
+    color: #FFFFFF !important;
+}
+
+/* New badge keeps white */
+.agy-badge-new {
+    color: #FFFFFF !important;
+}
+
+/* Muted secondary text */
+.agy-drop-desc,
+.agy-banner-text,
+.agy-spec-lbl,
+.agy-card-desc,
+.agy-footer-copy,
+.agy-footer-links a,
+.stat-lbl,
+.card-desc,
+.desc,
+.bio,
+.page-sub,
+.hero-sub {
+    color: #5E5E5E !important;
+}
+
+/* Nav links */
+.agy-nav-link {
+    color: #5E5E5E !important;
+}
+.agy-nav-link:hover {
+    color: #111111 !important;
+}
+
+/* Dropdown item titles must be black */
+.agy-drop-title {
+    color: #111111 !important;
+}
+
+/* Headings always deep black */
+h1, h2, h3, h4, h5, h6,
+.agy-hero-headline,
+.agy-showcase-title,
+.agy-card-heading,
+.agy-brand-title,
+.agy-hero-mark-text {
+    color: #111111 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   9. SUBPAGE INLINE-STYLE OVERRIDES — force white bg even if :root var fails
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Target dark background sections that use CSS variables */
+section, main, article, aside, header, footer, nav,
+.hero, .section, .page-wrapper, .content-wrap,
+.page-container, .container, .wrapper, .inner {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Keep header + footer white */
+.agy-header, .agy-footer {
+    background: rgba(255, 255, 255, 0.95) !important;
+    background-color: #FFFFFF !important;
+}
+
+/* IDE / code blocks — Google Antigravity Light Theme */
+.python-lab-ide,
+.editor-panel,
+.code-editor,
+.editor-area,
+.editor-wrap,
+.code-panel,
+.monaco-editor,
+.monaco-editor-background,
+.code-shell,
+.code-with-lines,
+pre,
+code {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #1F2937 !important;
+    font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+pre *, code *, .monaco-editor * {
+    -webkit-text-fill-color: initial !important;
+    background-image: none !important;
+}
+
+p code, li code, td code, .inline-code {
+    background: #F1F3F4 !important;
+    color: #1F2937 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    font-size: 0.9em !important;
+}
+
+/* Remove any inline SVG filter brightness hacks from dark themes */
+img, svg {
+    filter: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   10. FIX: .agy-nav-item.open shows dropdown (JS-driven click open)
+   ══════════════════════════════════════════════════════════════════════════════ */
+.agy-nav-item.open .agy-dropdown {
+    display: flex !important;
+}
+.agy-nav-item.open .agy-chevron {
+    transform: rotate(180deg);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   11. COMPREHENSIVE SUBPAGE ANTIGRAVITY THEME OVERRIDE (ALL PAGES)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Force all data-aos elements to be 100% visible immediately — prevents blank pages */
+[data-aos],
+[data-aos="fade-up"],
+[data-aos="fade-down"],
+[data-aos="fade-right"],
+[data-aos="fade-left"],
+[data-aos="zoom-in"],
+[data-aos="zoom-out"],
+.aos-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+    pointer-events: auto !important;
+}
+
+/* Hide all dark distractions & legacy OS pills */
+#boot-screen, #boot-loader, .noise-layer, .noise-overlay, .noise, .page-transition, .orb, #bg-canvas, #neural-canvas,
+.page-flash, .overload-overlay, .overload-hud,
+.os-toggle-pill, #os-toggle-pill, .toggle-pill, #scroll-progress,
+.cursor-core, .cursor-ring, .cursor-dot, .cursor-outline, #cursor, #custom-cursor, .custom-cursor {
+    display: none !important;
+}
+
+/* Ensure clean standard cursor everywhere */
+*, body, a, button, input, select, textarea {
+    cursor: auto !important;
+}
+a, button, [role="button"], .cat-tab, .clickable {
+    cursor: pointer !important;
+}
+
+/* Page titles and Hero headings in all subpages */
+.page-title, .hero-title, .section-title, .card-title, .tool-title, .module-title,
+.f-name, .f-codename, .f-role, .pt-top, .pt-bot, .fg-hero h1,
+.hud-title, .hud-sub, .archive-title, .doc-title, .lab-title {
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+    text-shadow: none !important;
+    font-family: var(--font-google) !important;
+}
+
+/* FocusGuard specific hero overrides */
+.fg-hero h1, .fg-hero h1 span, .text-grad {
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+    background: none !important;
+}
+.typing-text, #fg-typewriter {
+    color: #1A73E8 !important;
+    -webkit-text-fill-color: #1A73E8 !important;
+}
+
+/* Subtitles and secondary body copy */
+.page-sub, .hero-sub, .desc, .bio, .card-desc, .stat-lbl, .subtitle,
+.syn-desc, .f-spec-label, .info-text, .f-desc, .f-meta span {
+    color: #5E5E5E !important;
+    -webkit-text-fill-color: #5E5E5E !important;
+    text-shadow: none !important;
+}
+
+/* All subpage cards: pure white, clean hairline border, subtle shadow */
+.card,
+.glass-card,
+.holo-card,
+.f-card,
+.founder-card,
+.util-card,
+.tool-card,
+.module-card,
+.bcs-card,
+.game-card,
+.subject-card,
+.chapter-card,
+.stat-card,
+.timeline-card,
+.profile-card,
+.sync-card,
+.archive-card,
+.step-card,
+.success-card,
+.topic-card,
+.grid-card {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+    color: #1F1F1F !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.card:hover,
+.glass-card:hover,
+.holo-card:hover,
+.f-card:hover,
+.founder-card:hover,
+.util-card:hover,
+.tool-card:hover,
+.module-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06) !important;
+    border-color: rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Card inner previews and boxes */
+.card-preview, .preview-box, .stat-box, .tool-box, .code-preview-box {
+    background: #F8F9FA !important;
+    background-color: #F8F9FA !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-radius: 14px !important;
+    color: #1F1F1F !important;
+}
+.card-preview span, .card-preview div {
+    color: #4B5563 !important;
+}
+
+/* Category filter tabs (Utilities, BCS, etc.) */
+.cat-tabs, .filter-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 24px 0;
+}
+.cat-tab, .filter-tab, .tab-btn {
+    background: #FFFFFF !important;
+    color: #5E5E5E !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 9999px !important;
+    padding: 8px 20px !important;
+    font-family: var(--font-google) !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+.cat-tab:hover, .filter-tab:hover {
+    border-color: rgba(0, 0, 0, 0.25) !important;
+    color: #111111 !important;
+}
+.cat-tab.active, .filter-tab.active {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border-color: #000000 !important;
+}
+
+/* Action buttons across all pages */
+.btn-glow, .btn-primary, .cta-btn, .action-btn, .btn-action, .btn-exec, .btn-learn, .btn-download {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    text-shadow: none !important;
+    font-family: var(--font-google) !important;
+    font-weight: 500 !important;
+    transition: opacity 0.2s ease, transform 0.15s ease !important;
+}
+.btn-glow *, .btn-primary *, .cta-btn *, .action-btn *, .btn-action * {
+    color: #FFFFFF !important;
+}
+.btn-glow:hover, .btn-primary:hover, .cta-btn:hover, .action-btn:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Clean up boot screens & loader overlays — make them pure white with black text */
+#boot-screen, #overlay-loader, .fullscreen-overlay {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    color: #111111 !important;
+}
+#boot-screen *, #overlay-loader * {
+    color: #111111 !important;
+}
+.loader-ring {
+    border: 3px solid rgba(0, 0, 0, 0.08) !important;
+    border-top-color: #1A73E8 !important;
+}
+.boot-bar-bg, .loader-progress {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border-radius: 9999px !important;
+}
+.boot-fill, #loader-progress-fill {
+    background: #1A73E8 !important;
+    box-shadow: none !important;
+}
+.boot-title {
+    color: #111111 !important;
+}
+.boot-title span {
+    color: #1A73E8 !important;
+}
+
+/* Tags and Badges */
+.badge-label, .badge, .tag, .f-tag, .f-tags span, .rank-badge, .level-badge, .status-badge,
+.card-cat-badge, .card-cat-badge span {
+    background: #F4F4F6 !important;
+    color: #111111 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 9999px !important;
+    font-weight: 500 !important;
+}
+
+/* Modals & Dialogs */
+.modal-box, .modal-content, .dialog-box {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12) !important;
+    color: #1F1F1F !important;
+}
+.modal-header, .modal-body, .modal-footer {
+    background: transparent !important;
+    color: #1F1F1F !important;
+}
+.modal-close {
+    background: #F4F4F6 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #111111 !important;
+    border-radius: 50% !important;
+}
+
+/* Form inputs */
+input, select, textarea {
+    background: #F9FAFB !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    color: #111111 !important;
+    border-radius: 12px !important;
+}
+input:focus, select:focus, textarea:focus {
+    border-color: #1A73E8 !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12) !important;
+}
+
+/* Game overlays and dialogs in Antigravity White */
+.fullscreen-overlay {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+}
+.tutorial-card, .win-card, .diff-card, .level-card, .auth-card {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important;
+    color: #111111 !important;
+}
+.tutorial-header h1, .win-title, #auth-title {
+    color: #111111 !important;
+}
+.tutorial-body, .win-subtitle, .tutorial-header p {
+    color: #5E5E5E !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   12. GOOGLE ANTIGRAVITY LIGHT IDE & GAME THEME (python-lab.html & game.html)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Global IDE Canvas */
+#app {
+    background: #FFFFFF !important;
+    color: #1F1F1F !important;
+}
+
+/* --- PYTHON-LAB (Neural IDE) STYLING --- */
+.toolbar {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    padding: 0 20px !important;
+    height: 52px !important;
+}
+
+/* Run / Execute button in Python Lab — Black Pill like Antigravity Download */
+.tb-btn.tb-run {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    border-radius: 9999px !important;
+    padding: 7px 22px !important;
+    font-family: var(--font-google) !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+.tb-btn.tb-run * {
+    color: #FFFFFF !important;
+}
+.tb-btn.tb-run:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Secondary toolbar buttons (Snap, Copy, Paste, Save, Open) — Clean outline pills */
+.tb-btn:not(.tb-run) {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    color: #1F1F1F !important;
+    border-radius: 9999px !important;
+    padding: 6px 14px !important;
+    font-family: var(--font-google) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+}
+.tb-btn:not(.tb-run) * {
+    color: #1F1F1F !important;
+}
+.tb-btn:not(.tb-run):hover {
+    background: #F8F9FA !important;
+    border-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Active file chip */
+.file-chip {
+    background: #F1F3F4 !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #111111 !important;
+    border-radius: 9999px !important;
+    font-family: var(--font-google) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+.file-chip .fc-dot {
+    background: #188038 !important;
+    box-shadow: 0 0 6px #188038 !important;
+}
+
+/* Font controls */
+.font-ctl {
+    background: #F8F9FA !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 9999px !important;
+}
+.font-ctl button, .font-ctl .fsz {
+    color: #1F1F1F !important;
+}
+
+/* IDE Panels (Editor & Terminal) — Clean White Google Cards */
+#ide-grid {
+    background: #FFFFFF !important;
+    padding: 16px !important;
+    gap: 16px !important;
+}
+.ide-panel {
+    background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+    overflow: hidden !important;
+}
+.panel-header {
+    background: #FAFAFC !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 10px 18px !important;
+}
+.panel-title {
+    color: #111111 !important;
+    font-family: var(--font-google) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em !important;
+}
+.icon-btn {
+    border-radius: 9999px !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    background: #FFFFFF !important;
+    color: #111111 !important;
+}
+.icon-btn * {
+    color: #111111 !important;
+}
+.icon-btn:hover {
+    background: #F1F3F4 !important;
+}
+
+/* Monaco Editor Container in Python Lab */
+#monaco-container {
+    background: #FFFFFF !important;
+}
+.monaco-editor, .monaco-editor .overflow-guard {
+    background-color: #FFFFFF !important;
+}
+
+/* Terminal Panel in Python Lab */
+#console-output {
+    background: #FAFAFC !important;
+    color: #1F1F1F !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    padding: 18px !important;
+}
+.log-line .lp {
+    color: #1A73E8 !important;
+    font-weight: 700 !important;
+}
+.l-sys {
+    color: #5F6368 !important;
+    font-style: normal !important;
+}
+.l-out {
+    color: #1F1F1F !important;
+    font-weight: 500 !important;
+    background: none !important;
+    border-left-color: #1A73E8 !important;
+}
+.l-err {
+    color: #D93025 !important;
+    background: rgba(217, 48, 37, 0.06) !important;
+    border-left-color: #D93025 !important;
+}
+.l-ok, .l-success {
+    color: #188038 !important;
+    font-weight: 600 !important;
+}
+
+/* Status Bar */
+.status-bar {
+    background: #FFFFFF !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+.sb-item {
+    color: #5F6368 !important;
+}
+.sb-item span {
+    color: #111111 !important;
+}
+
+/* --- GAME.HTML (Neural Simulation Game) STYLING --- */
+/* Left Panel (Arena) */
+.left-panel {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+    overflow: hidden !important;
+}
+.level-header {
+    background: #FAFAFC !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 14px 20px !important;
+}
+.level-name {
+    color: #111111 !important;
+    font-family: var(--font-google) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+.level-story {
+    color: #5F6368 !important;
+    font-size: 13px !important;
+}
+.coord-btn {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    color: #111111 !important;
+    border-radius: 9999px !important;
+    font-weight: 500 !important;
+}
+.coord-btn:hover, .coord-btn.on {
+    background: #F1F3F4 !important;
+    color: #1A73E8 !important;
+    border-color: #1A73E8 !important;
+}
+
+/* Game Arena Grid */
+.grid-wrapper {
+    background: #FFFFFF !important;
+}
+.grid-cell {
+    background: #F1F3F4 !important;
+    border: 1.5px solid #E8EAED !important;
+    border-radius: 8px !important;
+}
+.grid-cell::after {
+    color: #70757A !important;
+}
+.col-lbl, .row-lbl {
+    color: #5F6368 !important;
+    font-weight: 600 !important;
+}
+
+/* Player Avatar — Google Blue Diamond */
+.player {
+    background: #1A73E8 !important;
+    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4) !important;
+}
+
+/* Quantum Core (Goal) — Google Amber */
+.core {
+    background: #FBBC05 !important;
+    box-shadow: 0 4px 16px rgba(251, 188, 5, 0.45) !important;
+}
+
+/* Firewall Obstacle */
+.firewall {
+    background: rgba(217, 48, 37, 0.08) !important;
+    border: 1.5px solid rgba(217, 48, 37, 0.35) !important;
+    border-radius: 8px !important;
+}
+.firewall-icon {
+    color: #D93025 !important;
+}
+
+/* Layer Status */
+.layer-status {
+    background: #FAFAFC !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 10px 20px !important;
+}
+.stat-item {
+    color: #5F6368 !important;
+    font-size: 13px !important;
+}
+.stat-item span {
+    color: #111111 !important;
+    font-weight: 600 !important;
+}
+
+/* Right Panel (Code Studio & Terminal) in Game */
+.right-panel {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+    overflow: hidden !important;
+}
+.mission-bar {
+    background: #FAFAFC !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 12px 18px !important;
+}
+.mission-dot {
+    background: #188038 !important;
+    box-shadow: 0 0 6px #188038 !important;
+}
+.mission-text {
+    color: #111111 !important;
+    font-family: var(--font-google) !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+}
+.mission-req {
+    background: #FEF7E0 !important;
+    border: 1px solid #FEEFC3 !important;
+    color: #B06000 !important;
+    border-radius: 9999px !important;
+    padding: 3px 10px !important;
+    font-weight: 600 !important;
+}
+
+/* Game Monaco Editor */
+#monaco-editor {
+    background: #FFFFFF !important;
+}
+
+/* Game Control Bar */
+.control-bar {
+    background: #FAFAFC !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    height: 54px !important;
+    padding: 0 18px !important;
+}
+.code-stat {
+    color: #5F6368 !important;
+}
+.code-stat span {
+    color: #111111 !important;
+    font-weight: 600 !important;
+}
+
+/* Game Execute Button — Black Pill */
+.btn-run#run-btn, .btn-run {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    border-radius: 9999px !important;
+    padding: 9px 24px !important;
+    font-family: var(--font-google) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+.btn-run#run-btn *, .btn-run * {
+    color: #FFFFFF !important;
+}
+.btn-run:hover {
+    opacity: 0.88 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Game Reset Button */
+.btn-reset {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 50% !important;
+    color: #111111 !important;
+}
+.btn-reset * {
+    color: #111111 !important;
+}
+.btn-reset:hover {
+    background: #F1F3F4 !important;
+    transform: rotate(180deg) !important;
+}
+
+/* Game Terminal below editor */
+#terminal, .terminal-container {
+    background: #FAFAFC !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    padding: 14px 18px !important;
+}
+.term-line {
+    color: #1F1F1F !important;
+}
+
+/* Run Code buttons in LambdaScript */
+.btn-exec {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000 !important;
+    border-radius: 9999px !important;
+    padding: 9px 24px !important;
+    font-family: var(--font-google) !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+}
+.btn-exec * {
+    color: #FFFFFF !important;
+}
+.output-terminal {
+    background: #FAFAFC !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    color: #1F1F1F !important;
+    border-radius: 12px !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MASTER FIX: 100% PURE WHITE TEXT FOR ALL BLACK PILL BUTTONS ACROSS ALL PAGES
+   ══════════════════════════════════════════════════════════════════════════════ */
+.agy-btn-download,
+.agy-btn-download *,
+.agy-btn-download span,
+.agy-hero-cta,
+.agy-hero-cta *,
+.agy-hero-cta span,
+.agy-badge-new,
+.agy-badge-new *,
+.btn-black-pill,
+.btn-black-pill *,
+.btn-black-pill span,
+.btn-run,
+.btn-run *,
+.btn-run span,
+.btn-exec,
+.btn-exec *,
+.btn-exec span,
+.btn-glow,
+.btn-glow *,
+.btn-glow span,
+.btn-primary,
+.btn-primary *,
+.btn-primary span,
+.btn-python,
+.btn-python *,
+.btn-python span,
+.cta-btn,
+.cta-btn *,
+.action-btn,
+.action-btn *,
+.cat-tab.active,
+.cat-tab.active *,
+.filter-tab.active,
+.filter-tab.active *,
+button[class*="black"],
+button[class*="black"] *,
+[class*="btn-black"],
+[class*="btn-black"] *,
+[class*="black-pill"],
+[class*="black-pill"] * {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+}
+
+.agy-btn-download svg,
+.agy-hero-cta svg,
+.btn-run svg,
+.btn-exec svg,
+.btn-glow i,
+.btn-primary i,
+.btn-python i,
+.btn-black-pill svg {
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+    fill: none !important;
+}
+
+.agy-btn-download:hover,
+.agy-hero-cta:hover,
+.btn-run:hover,
+.btn-glow:hover,
+.btn-primary:hover,
+.btn-python:hover,
+.btn-black-pill:hover {
+    background: #222222 !important;
+    color: #FFFFFF !important;
+}
+
+/* Universal Page Containers — prevent edge overflow on wide monitors */
+.fg-hero,
+.section,
+.products-hero,
+.main-container {
+    max-width: 1240px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: clamp(24px, 5vw, 64px) !important;
+    padding-right: clamp(24px, 5vw, 64px) !important;
+    box-sizing: border-box !important;
+}
+
+
+/* ==============================================================================
+   OFFICIAL GOOGLE ANTIGRAVITY THREE.JS PARTICLE SPHERE & TYPED HEADER ENGINE
+   ============================================================================== */
+.welcome-wrapper {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #FFFFFF;
+}
+
+.hero-video-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.main-particles-component-section {
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.main-particles-component-section .main-particles-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.main-particles-component-section canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto;
+}
+
+.welcome-section {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 60px 24px 40px;
+}
+
+.landing-main-header {
+    margin: 0 auto;
+    max-width: 900px;
+}
+
+.typed-container {
+    max-width: 100%;
+    display: inline-block;
+    position: relative;
+}
+
+.typed-content {
+    max-width: 100%;
+    display: inline-block;
+    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: clamp(2.5rem, 5.5vw, 4.6rem);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+}
+
+.cursor-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(var(--cursor-pos-x, 0), var(--cursor-pos-y, 0));
+    pointer-events: none;
+    z-index: 5;
+}
+
+.blinking-cursor {
+    width: 24px;
+    height: 38px;
+    animation: blinkCursor 0.8s infinite;
+}
+
+@keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Fixed Three.js Antigravity Particles Background */
+.particles-bg-fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+}
+.particles-bg-fixed .main-particles-component-section {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+}
+.particles-bg-fixed .main-particles-container {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    inset: 0 !important;
+}
+.particles-bg-fixed canvas {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: auto !important;
+}
+
+/* Antigravity Typing Cursor - Pure Black */
+.cursor-container .blinking-cursor {
+    filter: brightness(0) !important;
+}
+
+
+/* ==============================================================================
+   GOOGLE ANTIGRAVITY 2-COLUMN MEGA DROPDOWN (1:1 replica of antigravity.google)
+   ============================================================================== */
+.agy-mega-dropdown {
+    min-width: 680px !important;
+    padding: 0 !important;
+    display: none;
+    grid-template-columns: 240px 1fr !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08) !important;
+    overflow: hidden !important;
+    left: 10% !important;
+    transform: translateX(-10%) translateY(8px) !important;
+    background: #FFFFFF !important;
+    z-index: 1002 !important;
+}
+
+.agy-nav-item:hover .agy-mega-dropdown,
+.agy-nav-item.open .agy-mega-dropdown {
+    display: grid !important;
+}
+
+.agy-mega-left {
+    background: #F8F9FA !important;
+    padding: 28px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.agy-mega-title {
+    font-family: var(--font-google) !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    color: #111111 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.agy-mega-overview-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 9px 20px !important;
+    border-radius: 9999px !important;
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    color: #111111 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    margin-top: 24px !important;
+    width: fit-content !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+}
+
+.agy-mega-overview-btn:hover {
+    background: #000000 !important;
+    color: #FFFFFF !important;
+    border-color: #000000 !important;
+}
+
+.agy-mega-right {
+    padding: 24px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #FFFFFF !important;
+}
+
+.agy-mega-category {
+    font-family: var(--font-google) !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: #5F6368 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 12px !important;
+    padding-left: 8px !important;
+}
+
+.agy-mega-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 4px !important;
+}
+
+.agy-mega-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 10px 10px !important;
+    border-radius: 12px !important;
+    text-decoration: none !important;
+    color: #111111 !important;
+    transition: background 0.15s ease !important;
+}
+
+.agy-mega-item:hover {
+    background: #F8F9FA !important;
+}
+
+.agy-mega-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    background: #F1F3F4 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    color: #111111 !important;
+}
+
+.agy-mega-item:hover .agy-mega-icon {
+    background: #E8F0FE !important;
+    color: #1A73E8 !important;
+}
+
+.agy-mega-info {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.agy-mega-name {
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #111111 !important;
+    line-height: 1.25 !important;
+}
+
+.agy-mega-sub {
+    font-size: 11.5px !important;
+    color: #5F6368 !important;
+    margin-top: 2px !important;
+    line-height: 1.3 !important;
+}
+
+/* ==============================================================================
+   FOCUSGUARD PRO & FOUNDERS GOOGLE ANTIGRAVITY WHITE CARDS OVER PARTICLES
+   ============================================================================== */
+.fg-container,
+.main-wrapper,
+.founders-wrap,
+.content-wrapper {
+    max-width: 1240px !important;
+    margin: 0 auto !important;
+    padding: 20px 24px 80px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* White Hero Card on FocusGuard */
+.fg-hero {
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
+    padding: 50px 40px !important;
+    margin: 40px auto 40px !important;
+    max-width: 1200px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.fg-hero h1,
+.fg-hero h2,
+.fg-hero h3 {
+    color: #111111 !important;
+    font-family: var(--font-google) !important;
+}
+
+.fg-hero p,
+.fg-hero .subtext,
+.fg-hero .hero-desc {
+    color: #3C4043 !important;
+}
+
+/* FocusGuard Sections & Feature Cards */
+.glass-card,
+.feature-card,
+.section-card,
+.success-card {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.03) !important;
+    color: #111111 !important;
+    padding: 32px !important;
+}
+
+.glass-card h2, .glass-card h3, .glass-card h4,
+.feature-card h2, .feature-card h3, .feature-card h4,
+.section-header h2, .section-header h3 {
+    color: #111111 !important;
+}
+
+.glass-card p,
+.feature-card p {
+    color: #5F6368 !important;
+}
+
+/* Founders Header & Cards */
+.header-section {
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
+    padding: 48px 36px !important;
+    margin: 40px auto 32px !important;
+    max-width: 1200px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.f-card {
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+    color: #111111 !important;
+}
+
+.f-card .f-name,
+.f-card h2,
+.f-card h3 {
+    color: #111111 !important;
+}
+
+.f-card .f-role,
+.f-card .f-bio,
+.f-card p {
+    color: #5F6368 !important;
+}
+
+
+/* Guaranteed Pure White Foreground for all Black Pill Buttons */
+.btn-black-pill,
+.btn-black-pill *,
+.btn-black-pill span,
+.btn-black-pill i,
+.btn-black-pill svg,
+.btn-apk-download,
+.btn-apk-download *,
+.btn-apk-download span,
+.btn-apk-download i,
+.btn-apk-download svg,
+[class*="black-pill"],
+[class*="black-pill"] * {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+}
+
+
+/* ==============================================================================
+   CODESTITCHER LOGO CONTAINER (ZERO SVG INTERFERENCE - 100% IDENTICAL TO SVG VIEWER)
+   ============================================================================== */
+.cs-anim-logo {
+    height: 52px !important;
+    width: auto !important;
+    max-width: 175px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    transition: transform 0.2s ease !important;
+}
+
+.agy-nav-left:hover .cs-anim-logo {
+    transform: scale(1.03);
+}
+
+@media (max-width: 1080px) {
+    .agy-nav-center {
+        display: none !important;
+    }
+    .agy-mobile-btn {
+        display: inline-flex !important;
+    }
+    .agy-header {
+        padding: 0 18px !important;
+    }
+    .agy-github-btn span {
+        display: none !important;
+    }
+    .agy-github-btn {
+        padding: 8px 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .cs-anim-logo {
+        height: 42px !important;
+        max-width: 140px !important;
+    }
+    .agy-header {
+        padding: 0 12px !important;
+    }
+}
+
+
+/* ==============================================================================
+   UNIVERSAL ULTRA-NARROW PHONE FRAME (CALCULATE APP SCREENSHOT MOCKUP)
+   ============================================================================== */
+.device-bezel {
+    width: 275px;
+    height: 570px;
+    background: #18191B;
+    border-radius: 40px;
+    padding: 5px; /* Ultra-narrow flagship bezel */
+    box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.16),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+        inset 0 0 0 2px rgba(0, 0, 0, 0.7);
+    position: relative;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin: 0 auto;
+}
+
+.device-bezel:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        0 30px 70px rgba(0, 0, 0, 0.2),
+        0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.device-punchhole {
+    position: absolute;
+    top: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    background: #000000;
+    border-radius: 50%;
+    z-index: 25;
+    box-shadow: 0 0 0 1.2px rgba(255, 255, 255, 0.16), inset 0 0 2px rgba(66, 133, 244, 0.5);
+    pointer-events: none;
+}
+
+.device-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 35px;
+    overflow: hidden;
+    background: #FFFFFF;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.device-screen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .device-bezel {
+        width: 240px;
+        height: 500px;
+        border-radius: 36px;
+    }
+    .device-screen {
+        border-radius: 31px;
+    }
+}

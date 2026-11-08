@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Founders | CodeStitcher Core Leadership</title>
+    <meta name="description" content="Meet the architects behind CodeStitcher: Ratul and Tamim.">
+    <meta name="theme-color" content="#0B0F19">
+    <link rel="icon" type="image/png" href="codestitcher.png">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+    /* ============================================================
+       DESIGN TOKENS & RESET (Matches index.html)
+    ============================================================ */
+    :root {
+        --void:       #0B0F19;
+        --deep:       #111827;
+        --surface:    #1F2937;
+        --elevated:   #374151;
+        --glass:      rgba(31, 41, 55, 0.65);
+        --border:     rgba(255, 255, 255, 0.08);
+        --border-hot: rgba(56, 189, 248, 0.4);
+
+        --cyan:       #38BDF8;
+        --violet:     #6366F1;
+        --violet2:    #A855F7;
+        --green:      #34D399;
+        --amber:      #FBBF24;
+        --red:        #F87171;
+        --white:      #F3F4F6;
+
+        --glow-cyan:   0 0 35px rgba(56, 189, 248, 0.25);
+        --glow-violet: 0 0 35px rgba(99, 102, 241, 0.25);
+        --glow-amber:  0 0 35px rgba(251, 191, 36, 0.25);
+        --glow-green:  0 0 35px rgba(52, 211, 153, 0.2);
+
+        --font-display: 'Sora', sans-serif;
+        --font-body:    'Inter', sans-serif;
+        --font-mono:    'JetBrains Mono', monospace;
+
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html {
+        scroll-behavior: smooth;
+        overflow-x: hidden;
+    }
+
+    body {
+        background: var(--void);
+        color: var(--white);
+        font-family: var(--font-body);
+        overflow-x: hidden;
+        min-height: 100vh;
+        cursor: auto;
+    }
+
+    /* Scroll progress bar */
+    #scroll-progress {
+        position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+        background: linear-gradient(90deg, var(--cyan), var(--violet2), var(--amber));
+        z-index: 99999;
+        box-shadow: 0 0 12px var(--cyan);
+        transition: width 0.1s linear;
+    }
+
+    /* ============================================================
+       QUANTUM X-RAY CURSOR
+    ============================================================ */
+    @media (pointer: fine) {
+        *, body, a, button { cursor: auto !important; }
+        input, textarea { cursor: text !important; }
+
+        .cursor-core {
+            width: 5px; height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 2147483647; 
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.1s;
+        }
+        
+        .cursor-ring {
+            width: 32px; height: 32px;
+            border: 1.5px solid rgba(0, 245, 255, 0.8);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 2147483646;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: width 0.35s var(--ease-spring), 
+                        height 0.35s var(--ease-spring), 
+                        border-color 0.2s, background 0.2s;
+        }
+
+        .cursor-ring::after {
+            content: '';
+            position: absolute;
+            inset: -7px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: spinRing 6s linear infinite;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        @keyframes spinRing { 100% { transform: rotate(360deg); } }
+        
+        .cursor-ring.hovering {
+            width: 55px; height: 55px;
+            background: #fff;
+            border-color: transparent;
+        }
+        .cursor-ring.hovering::after {
+            opacity: 0;
+            transform: scale(1.4) rotate(90deg);
+        }
+    }
+
+    @media (pointer: coarse) {
+        .cursor-core, .cursor-ring { display: none !important; }
+    }
+
+    /* Background canvas & Noise */
+    #bg-canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-2; }
+    .noise-layer {
+        position: fixed; inset:0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        opacity: 0.028;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    /* Ambient orbs */
+    .orb {
+        position: fixed; border-radius: 50%;
+        pointer-events: none; z-index: -1;
+        filter: blur(90px);
+        opacity: 0.12;
+    }
+    .orb-1 { width: 550px; height: 550px; background: var(--cyan); top: -100px; right: -80px; }
+    .orb-2 { width: 600px; height: 600px; background: var(--violet2); bottom: -120px; left: -100px; }
+
+    /* ============================================================
+       NAVIGATION
+    ============================================================ */
+    nav {
+        position: fixed; top: 0; left: 0; width: 100%;
+        z-index: 1000;
+        padding: 0 4%;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(11, 15, 25, 0.75);
+        backdrop-filter: blur(24px) saturate(180%);
+        border-bottom: 1px solid var(--border);
+        transition: background 0.4s;
+    }
+    nav.scrolled {
+        background: rgba(11, 15, 25, 0.95);
+        border-bottom-color: rgba(56, 189, 248, 0.25);
+    }
+    .nav-logo {
+        display: flex; align-items: center; gap: 12px;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+    .nav-logo img {
+        height: 40px; width: auto;
+        border-radius: 4px;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        transition: 0.4s var(--ease-spring);
+    }
+    .nav-logo:hover img {
+        transform: scale(1.1) rotate(-3deg);
+        border-color: var(--cyan);
+        filter: drop-shadow(0 0 16px var(--cyan));
+    }
+    .nav-wordmark {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.5px;
+        color: var(--white);
+    }
+    .nav-tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        padding: 2px 7px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+    }
+
+    .mobile-toggle {
+        display: none;
+        color: var(--white);
+        font-size: 1.3rem;
+        padding: 8px;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .nav-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.25s var(--ease-spring);
+        white-space: nowrap;
+    }
+    .btn-python   { color: var(--green);   background: rgba(52, 211, 153, 0.08);  border-color: rgba(52, 211, 153, 0.2); }
+    .btn-python:hover { background: var(--green); color: #000; box-shadow: var(--glow-green); transform: translateY(-2px); }
+    .btn-founder  { color: var(--cyan);    background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.35); box-shadow: var(--glow-cyan); }
+    .btn-game     { color: var(--violet2); background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); }
+    .btn-game:hover { background: var(--violet2); color: #111111; box-shadow: var(--glow-violet); transform: translateY(-2px); }
+    .btn-products { color: var(--amber);   background: rgba(251, 191, 36, 0.08);  border-color: rgba(251, 191, 36, 0.2); }
+    .btn-products:hover { background: var(--amber); color: #000; box-shadow: var(--glow-amber); transform: translateY(-2px); }
+
+    /* ============================================================
+       OS PILL TOGGLE
+    ============================================================ */
+    .os-toggle-pill {
+        position: fixed; bottom: 28px; right: 24px; z-index: 10000;
+        display: flex; align-items: center;
+        background: rgba(11, 15, 25, 0.88);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-hot);
+        border-radius: 50px;
+        padding: 5px;
+        box-shadow: var(--glow-cyan), 0 4px 30px rgba(0,0,0,0.6);
+    }
+    .toggle-option {
+        padding: 8px 18px;
+        border-radius: 40px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        text-decoration: none;
+        color: #888;
+        border: none;
+        background: transparent;
+        transition: 0.3s;
+    }
+    .toggle-option.active {
+        background: linear-gradient(135deg, var(--cyan), var(--violet));
+        color: #000;
+        font-weight: 800;
+    }
+    .toggle-divider { width: 1px; height: 18px; background: var(--border-hot); }
+
+    /* ============================================================
+       HERO HEADER
+    ============================================================ */
+    .header-section {
+        padding: 140px 5% 50px;
+        text-align: center;
+        position: relative;
+    }
+    .badge-label {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        padding: 6px 14px;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    
+    .page-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 800;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        margin-bottom: 18px;
+    }
+    .page-title span {
+        color: #111111;
+    }
+    .page-sub {
+        font-size: 1.05rem;
+        color: rgba(243, 244, 246, 0.6);
+        max-width: 620px;
+        margin: 0 auto;
+        line-height: 1.7;
+        font-weight: 300;
+    }
+
+    /* ============================================================
+       FOUNDER CARDS GRID
+    ============================================================ */
+    .founders-wrap {
+        padding: 20px 5% 90px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .founders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+        gap: 36px;
+    }
+
+    .f-card {
+        background: linear-gradient(145deg, rgba(31, 41, 55, 0.6), rgba(17, 24, 39, 0.85));
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 44px;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
+        transition: all 0.4s var(--ease-spring);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .f-card:hover {
+        transform: translateY(-8px);
+    }
+    .f-card.ratul:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        box-shadow: var(--glow-cyan), 0 30px 60px rgba(0,0,0,0.5);
+    }
+    .f-card.tamim:hover {
+        border-color: rgba(168, 85, 247, 0.45);
+        box-shadow: var(--glow-violet), 0 30px 60px rgba(0,0,0,0.5);
+    }
+
+    .f-card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        opacity: 0; transition: opacity 0.4s;
+    }
+    .f-card.ratul::before {
+        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+    .f-card.tamim::before {
+        background: linear-gradient(90deg, transparent, var(--violet2), transparent);
+    }
+    .f-card:hover::before { opacity: 1; }
+
+    /* Header inside card */
+    .f-header {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-bottom: 24px;
+    }
+    .avatar-wrap {
+        width: 84px; height: 84px;
+        border-radius: 20px;
+        position: relative;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        background: var(--deep);
+        border: 1px solid var(--border);
+    }
+    .f-card.ratul .avatar-wrap {
+        color: var(--cyan);
+        box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.15);
+        border-color: rgba(56, 189, 248, 0.3);
+    }
+    .f-card.tamim .avatar-wrap {
+        color: var(--violet2);
+        box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.15);
+        border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    .f-meta { display: flex; flex-direction: column; }
+    .f-codename {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .f-card.ratul .f-codename { color: var(--cyan); }
+    .f-card.tamim .f-codename { color: var(--violet2); }
+
+    .f-name {
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+        color: var(--white);
+    }
+    .f-role {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: rgba(243, 244, 246, 0.5);
+        margin-top: 4px;
+    }
+
+    /* Card body */
+    .f-desc {
+        color: rgba(243, 244, 246, 0.7);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 28px;
+        font-weight: 300;
+    }
+
+    /* Skills / Tags */
+    .f-spec-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #777;
+        margin-bottom: 12px;
+    }
+    .f-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+    .f-tag {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(243, 244, 246, 0.8);
+    }
+    .f-card.ratul .f-tag:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+        background: rgba(56, 189, 248, 0.08);
+    }
+    .f-card.tamim .f-tag:hover {
+        border-color: var(--violet2);
+        color: var(--violet2);
+        background: rgba(168, 85, 247, 0.08);
+    }
+
+    /* Buttons row inside card */
+    .f-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+    }
+    .btn-action {
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s var(--ease-spring);
+    }
+    .btn-ratul {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--cyan);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .btn-ratul:hover {
+        background: var(--cyan);
+        color: #000;
+        box-shadow: var(--glow-cyan);
+        transform: translateY(-2px);
+    }
+    .btn-tamim {
+        background: rgba(168, 85, 247, 0.12);
+        color: var(--violet2);
+        border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .btn-tamim:hover {
+        background: var(--violet2);
+        color: #111111;
+        box-shadow: var(--glow-violet);
+        transform: translateY(-2px);
+    }
+
+    /* Synergy Section */
+    .synergy-box {
+        margin-top: 40px;
+        background: rgba(17, 24, 39, 0.6);
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 28px 36px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .syn-title {
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--white);
+    }
+    .syn-title span { color: var(--green); }
+    .syn-desc {
+        font-size: 0.88rem;
+        color: rgba(243, 244, 246, 0.5);
+        font-family: var(--font-mono);
+        margin-top: 4px;
+    }
+    .syn-stats {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+    .syn-metric {
+        text-align: right;
+    }
+    .syn-metric .val {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--cyan);
+    }
+    .syn-metric .lbl {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: #666;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Footer */
+    footer {
+        padding: 50px 5%;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .footer-left {
+        font-family: var(--font-display);
+        font-weight: 700;
+        color: rgba(240,240,255,0.3);
+        font-size: 0.9rem;
+        text-align: center;
+        flex: 1;
+    }
+    .footer-left span { color: var(--cyan); }
+
+    /* ============================================================
+       INTERACTIVE ENHANCEMENTS
+    ============================================================ */
+
+    /* Card spotlight + 3D tilt surface */
+    .f-card { transform-style: preserve-3d; will-change: transform; }
+    .f-spot {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.07), transparent 65%);
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+    .f-card:hover .f-spot { opacity: 1; }
+    .f-card > div, .f-card > .f-actions { position: relative; z-index: 2; }
+
+    /* Clickable avatar */
+    .avatar-wrap { cursor: pointer; transition: transform 0.3s var(--ease-spring); }
+    .avatar-wrap:hover { transform: scale(1.06); }
+    .avatar-wrap:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 4px;
+    }
+
+    /* Name glitch-on-hover */
+    .f-name { position: relative; display: inline-block; }
+    .f-name.glitching::before,
+    .f-name.glitching::after {
+        content: attr(data-text);
+        position: absolute; left: 0; top: 0;
+        width: 100%; height: 100%;
+        overflow: hidden;
+        background: var(--deep);
+    }
+    .f-name.glitching::before {
+        color: var(--cyan);
+        clip-path: inset(0 0 55% 0);
+        animation: glitchTop 0.35s linear;
+    }
+    .f-name.glitching::after {
+        color: var(--violet2);
+        clip-path: inset(55% 0 0 0);
+        animation: glitchBot 0.35s linear;
+    }
+    @keyframes glitchTop {
+        0% { transform: translate(0,0); }
+        20% { transform: translate(-3px,-1px); }
+        40% { transform: translate(3px,1px); }
+        60% { transform: translate(-2px,0); }
+        100% { transform: translate(0,0); }
+    }
+    @keyframes glitchBot {
+        0% { transform: translate(0,0); }
+        20% { transform: translate(3px,1px); }
+        40% { transform: translate(-3px,-1px); }
+        60% { transform: translate(2px,0); }
+        100% { transform: translate(0,0); }
+    }
+
+    /* Ripple on action buttons */
+    .btn-action { position: relative; overflow: hidden; }
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.55);
+        transform: scale(0);
+        animation: rippleAnim 0.6s ease-out forwards;
+        pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform: scale(3.5); opacity: 0; } }
+
+    /* Sync connector visual */
+    .sync-visual {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        max-width: 260px;
+    }
+    .sync-node {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+    .sync-node.n-r { color: var(--cyan); border: 1px solid rgba(56,189,248,0.4); background: rgba(56,189,248,0.08); }
+    .sync-node.n-t { color: var(--violet2); border: 1px solid rgba(168,85,247,0.4); background: rgba(168,85,247,0.08); }
+    .sync-line { flex: 1; height: 18px; overflow: visible; }
+    .pulse-dot { fill: var(--green); filter: drop-shadow(0 0 5px var(--green)); }
+
+    .syn-metric .val { transition: color 0.3s; }
+    .syn-metric.counted .val { color: var(--green); }
+
+    /* Terminal / node access panel */
+    .term-overlay {
+        position: fixed; inset: 0;
+        background: rgba(5, 7, 12, 0.82);
+        backdrop-filter: blur(6px);
+        z-index: 20000;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.3s ease;
+        padding: 20px;
+    }
+    .term-overlay.open { opacity: 1; pointer-events: all; }
+    .term-window {
+        width: min(560px, 100%);
+        background: #FFFFFF;
+        border: 1px solid var(--border-hot);
+        border-radius: 14px;
+        box-shadow: var(--glow-cyan), 0 40px 100px rgba(0,0,0,0.7);
+        transform: translateY(16px) scale(0.97);
+        transition: transform 0.35s var(--ease-spring);
+        overflow: hidden;
+    }
+    .term-overlay.open .term-window { transform: translateY(0) scale(1); }
+    .term-titlebar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 14px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+    }
+    .term-dots { display: flex; gap: 6px; }
+    .term-dots span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+    .term-dots span:nth-child(1){ background:#F87171; }
+    .term-dots span:nth-child(2){ background:#FBBF24; }
+    .term-dots span:nth-child(3){ background:#34D399; }
+    .term-title { font-family: var(--font-mono); font-size: 0.72rem; color: #999; }
+    .term-close {
+        background: none; border: none; color: #999; font-size: 1rem;
+        cursor: pointer; padding: 4px 6px;
+    }
+    .term-close:hover { color: var(--white); }
+    .term-body {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.8;
+        padding: 22px 20px;
+        min-height: 220px;
+        color: #A9F0C4;
+        white-space: pre-wrap;
+    }
+    .term-cursor {
+        display: inline-block;
+        width: 8px; height: 1em;
+        background: var(--green);
+        vertical-align: text-bottom;
+        animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* One orchestrated hero reveal on load */
+    .page-title { animation: titleReveal 1s var(--ease-smooth) both; }
+    @keyframes titleReveal {
+        from { clip-path: inset(0 100% 0 0); }
+        to { clip-path: inset(0 0 0 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .page-title { animation: none; }
+        .f-card, .avatar-wrap, .btn-action { transition: none; }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .mobile-toggle { display: block; }
+        .nav-actions {
+            position: absolute; top: 100%; left: 0; width: 100%;
+            background: rgba(11, 15, 25, 0.98);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0; transform: translateY(-10px);
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .nav-actions.open {
+            opacity: 1; transform: translateY(0);
+            pointer-events: all;
+        }
+        .nav-btn { width: 100%; justify-content: center; padding: 12px; }
+        .founders-grid { grid-template-columns: 1fr; }
+        .f-card { padding: 32px 24px; }
+        .synergy-box { flex-direction: column; text-align: center; }
+        .syn-metric { text-align: center; }
+        .sync-visual { max-width: 100%; justify-content: center; margin-left: auto; margin-right: auto; }
+        .syn-stats { justify-content: center; }
+    }
+    </style>
+        <!-- Antigravity Universal B&W Design System -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Antigravity override — force white background, black text, clean cursor */
+        html, body { background: #FFFFFF !important; background-color: #FFFFFF !important; color: #1F1F1F !important; cursor: auto !important; }
+        body * { cursor: auto; }
+        a, button, [role="button"] { cursor: pointer !important; }
+        .cursor-core, .cursor-ring, .cursor-dot, .cursor-outline, #cursor, #custom-cursor, .custom-cursor { display: none !important; }
+        .noise-layer, .noise-overlay, .orb, #bg-canvas, #neural-canvas { display: none !important; }
+        /* Ensure canvas is always on top of content */
+        #antigravity-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+        /* Page content above canvas */
+        .agy-header, main, section, article, aside, footer, .page-wrapper, .content-wrap { position: relative; z-index: 10; }
+    </style>
+
+    <style>
+        /* Google Antigravity Founders White Cards */
+        body {
+            background: #FFFFFF !important;
+            color: #111111 !important;
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        }
+
+        .header-section {
+            background: rgba(255, 255, 255, 0.96) !important;
+            backdrop-filter: blur(24px) !important;
+            -webkit-backdrop-filter: blur(24px) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 32px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04) !important;
+            padding: 48px 36px !important;
+            margin: 100px auto 32px !important;
+            max-width: 1200px !important;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-section .badge-label {
+            background: #E8F0FE !important;
+            color: #1A73E8 !important;
+            border: 1px solid rgba(26, 115, 232, 0.16) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .header-section .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #1A73E8;
+        }
+
+        .page-title {
+            font-size: 2.8rem !important;
+            font-weight: 700 !important;
+            color: #111111 !important;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-title span {
+            color: #1A73E8 !important;
+        }
+
+        .page-sub {
+            font-size: 1.15rem !important;
+            color: #3C4043 !important;
+            max-width: 680px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .founders-wrap {
+            max-width: 1200px;
+            margin: 0 auto 80px;
+            padding: 0 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .f-card {
+            background: #FFFFFF !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 28px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04) !important;
+            padding: 44px !important;
+            color: #111111 !important;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .f-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08) !important;
+            border-color: rgba(0, 0, 0, 0.16) !important;
+        }
+
+        .f-card .f-name,
+        .f-card h2,
+        .f-card h3 {
+            color: #111111 !important;
+            font-weight: 700 !important;
+        }
+
+        .f-card .f-role {
+            color: #1A73E8 !important;
+            font-weight: 600 !important;
+        }
+
+        .f-card .f-bio,
+        .f-card p {
+            color: #3C4043 !important;
+            line-height: 1.65 !important;
+        }
+
+        .f-card .tag,
+        .f-card .f-tag {
+            background: #F1F3F4 !important;
+            color: #3C4043 !important;
+            border: 1px solid rgba(0, 0, 0, 0.06) !important;
+            border-radius: 9999px !important;
+        }
+
+        .f-card .f-btn,
+        .f-card .btn-outline {
+            background: #000000 !important;
+            color: #FFFFFF !important;
+            border: 1px solid #000000 !important;
+            border-radius: 9999px !important;
+            padding: 8px 20px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .f-card .f-btn:hover {
+            opacity: 0.88;
+        }
+    </style>
+
+</head>
+<body>
+    <!-- Official Three.js Particle Background -->
+    <div class="particles-bg-fixed" data-hero-particles>
+        <div class="main-particles-component-section" data-main-particles-component data-theme="light" data-ring-width="0.006" data-ring-width2="0.107" data-ring-displacement="0.62" data-density="230" data-particles-scale="0.59">
+            <div class="main-particles-container" data-container></div>
+        </div>
+    </div>
+
+    <!-- Google Antigravity Unified Header -->
+    <header class="agy-header">
+        <a href="index.html" class="agy-nav-left" aria-label="CodeStitcher Home">
+            <svg class="cs-anim-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="100%" height="100%" style="background: transparent;">
+  <defs>
+    <style>
+      /* Base Outline Stroke */
+      .stitch-outline {
+        stroke: #000000;
+        stroke-width: 4.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* Capsule 1: Top-Left (8.2s total: ~2.4s draw/fill + ~5.5s still hold) */
+      .capsule-1 {
+        stroke-dasharray: 520;
+        stroke-dashoffset: 520;
+        animation: drawCapsule 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+
+      /* Capsule 2: Bottom-Right */
+      .capsule-2 {
+        stroke-dasharray: 520;
+        stroke-dashoffset: 520;
+        animation: drawCapsule 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation-delay: 0.2s;
+      }
+
+      /* The White Central Stitch */
+      .stitch-cut {
+        stroke: #ffffff; /* পুরোপুরি সাদা */
+        stroke-width: 7.5; /* থিকনেস বাড়ানো হয়েছে */
+        stroke-linecap: round;
+        stroke-dasharray: 55;
+        stroke-dashoffset: 55;
+        animation: drawStitch 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation-delay: 0.5s;
+      }
+
+      /* "CodeStitcher" Text */
+      .logo-text {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", sans-serif;
+        font-size: 96px;
+        font-weight: 600;
+        letter-spacing: -2.5px;
+        stroke: #000000;
+        stroke-width: 2.2;
+        stroke-dasharray: 600;
+        stroke-dashoffset: 600;
+        animation: drawText 8.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        animation-delay: 0.4s;
+      }
+
+      /* Reconstruction, Solid Fill & 5.5s Still Hold */
+      @keyframes drawCapsule {
+        0% {
+          stroke-dashoffset: 520;
+          fill: transparent;
+        }
+        14% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+        }
+        22%, 94% {
+          stroke-dashoffset: 0;
+          fill: #000000;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+        }
+      }
+
+      @keyframes drawStitch {
+        0%, 8% {
+          stroke-dashoffset: 55;
+        }
+        16%, 94% {
+          stroke-dashoffset: 0;
+        }
+        100% {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      @keyframes drawText {
+        0% {
+          stroke-dashoffset: 600;
+          fill: transparent;
+        }
+        16% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+        }
+        24%, 94% {
+          stroke-dashoffset: 0;
+          fill: #000000;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          fill: transparent;
+        }
+      }
+    </style>
+  </defs>
+
+  <!-- ================= 1. THE 'S-STITCH' MARK ================= -->
+  <!-- Centered at X: 180, Y: 180 and rotated 45° -->
+  <g id="icon-mark" transform="translate(180, 180) rotate(45)">
+    <!-- Top-Left Capsule -->
+    <rect class="stitch-outline capsule-1" 
+          x="-72" y="-95" 
+          width="66" height="150" 
+          rx="33" />
+
+    <!-- Bottom-Right Capsule -->
+    <rect class="stitch-outline capsule-2" 
+          x="6" y="-55" 
+          width="66" height="150" 
+          rx="33" />
+
+    <!-- Pure White Stitch (Crosses over both black capsules across the gap) -->
+    <line class="stitch-cut" 
+          x1="-20" y1="0" 
+          x2="20" y2="0" />
+  </g>
+
+  <!-- ================= 2. THE BRAND TYPOGRAPHY ================= -->
+  <g id="brand-text">
+    <text x="320" y="212" class="stitch-outline logo-text">CodeStitcher</text>
+  </g>
+</svg>
+        </a>
+
+                <ul class="agy-nav-center">
+            <li class="agy-nav-item has-dropdown">
+                <a href="products/index.html" class="agy-nav-link">
+                    Products
+                    <svg class="agy-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </a>
+                <div class="agy-dropdown agy-mega-dropdown">
+                    <div class="agy-mega-left">
+                        <div>
+                            <h3 class="agy-mega-title">Explore our next generation products</h3>
+                        </div>
+                        <a href="products/index.html" class="agy-mega-overview-btn">See overview</a>
+                    </div>
+                    <div class="agy-mega-right">
+                        <div class="agy-mega-category">Products</div>
+                        <div class="agy-mega-grid">
+                            <a href="products/Calculate/index.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Calculate App</span>
+                                    <span class="agy-mega-sub">120 FPS native Compose</span>
+                                </div>
+                            </a>
+                            <a href="focusguard/index.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">FocusGuard Pro</span>
+                                    <span class="agy-mega-sub">Focus enforcement</span>
+                                </div>
+                            </a>
+                            <a href="learn-lambdascript.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">LambdaScript</span>
+                                    <span class="agy-mega-sub">Functional runtime &amp; spec</span>
+                                </div>
+                            </a>
+                            <a href="game.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="6" cy="12" r="1"></circle><circle cx="10" cy="12" r="1"></circle><line x1="15" y1="11" x2="15" y2="13"></line><line x1="17" y1="11" x2="17" y2="13"></line></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Agent Arena</span>
+                                    <span class="agy-mega-sub">Quantum Grid game</span>
+                                </div>
+                            </a>
+                            <a href="utilities.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Utilities</span>
+                                    <span class="agy-mega-sub">Developer toolkit</span>
+                                </div>
+                            </a>
+                            <a href="founder.html" class="agy-mega-item">
+                                <div class="agy-mega-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                </div>
+                                <div class="agy-mega-info">
+                                    <span class="agy-mega-name">Founders</span>
+                                    <span class="agy-mega-sub">Engineering &amp; team</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="agy-nav-item has-dropdown">
+                <a href="utilities.html" class="agy-nav-link">
+                    Utilities
+                    <svg class="agy-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </a>
+                <div class="agy-dropdown">
+                    <a href="utilities.html" class="agy-dropdown-item">
+                        <div class="agy-drop-text">
+                            <span class="agy-drop-title">Developer Toolkit</span>
+                            <span class="agy-drop-desc">Precision micro-utilities</span>
+                        </div>
+                    </a>
+                    <a href="learn-lambdascript.html" class="agy-dropdown-item">
+                        <div class="agy-drop-text">
+                            <span class="agy-drop-title">LambdaScript</span>
+                            <span class="agy-drop-desc">Functional programming lab</span>
+                        </div>
+                    </a>
+                </div>
+            </li>
+            <li class="agy-nav-item">
+                <a href="game.html" class="agy-nav-link">Play Game</a>
+            </li>
+            <li class="agy-nav-item">
+                <a href="founder.html" class="agy-nav-link">Founders</a>
+            </li>
+        </ul>
+
+        <div class="agy-nav-right">
+            <a href="https://github.com/MustafijRatul" target="_blank" rel="noopener noreferrer" class="agy-github-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:4px;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <span>GitHub &#8599;</span>
+            </a>
+            <button id="mobile-menu-toggle" class="agy-mobile-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <!-- Mobile hamburger button -->
+        <button class="agy-mobile-btn" id="mobile-menu-toggle" aria-label="Open menu" aria-expanded="false">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+    </header>
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-drawer" class="mobile-drawer">
+        <ul class="mobile-nav-list">
+            <li><a href="products/index.html"><span>Products</span> <span class="mobile-nav-badge">NEW</span></a></li>
+            <li><a href="products/Calculate/index.html"><span>Calculate App (Android)</span></a></li>
+            <li><a href="focusguard/index.html"><span>FocusGuard Pro</span></a></li>
+            <li><a href="learn-lambdascript.html"><span>LambdaScript</span></a></li>
+            <li class="mobile-nav-divider"></li>
+            <li><a href="utilities.html"><span>Utilities &amp; Tools</span></a></li>
+            <li><a href="game.html"><span>Play Game</span></a></li>
+            <li><a href="founder.html"><span>Founders</span></a></li>
+            <li class="mobile-nav-divider"></li>
+            <li><a href="https://github.com/MustafijRatul" target="_blank" rel="noopener noreferrer"><span>GitHub Profile &#8599;</span></a></li>
+        </ul>
+    </div>
+    <script>
+    (function() {
+        function initMobileNav() {
+            var toggle = document.getElementById('mobile-menu-toggle');
+            var drawer = document.getElementById('mobile-drawer');
+            if (!toggle || !drawer || toggle._hasMobileNav) return;
+            toggle._hasMobileNav = true;
+
+            var hamburgerSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+            var closeSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var isOpen = drawer.classList.toggle('open');
+                drawer.classList.toggle('active', isOpen);
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                toggle.innerHTML = isOpen ? closeSvg : hamburgerSvg;
+            });
+
+            drawer.addEventListener('click', function(e) {
+                if (e.target.closest('a')) {
+                    drawer.classList.remove('open', 'active');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.innerHTML = hamburgerSvg;
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!drawer.contains(e.target) && !toggle.contains(e.target)) {
+                    if (drawer.classList.contains('open') || drawer.classList.contains('active')) {
+                        drawer.classList.remove('open', 'active');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.innerHTML = hamburgerSvg;
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileNav);
+        } else {
+            initMobileNav();
+        }
+    })();
+    </script>
+
+    <!-- Mobile Drawer -->
+    <nav class="mobile-drawer" id="mobile-drawer">
+        <ul class="mobile-nav-list">
+            <li><a href="products/index.html">Products</a></li>
+            <li><a href="utilities.html">Utilities</a></li>
+            <li><a href="learn-lambdascript.html">LambdaScript</a></li>
+            <li><a href="game.html">Play Game</a></li>
+            <li><a href="founder.html">Founders</a></li>
+        </ul>
+    </nav>
+
+    <!-- Particle canvas (shared across all pages) -->
+    
+
+<!-- AMBIENT GLOWS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="noise-layer"></div>
+
+<div id="scroll-progress"></div>
+
+<!-- CUSTOM CURSOR -->
+
+
+
+<!-- OS TOGGLE PILL -->
+
+    
+</div>
+
+<!-- ============================================================
+     NAVIGATION
+============================================================ -->
+    
+
+<!-- ============================================================
+     HEADER
+============================================================ -->
+<header class="header-section" data-aos="fade-down">
+    <div class="badge-label">
+        <span class="badge-dot"></span>
+        CORE DIRECTORY // BI-NODE ARCHITECTURE
+    </div>
+    <h1 class="page-title">
+        The Minds Behind <span>CodeStitcher</span>
+    </h1>
+    <p class="page-sub">
+        Two brothers uniting systems-level engineering with high-velocity creative direction to build cutting-edge developer tools.
+    </p>
+</header>
+
+<!-- ============================================================
+     FOUNDERS DIRECTORY
+============================================================ -->
+<main class="founders-wrap">
+    <div class="founders-grid">
+
+        <!-- FOUNDER 1: RATUL -->
+        <article class="f-card ratul" data-aos="fade-up" data-aos-delay="100">
+            <div class="f-spot" aria-hidden="true"></div>
+            <div>
+                <div class="f-header">
+                    <div class="avatar-wrap" data-founder="ratul" tabindex="0" role="button" aria-label="Open Ratul's system access panel">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <div class="f-meta">
+                        <span class="f-codename">ARCHITECT_01 // SYSTEM LEAD</span>
+                        <h2 class="f-name" data-text="Mustafij Ratul">Mustafij Ratul</h2>
+                        <span class="f-role">Founder & Chief Architect</span>
+                    </div>
+                </div>
+
+                <p class="f-desc">
+                    Creator of CodeStitcher's core runtime engines, web assembly pipelines, and precision desktop utilities. Leading low-latency browser architectures and algorithm design.
+                </p>
+
+                <div class="f-spec-label">CORE DOMAINS & STACK</div>
+                <div class="f-tags">
+                    <span class="f-tag">Systems Engineering</span>
+                    <span class="f-tag">Kotlin & Jetpack Compose</span>
+                    <span class="f-tag">WebAssembly</span>
+                    <span class="f-tag">Desktop Utilities</span>
+                    <span class="f-tag">Algorithm Design</span>
+                </div>
+            </div>
+
+            <div class="f-actions">
+                <a href="https://mustafijratul.github.io" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
+                    <i class="fa-solid fa-globe"></i> Portfolio
+                </a>
+                <a href="https://github.com/MustafijRatul" target="_blank" class="btn-action btn-ratul" onclick="playSound('click')">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+            </div>
+        </article>
+
+        <!-- FOUNDER 2: TAMIM -->
+        <article class="f-card tamim" data-aos="fade-up" data-aos-delay="200">
+            <div class="f-spot" aria-hidden="true"></div>
+            <div>
+                <div class="f-header">
+                    <div class="avatar-wrap" data-founder="tamim" tabindex="0" role="button" aria-label="Open Tamim's system access panel">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div class="f-meta">
+                        <span class="f-codename">VISION_02 // STRATEGIST</span>
+                        <h2 class="f-name" data-text="Tamim">Tamim</h2>
+                        <span class="f-role">Co-Founder & Creative Director</span>
+                    </div>
+                </div>
+
+                <p class="f-desc">
+                    The creative compass and product strategist behind CodeStitcher. Directing user experience dynamics, interactive game concepts, and testing next-gen productivity paradigms.
+                </p>
+
+                <div class="f-spec-label">CORE DOMAINS & STACK</div>
+                <div class="f-tags">
+                    <span class="f-tag">Creative Direction</span>
+                    <span class="f-tag">Game Logic & Flow</span>
+                    <span class="f-tag">Product Vision</span>
+                    <span class="f-tag">Quality Assurance</span>
+                    <span class="f-tag">UX Dynamics</span>
+                </div>
+            </div>
+
+            <div class="f-actions">
+                <span class="btn-action btn-tamim">
+                    <i class="fa-solid fa-shield-halved"></i> Co-Founder
+                </span>
+                <span class="btn-action btn-tamim">
+                    <i class="fa-solid fa-sparkles"></i> Innovation Lead
+                </span>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- BROTHERHOOD SYNERGY STATUS -->
+    <div class="synergy-box" data-aos="fade-up" data-aos-delay="300">
+        <div>
+            <div class="syn-title">Brotherhood Synchronization // <span>ACTIVE</span></div>
+            <div class="syn-desc">Decentralized collaboration matrix: Ratul × Tamim</div>
+
+            <div class="sync-visual" aria-hidden="true">
+                <span class="sync-node n-r">R</span>
+                <svg class="sync-line" viewBox="0 0 200 20" preserveAspectRatio="none">
+                    <line x1="10" y1="10" x2="190" y2="10" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                    <circle class="pulse-dot" r="3" cx="10" cy="10">
+                        <animate attributeName="cx" values="10;190;10" dur="3.2s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+                <span class="sync-node n-t">T</span>
+            </div>
+        </div>
+        <div class="syn-stats">
+            <div class="syn-metric" id="metric-sync" data-target="100">
+                <div class="val">0%</div>
+                <div class="lbl">Synergy Matrix</div>
+            </div>
+            <div class="syn-metric">
+                <div class="val">2 Nodes</div>
+                <div class="lbl">Unified Core</div>
+            </div>
+            <div class="syn-metric">
+                <div class="val" id="live-packets">0</div>
+                <div class="lbl">Packets Synced</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+<footer>
+    <div class="footer-left">
+        &copy; 2025 <span>CodeStitcher</span> — Engineered by Ratul & Tamim
+    </div>
+</footer>
+
+<!-- SYSTEM ACCESS PANEL (opens from clicking a founder avatar) -->
+<div class="term-overlay" id="term-overlay">
+    <div class="term-window" role="dialog" aria-modal="true" aria-labelledby="term-title-label">
+        <div class="term-titlebar">
+            <div class="term-dots"><span></span><span></span><span></span></div>
+            <span class="term-title" id="term-title-label">SYSTEM ACCESS // NODE PANEL</span>
+            <button class="term-close" id="term-close" aria-label="Close panel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="term-body" id="term-body"></div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+/* Audio Engine */
+const clickAudio = new Audio('click.wav');
+clickAudio.preload = 'auto';
+
+function playSound(type) {
+    if (type === 'click') {
+        const c = clickAudio.cloneNode();
+        c.volume = 0.4;
+        c.play().catch(()=>{});
+    }
+}
+
+function delayedNav(url) {
+    playSound('click');
+    setTimeout(() => { window.location.href = url; }, 250);
+}
+
+/* Mobile Nav Toggle */
+function toggleMenu() {
+    const m = document.getElementById('nav-menu');
+    const ic = document.getElementById('menu-icon');
+    m.classList.toggle('open');
+    if (m.classList.contains('open')) {
+        ic.className = 'fa-solid fa-xmark';
+        playSound('click');
+    } else {
+        ic.className = 'fa-solid fa-bars';
+    }
+}
+
+/* Scroll progress */
+window.addEventListener('scroll', () => {
+    const nb = document.getElementById('navbar');
+    if (nb) nb.classList.toggle('scrolled', window.scrollY > 40);
+
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    const bar = document.getElementById('scroll-progress');
+    if (bar) bar.style.width = pct + '%';
+});
+
+/* Custom Quantum Cursor */
+const cursorCore = document.getElementById('cursor-core');
+const cursorRing = document.getElementById('cursor-ring');
+let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
+
+if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        cursorCore.style.left = mouseX + 'px';
+        cursorCore.style.top  = mouseY + 'px';
+    });
+
+    (function animRing() {
+        ringX += (mouseX - ringX) * 0.12;
+        ringY += (mouseY - ringY) * 0.12;
+        cursorRing.style.left = ringX + 'px';
+        cursorRing.style.top  = ringY + 'px';
+        requestAnimationFrame(animRing);
+    })();
+
+    document.querySelectorAll('a, button, .f-card, .btn-action, .toggle-option').forEach(el => {
+        el.addEventListener('mouseenter', () => cursorRing.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => cursorRing.classList.remove('hovering'));
+    });
+}
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    AOS.init({ duration: 800, once: true, offset: 40 });
+});
+
+/* ============================================================
+   INTERACTIVE ENHANCEMENTS
+   (card tilt/spotlight, node access panel, sync visuals,
+   magnetic buttons, count-up stats — nav & cursor untouched)
+============================================================ */
+(function() {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = window.matchMedia('(pointer: fine)').matches;
+
+    /* ---- Tiny synth "blip" — no extra audio asset needed ---- */
+    let actx;
+    function blip(freq, dur, vol) {
+        if (prefersReduced) return;
+        try {
+            actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+            if (actx.state === 'suspended') actx.resume();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(vol, actx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+            osc.connect(gain).connect(actx.destination);
+            osc.start();
+            osc.stop(actx.currentTime + dur);
+        } catch (e) { /* audio not available, fail silently */ }
+    }
+
+    /* ---- Card 3D tilt + cursor-follow spotlight ---- */
+    if (fine && !prefersReduced) {
+        document.querySelectorAll('.f-card').forEach(card => {
+            card.addEventListener('mouseenter', () => blip(680, 0.04, 0.02));
+            card.addEventListener('mousemove', e => {
+                const r = card.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width;
+                const py = (e.clientY - r.top) / r.height;
+                const rx = (py - 0.5) * -6;
+                const ry = (px - 0.5) * 8;
+                card.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-8px)`;
+                card.style.setProperty('--mx', (px * 100) + '%');
+                card.style.setProperty('--my', (py * 100) + '%');
+            });
+            card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+        });
+    }
+
+    /* ---- Name glitch flicker on hover ---- */
+    document.querySelectorAll('.f-name').forEach(name => {
+        name.addEventListener('mouseenter', () => {
+            name.classList.remove('glitching');
+            void name.offsetWidth; /* restart animation */
+            name.classList.add('glitching');
+        });
+        name.addEventListener('animationend', () => name.classList.remove('glitching'));
+    });
+
+    /* ---- Magnetic pull + ripple on action buttons ---- */
+    document.querySelectorAll('.btn-action').forEach(btn => {
+        if (fine && !prefersReduced) {
+            btn.addEventListener('mousemove', e => {
+                const r = btn.getBoundingClientRect();
+                const x = e.clientX - r.left - r.width / 2;
+                const y = e.clientY - r.top - r.height / 2;
+                btn.style.transform = `translate(${x * 0.22}px, ${y * 0.32}px)`;
+            });
+            btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+        }
+        btn.addEventListener('click', e => {
+            const r = btn.getBoundingClientRect();
+            const size = Math.max(r.width, r.height);
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - r.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - r.top - size / 2) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 650);
+        });
+    });
+
+    /* ---- System access / terminal panel ---- */
+    const overlay = document.getElementById('term-overlay');
+    const term = document.getElementById('term-body');
+    const closeBtn = document.getElementById('term-close');
+    let typing = false;
+
+    const dossiers = {
+        ratul: [
+            '$ whoami',
+            '> mustafij_ratul',
+            '$ access core --user=ratul',
+            '[OK] Authenticating architect credentials...',
+            '[OK] Loading subsystems: runtime-engine, wasm-pipeline, desktop-utils',
+            '> 247 commits this quarter, 12 repositories, uptime 99.98%',
+            '> "I do not just write code, I stitch systems together."',
+            '$ _'
+        ],
+        tamim: [
+            '$ whoami',
+            '> tamim',
+            '$ access core --user=tamim',
+            '[OK] Authenticating strategist credentials...',
+            '[OK] Loading subsystems: product-vision, game-logic, ux-dynamics',
+            '> 3 shipped concepts, 40+ QA passes, 0 unresolved paper cuts',
+            '> "Great tools disappear, you just feel the flow."',
+            '$ _'
+        ]
+    };
+
+    function typeLines(lines) {
+        term.textContent = '';
+        typing = true;
+        let li = 0, ci = 0;
+        function step() {
+            if (!typing) return;
+            if (li >= lines.length) {
+                const cur = document.createElement('span');
+                cur.className = 'term-cursor';
+                term.appendChild(cur);
+                return;
+            }
+            const line = lines[li];
+            if (ci === 0 && li > 0) term.appendChild(document.createTextNode('\n'));
+            if (ci < line.length) {
+                term.appendChild(document.createTextNode(line[ci]));
+                ci++;
+                setTimeout(step, line.startsWith('$') ? 26 : 10);
+            } else {
+                li++; ci = 0;
+                setTimeout(step, 130);
+            }
+        }
+        step();
+    }
+
+    function openPanel(id) {
+        overlay.classList.add('open');
+        typeLines(dossiers[id] || []);
+        blip(900, 0.06, 0.03);
+        closeBtn.focus();
+    }
+    function closePanel() {
+        overlay.classList.remove('open');
+        typing = false;
+    }
+
+    document.querySelectorAll('.avatar-wrap[data-founder]').forEach(el => {
+        el.addEventListener('click', () => openPanel(el.dataset.founder));
+        el.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPanel(el.dataset.founder); }
+        });
+    });
+    closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closePanel(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+    /* ---- Count-up synergy stat + live "packets synced" ticker ---- */
+    const metricEl = document.getElementById('metric-sync');
+    const packetsEl = document.getElementById('live-packets');
+    let packetVal = 1428;
+    let liveStarted = false;
+
+    function countUp(el, target, suffix, duration) {
+        const start = performance.now();
+        function frame(now) {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(eased * target) + suffix;
+            if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+    }
+
+    function tickPackets() {
+        packetVal += Math.floor(Math.random() * 9) + 1;
+        if (packetsEl) packetsEl.textContent = packetVal.toLocaleString();
+        setTimeout(tickPackets, 1400 + Math.random() * 900);
+    }
+
+    if (metricEl) {
+        const valEl = metricEl.querySelector('.val');
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !metricEl.classList.contains('counted')) {
+                    metricEl.classList.add('counted');
+                    countUp(valEl, parseInt(metricEl.dataset.target, 10), '%', 1200);
+                    if (!liveStarted) { liveStarted = true; tickPackets(); }
+                }
+            });
+        }, { threshold: 0.5 });
+        obs.observe(metricEl);
+    }
+})();
+</script>
+    <script src="script.js"></script>
+    <script src="antigravity-particles.bundle.js"></script>
+</body>
+</html>
