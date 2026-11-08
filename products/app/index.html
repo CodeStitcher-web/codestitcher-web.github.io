@@ -554,6 +554,22 @@
         </div>
     </header>
 
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-drawer" class="mobile-drawer">
+        <ul class="mobile-nav-list">
+            <li><a href="../../index.html"><span>Home</span></a></li>
+            <li><a href="../index.html"><span>Products</span> <span class="mobile-nav-badge">NEW</span></a></li>
+            <li><a href="../Calculate/index.html"><span>Calculate App (Android)</span></a></li>
+            <li><a href="index.html"><span>CodeStitcher App (Android)</span> <span class="mobile-nav-badge">NEW</span></a></li>
+            <li><a href="../../focusguard/index.html"><span>FocusGuard Pro</span></a></li>
+            <li><a href="../../learn-lambdascript.html"><span>LambdaScript</span></a></li>
+            <li class="mobile-nav-divider"></li>
+            <li><a href="../../founder.html"><span>Founders</span></a></li>
+            <li class="mobile-nav-divider"></li>
+            <li><a href="https://github.com/MustafijRatul" target="_blank" rel="noopener noreferrer"><span>GitHub Profile &#8599;</span></a></li>
+        </ul>
+    </div>
+
     <!-- Main Content Container -->
     <main class="app-page-wrapper">
 
@@ -688,12 +704,56 @@
     <!-- Mobile Navigation Drawer Handler -->
     <script>
     (function() {
-        var toggle = document.getElementById('mobile-menu-toggle');
-        if (!toggle) return;
-        toggle.addEventListener('click', function() {
-            var menu = document.querySelector('.agy-nav-center');
-            if (menu) menu.classList.toggle('active');
-        });
+        function initMobileNav() {
+            var toggle = document.getElementById('mobile-menu-toggle');
+            var drawer = document.getElementById('mobile-drawer');
+            if (!toggle || !drawer || toggle._hasMobileNav) return;
+            toggle._hasMobileNav = true;
+
+            var hamburgerSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+            var closeSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+            var lastTime = 0;
+            function doToggle(e) {
+                var now = Date.now();
+                if (now - lastTime < 320) return;
+                lastTime = now;
+                if (e && e.cancelable) e.preventDefault();
+                if (e) e.stopPropagation();
+
+                var isOpen = drawer.classList.toggle('open');
+                drawer.classList.toggle('active', isOpen);
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                toggle.innerHTML = isOpen ? closeSvg : hamburgerSvg;
+            }
+
+            toggle.addEventListener('click', doToggle);
+            toggle.addEventListener('touchend', doToggle);
+
+            drawer.addEventListener('click', function(e) {
+                if (e.target.closest('a')) {
+                    drawer.classList.remove('open', 'active');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.innerHTML = hamburgerSvg;
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!drawer.contains(e.target) && !toggle.contains(e.target)) {
+                    if (drawer.classList.contains('open') || drawer.classList.contains('active')) {
+                        drawer.classList.remove('open', 'active');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.innerHTML = hamburgerSvg;
+                    }
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileNav);
+        } else {
+            initMobileNav();
+        }
     })();
     </script>
 </body>
